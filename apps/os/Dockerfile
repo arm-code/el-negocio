@@ -39,7 +39,10 @@ COPY --from=builder --chown=app:app /app/public ./public
 USER app
 EXPOSE 3000
 
+# Se consulta /auth/login y no "/": la landing responde 404 mientras la base no tiene
+# negocio, y un contenedor "unhealthy" no recibe tráfico del proxy. El login siempre
+# responde 200 y no depende de los datos.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1:3000/auth/login || exit 1
 
 CMD ["node", "server.js"]
