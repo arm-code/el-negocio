@@ -7,7 +7,7 @@
 FROM node:22-alpine AS builder
 
 # Instala pnpm globalmente
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 
 WORKDIR /app
 
@@ -48,7 +48,7 @@ RUN ffmpeg -version | head -n 1
 # ── Configuración de la aplicación ───────────────────────────────────────────
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
 
 # Solo dependencias de producción
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./

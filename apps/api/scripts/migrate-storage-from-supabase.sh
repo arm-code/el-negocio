@@ -6,11 +6,11 @@
 # Requisitos: `docker compose up -d postgres api` (el API monta el volumen).
 # Uso:
 #   STORAGE_PUBLIC_URL=https://api.tudominio.mx/files ./scripts/migrate-storage-from-supabase.sh
-# (sin la variable usa http://localhost:3500/files)
+# (sin la variable usa /files, relativa)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-PUBLIC_URL="${STORAGE_PUBLIC_URL:-http://localhost:3500/files}"
+PUBLIC_URL="${STORAGE_PUBLIC_URL:-/files}"
 PUBLIC_URL="${PUBLIC_URL%/}"
 MARK='/storage/v1/object/public/businesses/'
 PSQL=(docker compose exec -T postgres psql -U changarro -d changarro -v ON_ERROR_STOP=1 -tA -F $'\t')

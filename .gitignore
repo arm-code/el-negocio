@@ -1,0 +1,12 @@
+# Secretos y datos locales: NUNCA al repo
+.env
+.env.*
+!.env.example
+backups/
+import/
+storage/
+*.sql.gz
+
+# Sistema
+.DS_Store
+Thumbs.db

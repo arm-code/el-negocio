@@ -42,6 +42,18 @@ pnpm dev
 Más detalle en `apps/api/scripts/` (backup, importación de datos, usuarios) y en
 el `README` de cada app.
 
+## Despliegue
+
+Una instancia se despliega con el `docker-compose.yml` de la raíz (Postgres + API + front).
+Guía paso a paso para Coolify, carga de datos y backups: [`docs/DEPLOY-COOLIFY.md`](docs/DEPLOY-COOLIFY.md).
+Para probar el stack completo en tu máquina:
+
+```bash
+cp .env.example .env     # completa los valores
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+# → http://localhost:8080
+```
+
 ## Ramas
 
 `main` es producción y `dev` es integración. Los cambios nuevos se hacen en una

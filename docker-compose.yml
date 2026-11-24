@@ -1,0 +1,90 @@
+# Stack de UNA instancia (un negocio): Postgres + API + front.
+# Es lo que despliega Coolify (recurso "Docker Compose", este archivo).
+#
+#   web  → único servicio público (puerto 3000). Reenvía /api y /files al API.
+#   api  → NestJS; solo en la red interna, sin exponerse a internet.
+#   postgres → base de datos propia (volumen `pgdata`).
+#   migrate → tarea de un solo uso: aplica las migraciones antes de arrancar el API.
+#
+# Volúmenes que NO se pueden perder: pgdata (datos) y storage (logos/galería).
+# Variables: ver .env.example.
+
+services:
+  postgres:
+    build: ./apps/api/docker/postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: changarro
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
+      POSTGRES_DB: changarro
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U changarro -d changarro"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  migrate:
+    build:
+      context: ./apps/api
+      target: builder
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment: &db-env
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: changarro
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
+      DB_NAME: changarro
+      DB_SSL: "false"
+    command: ["pnpm", "run", "typeorm", "migration:run"]
+
+  api:
+    build:
+      context: ./apps/api
+      target: production
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      <<: *db-env
+      PORT: 3500
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET}
+      BUSINESS_SLUG: ${BUSINESS_SLUG:?Define BUSINESS_SLUG}
+      # Mismo origen que el front; el CORS del API lo valida contra SITE_URL
+      ALLOWED_ORIGINS: ${SITE_URL:-}
+      # false solo para pruebas locales sin HTTPS
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      STORAGE_DIR: /app/storage
+      STORAGE_PUBLIC_URL: /files
+      DOCS_USER: ${DOCS_USER:-docs}
+      DOCS_PASSWORD: ${DOCS_PASSWORD:?Define DOCS_PASSWORD}
+    volumes:
+      - storage:/app/storage
+    expose:
+      - "3500"
+
+  web:
+    build:
+      context: ./apps/os
+      args:
+        NEXT_PUBLIC_API_BASE_URL: /api
+        NEXT_PUBLIC_SITE_URL: ${SITE_URL:-}
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      # Mismo secreto que el API: el proxy del front verifica la cookie de sesión
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET}
+      # Para las páginas que se generan en el servidor (landing)
+      INTERNAL_API_URL: http://api:3500/api
+    expose:
+      - "3000"
+
+volumes:
+  pgdata:
+  storage:
