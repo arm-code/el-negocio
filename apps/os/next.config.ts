@@ -6,24 +6,6 @@ const isProd = process.env.NODE_ENV === 'production';
 // en desarrollo, el API local. Se fija al compilar.
 const API_ORIGIN = process.env.INTERNAL_API_ORIGIN ?? (isProd ? 'http://api:3500' : 'http://localhost:3500');
 
-// Solo si NEXT_PUBLIC_API_BASE_URL es absoluta (desarrollo con el API en otro puerto).
-// En producción las imágenes son rutas relativas (/files/...) y no necesitan patrón.
-function apiImagePatterns(): NonNullable<NextConfig['images']>['remotePatterns'] {
-  try {
-    const api = new URL(process.env.NEXT_PUBLIC_API_BASE_URL ?? '');
-    return [
-      {
-        protocol: api.protocol.replace(':', '') as 'http' | 'https',
-        hostname: api.hostname,
-        port: api.port,
-        pathname: '/files/**',
-      },
-    ];
-  } catch {
-    return [];
-  }
-}
-
 const nextConfig: NextConfig = {
   // Imagen de Docker mínima: copia solo lo necesario para `node server.js`
   output: 'standalone',
@@ -39,9 +21,11 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    remotePatterns: apiImagePatterns(),
-    // En local el API está en localhost (IP privada): Next lo bloquea por defecto
-    dangerouslyAllowLocalIP: !isProd,
+    // Sin optimizador de imágenes de Next. Usa `sharp` (binario precompilado que exige
+    // un CPU con SSE4.2 / x86-64-v2): en procesadores viejos (p. ej. Core 2 Duo) el
+    // proceso muere con "Illegal instruction" y el contenedor se reinicia en bucle.
+    // Las imágenes se sirven tal cual desde /files (caché larga, Cloudflare las cachea).
+    unoptimized: true,
   },
 };
 
