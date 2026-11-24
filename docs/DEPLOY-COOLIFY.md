@@ -152,6 +152,7 @@ sin SSE4.2). Al pasar a la máquina de producción, repasa esta lista en orden.
 
 **Resto de pasos:**
 
+- [ ] Si también despliegas el toolbox (sección 10): `IMAGE_OPTIMIZATION=true` ahí también, con el mismo criterio.
 - [ ] Recursos de la máquina: con la RAM justa (en pruebas, swap lleno) compilar el front puede fallar o ir muy lento.
 - [ ] Proxy de Coolify en marcha y con los puertos correctos (Servers → Proxy; comprobar con `docker ps | grep proxy`).
 - [ ] Crear el recurso y cargar variables (sección 1); `SITE_URL` con el dominio real.
@@ -160,3 +161,25 @@ sin SSE4.2). Al pasar a la máquina de producción, repasa esta lista en orden.
 - [ ] Probar login, imágenes y la vista previa al compartir (WhatsApp).
 - [ ] Configurar backups con cron **y** una copia fuera del servidor (sección 5).
 - [ ] Solo cuando todo funcione: apagar Supabase y el proyecto viejo de Vercel (guardar antes `import/armsolutions.sql`).
+
+## 10. Toolbox (sitio público de herramientas gratuitas)
+
+`apps/toolbox` es independiente del stack de arriba: **no usa base de datos, API, volúmenes ni
+backups** (las notas de venta se guardan en el navegador de cada visitante). Se despliega como
+un recurso aparte en Coolify, desde el mismo repo.
+
+1. **Project → New Resource → Public Git Repository**: `https://github.com/arm-code/elchangarro`,
+   rama `main`.
+2. **Build Pack: Dockerfile**. *Base Directory* `/apps/toolbox` y *Dockerfile Location* `/Dockerfile`.
+   (No uses Docker Compose aquí: el `docker-compose.yml` de la raíz es del otro stack.)
+3. **Variables de entorno**: solo `IMAGE_OPTIMIZATION` (`false` por defecto; `true` en servidores
+   modernos, con *Buildtime* marcado; ver sección 9). No hay más.
+4. **Dominio**: `http://<dominio-del-toolbox>` (protocolo `http`: el HTTPS lo pone Cloudflare),
+   puerto **3000**.
+5. **Tunnel de Cloudflare**: una ruta nueva `<dominio-del-toolbox>` → `http://<IP>:<puerto del proxy>`
+   (el mismo destino que usa la instancia del pos). Si el dominio apunta hoy a Vercel, borra antes
+   ese registro CNAME.
+6. **Deploy** y abre el dominio: debe salir la landing con "Notas de venta".
+
+Para actualizar: push a `main` → Redeploy. Si el front se reinicia en bucle o las imágenes dan 502,
+es el mismo problema de `IMAGE_OPTIMIZATION` de la sección 9.
