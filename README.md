@@ -6,7 +6,8 @@ Monorepo de **El Changarro OS**: sistema de control para negocios pequeños
 ```
 apps/
 ├── api/   API (NestJS + Postgres propio). Auth con cookie JWT, archivos en disco.
-└── os/    Front del pos (Next.js): landing pública + panel de administración.
+├── os/    Front del pos (Next.js): landing pública + panel de administración.
+└── toolbox/  Herramientas gratuitas para el público (Next.js, sin backend; datos en el navegador).
 ```
 
 Cada app es independiente (su propio `package.json`, lockfile y Dockerfile), así
