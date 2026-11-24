@@ -9,6 +9,10 @@ y `/files` hacia él (mismo origen: sin CORS ni cookies entre dominios).
 > nombre de botón cambió, la idea es la misma. Lo que sí está probado en local es
 > el stack (`docker-compose.yml`), el restore y los scripts.
 
+> **¿Vas a pasar de la máquina de pruebas a producción?** Lee primero la sección
+> [9. Pasar a producción](#9-pasar-a-producción-lista-de-pasos): hay valores que cambian
+> (sobre todo `IMAGE_OPTIMIZATION`) y es fácil olvidarlos.
+
 ## 0. Antes de empezar
 
 - El repo `arm-code/elchangarro` en GitHub (rama `main`).
@@ -29,8 +33,10 @@ y `/files` hacia él (mismo origen: sin CORS ni cookies entre dominios).
    | `BUSINESS_SLUG` | `eventosmendoza` |
    | `SITE_URL` | `https://eventosmendoza.dejuarez.mx` (sin `/` final) |
    | `DOCS_PASSWORD` | cualquier valor largo |
+   | `IMAGE_OPTIMIZATION` | `false` en CPUs viejos (máquina de pruebas); `true` en servidores modernos (ver sección 9) |
 
-   `SITE_URL` se incorpora al compilar el front: si lo cambias, hay que volver a desplegar.
+   `SITE_URL` e `IMAGE_OPTIMIZATION` se incorporan al compilar el front: si los cambias, hay que
+   volver a desplegar (en Coolify, mantén marcada la casilla *Buildtime* de ambas).
 3. **Dominio**: en el servicio `web`, dominio `https://eventosmendoza.dejuarez.mx`, puerto **3000**.
    Los demás servicios no llevan dominio.
 4. **Deploy.** La primera vez corre las migraciones sobre una base vacía y el API arranca,
@@ -118,3 +124,39 @@ docker exec -it $API node dist/src/scripts/user-admin.js set-password dueno@corr
 | Sitio sin negocio | falta restaurar datos, o `BUSINESS_SLUG` no coincide con el de la base |
 | `migrate` falla | `POSTGRES_PASSWORD` cambió después de crear el volumen: la base conserva la contraseña original |
 | 502 en el dominio | el servicio `web` no está sano; revisa sus logs |
+| El front se reinicia en bucle y las imágenes dan 502 (`/_next/image`) | CPU sin SSE4.2 con `IMAGE_OPTIMIZATION=true`: ponla en `false` y redespliega (sección 9) |
+
+## 9. Pasar a producción (lista de pasos)
+
+La máquina donde se probó este despliegue es **de pruebas** (Intel Core 2 Duo E4400, 3.7 GB de RAM,
+sin SSE4.2). Al pasar a la máquina de producción, repasa esta lista en orden.
+
+**Valores que cambian (los fáciles de olvidar):**
+
+| Qué | En pruebas | En producción |
+|---|---|---|
+| `IMAGE_OPTIMIZATION` | `false` (el CPU no soporta `sharp`) | **`true`** si el CPU tiene SSE4.2 (ver abajo) |
+| `POSTGRES_PASSWORD`, `JWT_SECRET`, `DOCS_PASSWORD` | los de pruebas | **nuevos**, generados otra vez; no reutilices los de pruebas |
+| Puerto del proxy de Coolify | `8081` (Apache y Nextcloud ocupaban 80 y 8080) | el que tenga esa máquina (normalmente 80) |
+| Ruta del tunnel de Cloudflare | `10.36.50.4:8081` | IP y puerto del proxy de la máquina de producción |
+
+**Activar el optimizador de imágenes (`IMAGE_OPTIMIZATION=true`):**
+
+1. Comprueba el CPU de producción: `grep -c sse4_2 /proc/cpuinfo`. Si imprime `0`, **no lo actives**.
+2. En Coolify, variable `IMAGE_OPTIMIZATION` = `true`, con *Buildtime* marcado.
+3. **Redeploy** (reconstruye el front; no basta reiniciar).
+4. Verifica que no se cae: abre la landing y comprueba que el contador de reinicios de `web` no sube
+   (`docker inspect <web> --format '{{.RestartCount}}'`), y que esto responde `200`:
+   `https://<dominio>/_next/image?url=%2Ffiles%2F<negocio>%2Flogo%2F<archivo>.png&w=640&q=75`
+5. Si el front se reinicia en bucle, vuelve a `false` y redespliega.
+
+**Resto de pasos:**
+
+- [ ] Recursos de la máquina: con la RAM justa (en pruebas, swap lleno) compilar el front puede fallar o ir muy lento.
+- [ ] Proxy de Coolify en marcha y con los puertos correctos (Servers → Proxy; comprobar con `docker ps | grep proxy`).
+- [ ] Crear el recurso y cargar variables (sección 1); `SITE_URL` con el dominio real.
+- [ ] Cargar datos con un respaldo **fresco** de la base y de los archivos (sección 3).
+- [ ] Mover la ruta del tunnel a la nueva máquina y borrar la de la máquina de pruebas.
+- [ ] Probar login, imágenes y la vista previa al compartir (WhatsApp).
+- [ ] Configurar backups con cron **y** una copia fuera del servidor (sección 5).
+- [ ] Solo cuando todo funcione: apagar Supabase y el proyecto viejo de Vercel (guardar antes `import/armsolutions.sql`).
