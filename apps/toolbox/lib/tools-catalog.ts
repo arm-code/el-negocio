@@ -37,16 +37,15 @@ export const availableTools: readonly AvailableTool[] = [
         icon: Receipt,
         href: "/tools/sales-note",
     },
+]
+
+export const upcomingTools: readonly UpcomingTool[] = [
     {
         id: "expenses",
         title: "Control de gastos",
         description: "Lleva el control de lo que entra y sale",
         icon: Wallet,
-        href: "/tools/expenses",
     },
-]
-
-export const upcomingTools: readonly UpcomingTool[] = [
     {
         id: "quotes",
         title: "Cotizaciones",

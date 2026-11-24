@@ -1,6 +1,6 @@
 // app/page.tsx
 import Link from "next/link"
-import { ChevronDown, ChevronRight, Store } from "lucide-react"
+import { ChevronDown, ChevronRight } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -27,7 +27,7 @@ export default function HomePage() {
                 Tu changarro, organizado desde el celular
               </h1>
               <p className="max-w-prose text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Haz notas de venta, lleva tus gastos y resuelve lo del día a día con herramientas
+                Haz notas de venta y resuelve lo del día a día con herramientas
                 sencillas. Se abren y se usan, sin complicarte.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -84,26 +84,6 @@ export default function HomePage() {
               </li>
             ))}
           </ul>
-
-          {/* Configuración: fila discreta, no compite con las herramientas */}
-          <Link
-            href="/tools/pos"
-            className={cn(
-              "group mt-4 flex min-h-14 items-center gap-3 rounded-xl border border-dashed px-4 py-3",
-              "transition-colors hover:bg-accent active:bg-accent",
-              focusRing
-            )}
-          >
-            <Store className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-            <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-medium">Punto de venta</span>
-              <span className="block text-sm text-muted-foreground">Configura tu negocio</span>
-            </span>
-            <ChevronRight
-              className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-              aria-hidden="true"
-            />
-          </Link>
 
           {/* Si el banner no renderiza nada (app ya instalada), el contenedor se oculta */}
           <div className="mt-8 empty:hidden">

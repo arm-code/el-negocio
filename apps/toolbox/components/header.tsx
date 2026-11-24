@@ -51,13 +51,6 @@ export function Header() {
 
                 <div className="flex items-center gap-1 sm:gap-2">
                     <ThemeToggle />
-                    <Button variant="ghost" disabled className="h-11 rounded-xl px-3 sm:px-4">
-                        Ingresar
-                    </Button>
-                    {/* En móvil se oculta para no saturar; el registro se alcanza desde /login */}
-                    <Button disabled className="hidden h-11 rounded-xl px-4 sm:inline-flex">
-                        Registrarse
-                    </Button>
                 </div>
             </div>
         </header>
