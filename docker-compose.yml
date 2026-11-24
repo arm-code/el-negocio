@@ -74,6 +74,8 @@ services:
       args:
         NEXT_PUBLIC_API_BASE_URL: /api
         NEXT_PUBLIC_SITE_URL: ${SITE_URL:-}
+        # false por defecto (funciona en cualquier CPU). true en servidores modernos.
+        IMAGE_OPTIMIZATION: ${IMAGE_OPTIMIZATION:-false}
     restart: unless-stopped
     depends_on:
       - api

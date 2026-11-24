@@ -17,8 +17,11 @@ COPY . .
 ARG NEXT_PUBLIC_API_BASE_URL=/api
 # Dominio público de la instancia (vista previa al compartir, canonical)
 ARG NEXT_PUBLIC_SITE_URL=
+# Optimizador de imágenes de Next: true solo en servidores con CPU moderno (ver next.config.ts)
+ARG IMAGE_OPTIMIZATION=false
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
     NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
+    IMAGE_OPTIMIZATION=$IMAGE_OPTIMIZATION \
     NEXT_TELEMETRY_DISABLED=1
 RUN pnpm run build
 

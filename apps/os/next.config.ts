@@ -21,11 +21,14 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    // Sin optimizador de imágenes de Next. Usa `sharp` (binario precompilado que exige
-    // un CPU con SSE4.2 / x86-64-v2): en procesadores viejos (p. ej. Core 2 Duo) el
-    // proceso muere con "Illegal instruction" y el contenedor se reinicia en bucle.
-    // Las imágenes se sirven tal cual desde /files (caché larga, Cloudflare las cachea).
-    unoptimized: true,
+    // Optimizador de imágenes de Next (reescala/convierte). Usa `sharp`, un binario
+    // precompilado que exige un CPU con SSE4.2 (x86-64-v2). En CPUs viejos (p. ej.
+    // Core 2 Duo) el proceso muere con "Illegal instruction" y el contenedor se
+    // reinicia en bucle (502 en /_next/image).
+    //   IMAGE_OPTIMIZATION=true  → activado (servidores modernos / producción)
+    //   cualquier otro valor     → desactivado: las imágenes se sirven tal cual desde /files
+    // Se fija al COMPILAR. Ver docs/DEPLOY-COOLIFY.md ("Pasar a producción").
+    unoptimized: process.env.IMAGE_OPTIMIZATION !== 'true',
   },
 };
 

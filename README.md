@@ -46,6 +46,8 @@ el `README` de cada app.
 
 Una instancia se despliega con el `docker-compose.yml` de la raíz (Postgres + API + front).
 Guía paso a paso para Coolify, carga de datos y backups: [`docs/DEPLOY-COOLIFY.md`](docs/DEPLOY-COOLIFY.md).
+**Antes de pasar a producción**, revisa la sección *9. Pasar a producción* de esa guía
+(incluye `IMAGE_OPTIMIZATION`, que difiere entre la máquina de pruebas y producción).
 Para probar el stack completo en tu máquina:
 
 ```bash
