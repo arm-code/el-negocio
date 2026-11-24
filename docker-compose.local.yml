@@ -1,0 +1,10 @@
+# Solo para PROBAR el stack en tu máquina (Coolify NO usa este archivo):
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml --env-file .env up -d --build
+# Abre http://localhost:8080
+services:
+  web:
+    ports:
+      - "127.0.0.1:8080:3000"
+  api:
+    environment:
+      COOKIE_SECURE: "false"   # http://localhost no tiene HTTPS

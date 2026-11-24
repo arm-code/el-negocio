@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from './base-url';
+
 export interface ApiResponse<T> {
   data?: T;
   error?: string;
@@ -16,7 +18,7 @@ export async function apiClient<T>(
     };
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL!}${endpoint}`,
+      `${getApiBaseUrl()}${endpoint}`,
       {
         ...options,
         headers,

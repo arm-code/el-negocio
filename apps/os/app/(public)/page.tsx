@@ -6,6 +6,10 @@ import { businessApi } from '@/lib/api/business';
 import { isNotFound, publicBusinessQuery } from '@/lib/landing/queries';
 import { PublicLandingView } from '@/components/landing/PublicLandingView';
 
+// Se genera en cada petición (con caché de 10 min en el fetch): al compilar la imagen
+// no existe el API ni la base, y la vista previa al compartir necesita los datos reales.
+export const dynamic = 'force-dynamic';
+
 // Landing pública del negocio de esta instancia (una instancia = un negocio).
 const getBusiness = cache(async () => {
   try {

@@ -31,6 +31,7 @@ export interface UpdateBusinessDto {
 const PREFIX = '/v1/businesses';
 
 import { PublicBusinessResponse } from '@/types/finance';
+import { getApiBaseUrl } from './base-url';
 
 export const businessApi = {
   getBusinesses: async (): Promise<Business[]> => {
@@ -43,7 +44,7 @@ export const businessApi = {
    * Backend: GET /v1/businesses/public
    */
   getPublicBusiness: async (): Promise<PublicBusinessResponse> => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+    const baseUrl = getApiBaseUrl();
     const res = await fetch(`${baseUrl}/v1/businesses/public`, {
       next: { revalidate: 600 }
     });

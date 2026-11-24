@@ -10,7 +10,8 @@ import { AuthProvider } from '@/lib/auth';
 import { BusinessProvider } from '@/lib/business';
 import { DataProvider } from '@/lib/data-store';
 
-const BASE_URL = 'https://dejuarez.mx';
+// Dominio público de esta instancia (vista previa al compartir por WhatsApp, canonical)
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dejuarez.mx';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
