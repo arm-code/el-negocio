@@ -1,0 +1,100 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { ResponseMessage } from '../../../common/interceptors/transform.interceptor';
+import { CurrentBusiness } from '../../auth/decorators/current-business.decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { TenantGuard } from '../../auth/guards/tenant.guard';
+import { CreateInventoryItemDto } from '../dto/item/create-inventory-item.dto';
+import { QueryInventoryItemsDto } from '../dto/item/query-inventory-items.dto';
+import { UpdateInventoryItemDto } from '../dto/item/update-inventory-item.dto';
+import { InventoryItemsService } from '../services/inventory-items.service';
+
+@ApiTags('Inventory - Items')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, TenantGuard)
+@Controller('inventory/items')
+export class InventoryItemsController {
+  constructor(private readonly service: InventoryItemsService) {}
+
+  @Get()
+  @ResponseMessage('Ítems de inventario obtenidos exitosamente.')
+  @ApiOperation({
+    summary: 'Listar ítems de inventario paginados. Filtros: search, categoryId, status, type.',
+  })
+  findAll(
+    @CurrentBusiness() businessId: string,
+    @Query() query: QueryInventoryItemsDto,
+  ) {
+    return this.service.findAll(businessId, query);
+  }
+
+  @Get(':id')
+  @ResponseMessage('Ítem de inventario obtenido exitosamente.')
+  @ApiOperation({
+    summary:
+      'Detalle completo de un ítem. Incluye seriales si type === "serialized".',
+  })
+  @ApiResponse({ status: 404, description: 'Ítem no encontrado.' })
+  findOne(
+    @CurrentBusiness() businessId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.service.findOne(businessId, id);
+  }
+
+  @Post()
+  @ResponseMessage('Ítem de inventario creado exitosamente.')
+  @ApiOperation({ summary: 'Crear un nuevo ítem de inventario.' })
+  @ApiResponse({ status: 409, description: 'El SKU ya existe para este negocio.' })
+  create(
+    @CurrentBusiness() businessId: string,
+    @Body() dto: CreateInventoryItemDto,
+  ) {
+    return this.service.create(businessId, dto);
+  }
+
+  @Put(':id')
+  @ResponseMessage('Ítem de inventario actualizado exitosamente.')
+  @ApiOperation({ summary: 'Actualizar datos generales, precios o atributos de un ítem.' })
+  @ApiResponse({ status: 404, description: 'Ítem no encontrado.' })
+  @ApiResponse({ status: 409, description: 'El SKU ya existe para este negocio.' })
+  update(
+    @CurrentBusiness() businessId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateInventoryItemDto,
+  ) {
+    return this.service.update(businessId, id, dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @ResponseMessage('Ítem de inventario desactivado exitosamente (soft delete).')
+  @ApiOperation({
+    summary: 'Eliminación lógica del ítem. No borra el registro para preservar historiales.',
+  })
+  @ApiResponse({ status: 404, description: 'Ítem no encontrado.' })
+  remove(
+    @CurrentBusiness() businessId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.service.remove(businessId, id);
+  }
+}

@@ -1,0 +1,110 @@
+import { Column, Entity, OneToMany } from 'typeorm';
+import { BaseEntity } from '../../../common/entities/base.entity';
+import { BusinessStat } from './business-stat.entity';
+import { BusinessValue } from './business-value.entity';
+import { Faq } from './faq.entity';
+import { GalleryItem } from './gallery-item.entity';
+import { PaymentCard } from './payment-card.entity';
+import { Testimonial } from './testimonial.entity';
+
+@Entity({ name: 'business_configs', schema: 'armsolutions' })
+export class BusinessConfig extends BaseEntity {
+  /**
+   * Negocio al que pertenece esta configuración.
+   * Una fila por negocio (relación 1:1).
+   */
+  @Column({ name: 'business_id', type: 'uuid', nullable: true })
+  businessId: string | null;
+
+  @Column({ type: 'varchar', length: 150, default: 'Eventos Mendoza' })
+  name: string;
+
+  @Column({ name: 'logo_url', type: 'text', nullable: true })
+  logoUrl: string | null;
+
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  phone: string | null;
+
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  whatsapp: string | null;
+
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  email: string | null;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  address: string | null;
+
+  @Column({ type: 'text', array: true, default: '{}' })
+  services: string[];
+
+  @Column({ name: 'coverage_areas', type: 'text', array: true, default: '{}' })
+  coverageAreas: string[];
+
+  @Column({ name: 'terms_and_conditions', type: 'text', nullable: true })
+  termsAndConditions: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  description: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  history: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  mission: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  vision: string | null;
+
+  @Column({ name: 'opening_hours', type: 'varchar', length: 150, nullable: true })
+  openingHours: string | null;
+
+  /**
+   * Mensaje pre-rellenado para el botón de WhatsApp.
+   * Si es null, el frontend usa un fallback genérico.
+   */
+  @Column({ name: 'whatsapp_message', type: 'text', nullable: true })
+  whatsappMessage: string | null;
+
+  // ── Relaciones 1:N ──────────────────────────────────────────────────────────
+
+  @OneToMany(() => PaymentCard, (card) => card.config, {
+    cascade: true,
+    eager: true,
+  })
+  paymentCards: PaymentCard[];
+
+  /** Imágenes del catálogo para el carrusel del landing. */
+  @OneToMany(() => GalleryItem, (item) => item.config, {
+    cascade: true,
+    eager: true,
+  })
+  gallery: GalleryItem[];
+
+  /** Valores corporativos para la sección "Nuestros valores". */
+  @OneToMany(() => BusinessValue, (v) => v.config, {
+    cascade: true,
+    eager: true,
+  })
+  values: BusinessValue[];
+
+  /** Métricas para la sección "En números". */
+  @OneToMany(() => BusinessStat, (s) => s.config, {
+    cascade: true,
+    eager: true,
+  })
+  stats: BusinessStat[];
+
+  /** Reseñas para la sección "Lo que dicen nuestros clientes". */
+  @OneToMany(() => Testimonial, (t) => t.config, {
+    cascade: true,
+    eager: true,
+  })
+  testimonials: Testimonial[];
+
+  /** Preguntas frecuentes para la sección FAQ. */
+  @OneToMany(() => Faq, (f) => f.config, {
+    cascade: true,
+    eager: true,
+  })
+  faqs: Faq[];
+}

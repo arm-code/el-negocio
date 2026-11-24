@@ -1,0 +1,117 @@
+import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
+import { StorageService } from './common/services/storage.service';
+import { AppModule } from './app.module';
+import { ValidationPipe, Logger, RequestMethod } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import basicAuth from 'express-basic-auth';
+
+async function bootstrap() {
+  const logger = new Logger('Bootstrap');
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // 1. Configuración de CORS estricto
+  // 1. Configuración de CORS estricto
+  const rawOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? [];
+  const allowedOrigins: string[] = rawOrigins.map((o) => o.trim());
+
+  logger.log(`Orígenes CORS permitidos: ${JSON.stringify(allowedOrigins)}`);
+
+  app.enableCors({
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void,
+    ) => {
+      // 1. Permitir peticiones sin origen (curl, Postman, server-to-server)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // 2. Permitir cualquier subdominio de dejuarez.mx o arm-solutions.com.mx
+      const isDomainMatch =
+        /^https:\/\/([a-z0-9-]+\.)*dejuarez\.mx$/.test(origin) ||
+        /^https:\/\/([a-z0-9-]+\.)*arm-solutions\.com\.mx$/.test(origin) ||
+        origin.startsWith('http://localhost:');
+
+      // 3. O que esté explícitamente en la variable ALLOWED_ORIGINS limpia
+      if (isDomainMatch || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      logger.error(`Origen bloqueado por CORS: ${origin}`);
+      return callback(new Error('No permitido por políticas de CORS'));
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
+  // Archivos subidos (logos, galería): públicos y de solo lectura en /files.
+  // Los nombres son UUID, así que el contenido nunca cambia bajo la misma URL.
+  app.useStaticAssets(app.get(StorageService, { strict: false }).getRootDir(), {
+    prefix: '/files/',
+    index: false,
+    dotfiles: 'deny',
+    maxAge: '365d',
+    immutable: true,
+    setHeaders: (res) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
+  });
+
+  // 2. Tipado Estricto y Validación Global de DTOs
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Remueve propiedades que no estén en el DTO
+      forbidNonWhitelisted: true, // Lanza un error si envían propiedades no permitidas
+      transform: true, // Transforma los payloads a los tipos de los DTOs
+    }),
+  );
+
+  // Prefijo global para la API (excepto la raíz para health checks de Render)
+  app.setGlobalPrefix('api/v1', {
+    exclude: [{ path: '/', method: RequestMethod.ALL }],
+  });
+
+  // 3. Configuración de OpenAPI (Swagger) y Renderizado con Scalar
+  const config = new DocumentBuilder()
+    .setTitle('ARM Solutions API')
+    .setDescription(
+      'API central de herramientas personales y gestión de negocios',
+    )
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+
+  // Montamos Scalar en la ruta /docs
+  const { apiReference } = await import('@scalar/nestjs-api-reference');
+
+  app.use(
+    ['/docs', '/docs-json'],
+    basicAuth({
+      challenge: true,
+      users: {
+        [process.env.DOCS_USER!]: process.env.DOCS_PASSWORD!,
+      },
+    }),
+  );
+
+  app.use(
+    '/docs',
+    apiReference({
+      spec: {
+        content: document,
+      },
+    }),
+  );
+
+  const port = process.env.PORT || 3500;
+  await app.listen(port, '0.0.0.0');
+  logger.log(`Aplicación corriendo en: http://localhost:${port}/api/v1`);
+  logger.log(
+    `Documentación (Scalar) disponible en: http://localhost:${port}/docs`,
+  );
+}
+void bootstrap();
