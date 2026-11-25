@@ -9,7 +9,7 @@ import { computeNoteTotals, itemAmount, IVA_RATE } from '../lib/calculations'
 import { formatCurrency, genId } from '../lib/format'
 import { useSaveSalesNote } from '../hooks/use-sales-notes'
 import { useBusinessInfo } from '../hooks/use-business-info'
-import { SALES_NOTES_ROUTES } from '../routes'
+import { useSalesNotesConfig } from '../provider'
 import type { Note, NoteItem, NoteStatus } from '../types'
 import { PrintSaleNoteDocument } from './sale-note-document'
 import { NoteCardPreview } from './note-card-preview'
@@ -67,6 +67,7 @@ interface NoteWizardProps {
 /** Asistente de 3 pasos para crear o editar una nota de venta / cotización. */
 export function NoteWizard({ initialNote }: NoteWizardProps) {
   const router = useRouter()
+  const { routes, copy } = useSalesNotesConfig()
   const isEditing = Boolean(initialNote)
   const business = useBusinessInfo()
   const saveMutation = useSaveSalesNote(initialNote?.id)
@@ -107,7 +108,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
 
   function requestExit() {
     if (isDirty && !savedNote) setConfirmExit(true)
-    else router.push(SALES_NOTES_ROUTES.list)
+    else router.push(routes.list)
   }
 
   function handleNextStep1() {
@@ -166,7 +167,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
           setSavedNote(note)
         },
         onError: () => {
-          toast.error('No se pudo guardar la nota. Revisa que tu navegador permita guardar datos.')
+          toast.error(copy.saveError)
         },
       }
     )
@@ -507,7 +508,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
       {/* Visor post-guardado */}
       <AppBottomSheet
         open={savedNote !== null}
-        onOpenChange={(o) => !o && router.push(SALES_NOTES_ROUTES.list)}
+        onOpenChange={(o) => !o && router.push(routes.list)}
         title={savedNote ? `${kindLabel(savedNote.status)} ${savedNote.folio}` : ''}
         footer={
           savedNote && (
@@ -529,7 +530,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
         title="¿Salir sin guardar?"
         description="Los datos que capturaste se perderán."
         confirmText="Sí, salir"
-        onConfirm={() => router.push(SALES_NOTES_ROUTES.list)}
+        onConfirm={() => router.push(routes.list)}
         isPending={false}
       />
     </div>

@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { notesStorage, STORAGE_KEYS } from '../lib/storage'
+import { useSalesNotesConfig } from '../provider'
 import type { NoteInput } from '../types'
 
 export const notesKeys = {
@@ -10,48 +10,50 @@ export const notesKeys = {
   detail: (id: string) => ['salesNotes', id] as const,
 }
 
-/** Sincroniza la caché cuando otra pestaña modifica las notas. */
-function useCrossTabSync() {
+/** Refresca la lista cuando el almacenamiento avisa de un cambio hecho por fuera. */
+function useExternalChanges() {
+  const { notes } = useSalesNotesConfig()
   const queryClient = useQueryClient()
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.notes) queryClient.invalidateQueries({ queryKey: notesKeys.all })
-    }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [queryClient])
+  useEffect(
+    () => notes.subscribe?.(() => queryClient.invalidateQueries({ queryKey: notesKeys.all })),
+    [notes, queryClient]
+  )
 }
 
 export function useSalesNotes() {
-  useCrossTabSync()
+  const { notes } = useSalesNotesConfig()
+  useExternalChanges()
   return useQuery({
     queryKey: notesKeys.all,
-    queryFn: () => notesStorage.list(),
+    queryFn: () => notes.list(),
     staleTime: Infinity,
   })
 }
 
 export function useSalesNote(id: string | undefined) {
+  const { notes } = useSalesNotesConfig()
   return useQuery({
     queryKey: notesKeys.detail(id ?? ''),
-    queryFn: () => notesStorage.get(id!),
+    queryFn: () => notes.get(id!),
     enabled: Boolean(id),
     staleTime: Infinity,
   })
 }
 
 export function useSaveSalesNote(id?: string) {
+  const { notes } = useSalesNotesConfig()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (input: NoteInput) => (id ? notesStorage.update(id, input) : notesStorage.create(input)),
+    mutationFn: (input: NoteInput) => (id ? notes.update(id, input) : notes.create(input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: notesKeys.all }),
   })
 }
 
 export function useDeleteSalesNote() {
+  const { notes } = useSalesNotesConfig()
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (noteId: string) => notesStorage.remove(noteId),
+    mutationFn: (noteId: string) => notes.remove(noteId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: notesKeys.all }),
   })
 }

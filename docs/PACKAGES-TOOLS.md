@@ -1,7 +1,7 @@
 # Micro apps compartidas (plan y estándar de trabajo)
 
-> Estado al 2026-11-25: fases 0 y 1 hechas en local, **sin desplegar**. Todavía no
-> existe la carpeta `packages/`.
+> Estado al 2026-11-25: fases 0 y 1 en `main`, pero el sitio todavía servía la
+> versión anterior. Fase 2 hecha en local. Todavía no existe la carpeta `packages/`.
 
 ## 1. La idea
 
@@ -119,6 +119,21 @@ export interface BusinessInfoStorage {
 }
 ```
 
+La aplicación entrega todo junto en `<SalesNotesProvider config={...}>`:
+
+```ts
+export interface SalesNotesConfig {
+  notes: NotesStorage
+  business: BusinessInfoStorage
+  routes: { home: string; list: string; create: string; edit(id: string): string }
+  copy: SalesNotesCopy   // textos que dependen de la app o de dónde guarda
+}
+```
+
+Si el adaptador guarda en el navegador, la app debe configurar react-query con
+`networkMode: 'always'` (consultas y mutaciones). Con el valor por defecto, sin red
+las lecturas y los guardados quedan en pausa.
+
 **Terminada** significa: compila, funciona a 375 px en claro y oscuro, exporta y
 comparte (si aplica), conserva los datos ya guardados y está probada en el sitio
 desplegado.
@@ -127,7 +142,7 @@ desplegado.
 
 ### Fase 0 — Base sana del toolbox
 
-Hecha y probada en local el 2026-11-25; **falta desplegar y comprobar en el sitio**.
+Hecha y probada en local el 2026-11-25; **falta comprobarla en el sitio**.
 
 - **PWA:** el build usaba Turbopack, con el que `@serwist/next` no genera el service
   worker, y se publicaba un `public/sw.js` viejo guardado en git. Ahora compila con
@@ -142,7 +157,7 @@ Hecha y probada en local el 2026-11-25; **falta desplegar y comprobar en el siti
 ### Fase 1 — Estándar visual (dentro del toolbox, sin mover archivos)
 
 Hecha y probada en local el 2026-11-25 a 360 px, en claro y oscuro; **falta
-desplegar**.
+comprobarla en el sitio**.
 
 - Tema neutro con variantes de acento (el toolbox usa `brick`); paleta colorida
   solo en la landing; skeletons con el color de acento.
@@ -154,9 +169,20 @@ Visto y sin tocar: el teléfono se muestra agrupado como `656 1234 567`.
 
 ### Fase 2 — Puerto de almacenamiento (dentro del toolbox)
 
-- Puertos, provider y adaptador de `localStorage`.
+Hecha y probada en local el 2026-11-25.
+
+- Puertos (`ports.ts`) y provider en la micro app; ya no conoce rutas ni
+  `localStorage`.
+- Adaptador del toolbox en `apps/toolbox/lib/sales-notes-storage.ts`; rutas y textos
+  en `app/tools/sales-note/sales-notes-toolbox.tsx`.
 - **Mismas claves**, para no perder datos de usuarios actuales:
   `bt:sales-notes:v1`, `bt:sales-notes:seq`, `bt:business-info:v1`.
+- Corregido un fallo anterior: sin conexión, guardar o borrar se quedaba esperando a
+  que volviera la red.
+- Los huecos para integraciones pro se definen en la fase 4, cuando `os` los
+  necesite.
+- Riesgo conocido, sin cambios: si el JSON guardado se corrompe, la lista sale vacía
+  y el siguiente guardado lo sobrescribe.
 
 ### Fase 3 — Paquetes
 
