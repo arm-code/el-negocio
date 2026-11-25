@@ -33,7 +33,13 @@ export default function RootLayout({
     >
       <body className="font-sans antialiased text-foreground">
         <Providers>
-          <Toaster richColors closeButton position="bottom-right" />
+          {/* Arriba: abajo viven los botones principales (descargar, compartir, guardar) */}
+          <Toaster
+            richColors
+            closeButton
+            position="top-center"
+            mobileOffset={{ top: 'max(1rem, env(safe-area-inset-top))' }}
+          />
           {children}
         </Providers>
         <Analytics />

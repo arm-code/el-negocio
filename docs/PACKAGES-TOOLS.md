@@ -68,6 +68,7 @@ Cada pantalla se diseña y se revisa primero a 360–375 px.
 - Zonas táctiles de al menos 44 px (`TOUCH` = `h-12`).
 - Campos con texto de 16 px para que iOS no haga zoom.
 - Acción principal al alcance del pulgar (barra inferior o botón flotante).
+- Avisos emergentes arriba, para no tapar esas acciones.
 - Detalles y formularios cortos en hoja inferior; diálogo en escritorio.
 - Respetar `env(safe-area-inset-*)`.
 - Sin desplazamiento horizontal.
@@ -132,9 +133,10 @@ Hecha y probada en local el 2026-11-25; **falta desplegar y comprobar en el siti
   `/tools/sales-note/edit?id=<id>` para poder precargarla.
 - **Textos:** quitada la mayúscula en cada palabra de avisos y textos de ejemplo.
 
+- **Avisos:** salen arriba; abajo tapaban los botones Descargar y Compartir.
+
 Pendiente para la fase 1, visto en móvil:
 
-- El aviso emergente tapa los botones Descargar y Compartir.
 - Lo que captura el usuario se muestra con mayúscula en cada palabra ("Renta De
   Mesas").
 
