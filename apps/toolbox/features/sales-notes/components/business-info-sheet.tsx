@@ -14,7 +14,7 @@ interface BusinessInfoSheetProps {
   onOpenChange: (open: boolean) => void
 }
 
-/** Nombre y teléfono del negocio que salen en el documento. Se guardan en este dispositivo. */
+/** Nombre y teléfono del negocio que salen en el documento. */
 export function BusinessInfoSheet({ open, onOpenChange }: BusinessInfoSheetProps) {
   return (
     <AppBottomSheet

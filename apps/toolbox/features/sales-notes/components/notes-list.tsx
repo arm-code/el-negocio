@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ChevronRight, FilePlus2, FileText, Receipt, RotateCw } from 'lucide-react'
 import { noteTotal } from '../lib/calculations'
 import { formatCurrency, formatDate } from '../lib/format'
-import { SALES_NOTES_ROUTES } from '../routes'
+import { useSalesNotesConfig } from '../provider'
 import type { Note } from '../types'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -86,6 +86,8 @@ export function NotesList({ notes, isLoading, isError, isFiltered, onRetry, onSe
 /* ─── Subcomponentes ────────────────────────────────────────────────────── */
 
 function EmptyNotes() {
+  const { routes } = useSalesNotesConfig()
+
   return (
     <Card className="flex flex-col items-center gap-3 px-6 py-12 text-center">
       <span className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -96,7 +98,7 @@ function EmptyNotes() {
         Agrega a tu cliente y sus conceptos. Luego compártela por WhatsApp o descárgala en PDF.
       </p>
       <Button asChild className="mt-2 h-12 px-6 text-base">
-        <Link href={SALES_NOTES_ROUTES.create}>
+        <Link href={routes.create}>
           <FilePlus2 aria-hidden="true" />
           Crear nota
         </Link>
