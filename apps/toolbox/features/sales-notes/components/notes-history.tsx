@@ -7,7 +7,7 @@ import { ArrowLeft, FilePlus2, Pencil, Store, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useDeleteSalesNote, useSalesNotes } from '../hooks/use-sales-notes'
 import { useBusinessInfo } from '../hooks/use-business-info'
-import { SALES_NOTES_ROUTES } from '../routes'
+import { useSalesNotesConfig } from '../provider'
 import type { Note } from '../types'
 import { NotesList } from './notes-list'
 import { NoteCardPreview } from './note-card-preview'
@@ -31,6 +31,8 @@ const FOCUS_RING = 'outline-none focus-visible:ring-[3px] focus-visible:ring-rin
 
 /** Pantalla principal de la herramienta: historial, búsqueda, detalle y borrado. */
 export function NotesHistory() {
+  const { routes, copy, business: businessStorage } = useSalesNotesConfig()
+  const canEditBusiness = Boolean(businessStorage.save)
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState<Note | null>(null)
   const [noteToDelete, setNoteToDelete] = useState<Note | null>(null)
@@ -60,7 +62,7 @@ export function NotesHistory() {
         toast.success(`${noteToDelete.status === 'quote' ? 'Cotización eliminada' : 'Nota eliminada'}`)
         setNoteToDelete(null)
       },
-      onError: () => toast.error('No se pudo eliminar el documento. Revisa tu conexión.'),
+      onError: () => toast.error(copy.deleteError),
     })
   }
 
@@ -69,19 +71,19 @@ export function NotesHistory() {
       {/* Navegación + encabezado */}
       <div>
         <Button asChild variant="ghost" className="-ml-3 mb-2 h-11 text-muted-foreground hover:text-foreground">
-          <Link href="/">
+          <Link href={routes.home}>
             <ArrowLeft aria-hidden="true" />
-            Volver a herramientas
+            {copy.backLabel}
           </Link>
         </Button>
         <PageHeader
           title="Notas de venta"
-          description="Tus notas y cotizaciones, guardadas en este dispositivo."
+          description={copy.listDescription}
           // En móvil la acción es el botón flotante; en el estado vacío, la tarjeta de bienvenida.
           action={
             hasNotes ? (
               <Button asChild className={cn(TOUCH, 'hidden sm:inline-flex')}>
-                <Link href={SALES_NOTES_ROUTES.create}>
+                <Link href={routes.create}>
                   <FilePlus2 aria-hidden="true" />
                   Crear nota
                 </Link>
@@ -92,31 +94,33 @@ export function NotesHistory() {
       </div>
 
       {/* Datos del negocio: invitación si falta el nombre, fila discreta si ya existe */}
-      <button
-        type="button"
-        onClick={() => setBusinessOpen(true)}
-        className={cn(
-          'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors',
-          hasBusinessName
-            ? 'min-h-14 bg-card hover:bg-accent active:bg-accent'
-            : 'min-h-16 border-primary/30 bg-primary/5 hover:bg-primary/10 active:bg-primary/10',
-          FOCUS_RING
-        )}
-      >
-        <Store
-          className={cn('size-5 shrink-0', hasBusinessName ? 'text-muted-foreground' : 'text-primary')}
-          aria-hidden="true"
-        />
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-[15px] font-medium">
-            {hasBusinessName ? business.name : 'Agrega el nombre de tu negocio'}
+      {canEditBusiness && (
+        <button
+          type="button"
+          onClick={() => setBusinessOpen(true)}
+          className={cn(
+            'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors',
+            hasBusinessName
+              ? 'min-h-14 bg-card hover:bg-accent active:bg-accent'
+              : 'min-h-16 border-primary/30 bg-primary/5 hover:bg-primary/10 active:bg-primary/10',
+            FOCUS_RING
+          )}
+        >
+          <Store
+            className={cn('size-5 shrink-0', hasBusinessName ? 'text-muted-foreground' : 'text-primary')}
+            aria-hidden="true"
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[15px] font-medium">
+              {hasBusinessName ? business.name : 'Agrega el nombre de tu negocio'}
+            </span>
+            <span className="block truncate text-sm text-muted-foreground">
+              {hasBusinessName ? 'Así sale en tus notas y cotizaciones' : 'Para que aparezca en tus notas y cotizaciones'}
+            </span>
           </span>
-          <span className="block truncate text-sm text-muted-foreground">
-            {hasBusinessName ? 'Así sale en tus notas y cotizaciones' : 'Para que aparezca en tus notas y cotizaciones'}
-          </span>
-        </span>
-        <Pencil className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      </button>
+          <Pencil className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </button>
+      )}
 
       {notes.length > SEARCH_MIN_NOTES && (
         <section aria-label="Buscar notas">
@@ -135,7 +139,7 @@ export function NotesHistory() {
         />
       </section>
 
-      {hasNotes && <MobileFab href={SALES_NOTES_ROUTES.create} aria-label="Nueva nota de venta" title="Nueva nota" />}
+      {hasNotes && <MobileFab href={routes.create} aria-label="Nueva nota de venta" title="Nueva nota" />}
 
       {/* Detalle de la nota */}
       <AppBottomSheet
@@ -151,7 +155,7 @@ export function NotesHistory() {
               className="size-11 rounded-full text-muted-foreground hover:text-foreground"
             >
               <Link
-                href={SALES_NOTES_ROUTES.edit(selected.id)}
+                href={routes.edit(selected.id)}
                 onClick={() => setSelected(null)}
                 aria-label={`Editar ${selectedKind.toLowerCase()}`}
               >
@@ -195,13 +199,13 @@ export function NotesHistory() {
         open={noteToDelete !== null}
         onOpenChange={(isOpen) => !isOpen && setNoteToDelete(null)}
         title={`¿Eliminar la ${noteToDelete?.status === 'quote' ? 'cotización' : 'nota'} ${noteToDelete?.folio ?? ''}?`}
-        description="Se borrará por completo de este dispositivo y no podrás recuperarla."
+        description={copy.deleteWarning}
         confirmText="Sí, eliminar"
         onConfirm={confirmDelete}
         isPending={deleteMutation.isPending}
       />
 
-      <BusinessInfoSheet open={businessOpen} onOpenChange={setBusinessOpen} />
+      {canEditBusiness && <BusinessInfoSheet open={businessOpen} onOpenChange={setBusinessOpen} />}
     </div>
   )
 }
