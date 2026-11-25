@@ -59,6 +59,7 @@ function BusinessInfoForm({ onDone }: { onDone: () => void }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Ej. Abarrotes Doña Mary"
+          autoCapitalize="words"
           className="h-11 text-base"
         />
       </div>

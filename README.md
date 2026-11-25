@@ -148,6 +148,20 @@ docker compose run --rm migrate
 docker compose up -d --wait api
 ```
 
+### Probar la PWA del toolbox
+
+La instalación y el uso sin red solo funcionan en un build de producción. Con
+Docker, desde la raíz:
+
+```bash
+docker build -t toolbox-local apps/toolbox
+docker run --rm -p 127.0.0.1:3010:3000 toolbox-local
+```
+
+Abre http://localhost:3010, espera unos segundos y apaga el contenedor con
+`Ctrl+C`: las pantallas deben seguir abriendo. Al terminar, en las herramientas de
+desarrollo (`Application` → `Storage`) usa "Clear site data".
+
 ### Probar en tamaño celular
 
 Las apps se diseñan primero para móvil. En Chrome o Edge: `F12`, luego

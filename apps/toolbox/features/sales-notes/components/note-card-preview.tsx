@@ -1,7 +1,7 @@
 import { computeNoteTotals, itemAmount } from '../lib/calculations'
 import { formatCurrency } from '../lib/format'
 import type { Note } from '../types'
-import { formatMxPhone, toMxPhone } from '@/lib/display'
+import { capitalize, formatMxPhone, toMxPhone } from '@/lib/display'
 import { ContactButtons, DetailAmountRow, DetailDateRow, DetailSection, DetailSummary } from '@/components/ui/detail'
 
 /** Acepta 0.16 o 16 y devuelve "16". */
@@ -28,15 +28,15 @@ export function NoteCardPreview({ note }: { note: Note }) {
 
       <DetailSection title="Cliente">
         <div>
-          <p className="text-base font-medium capitalize">{note.customer.name}</p>
+          <p className="text-base font-medium">{note.customer.name}</p>
           {note.customer.phone && (
             <p className="text-[15px] tabular-nums text-muted-foreground">
               {phone ? formatMxPhone(phone) : note.customer.phone}
             </p>
           )}
           {note.customer.address && (
-            <p className="mt-1 text-[15px] leading-relaxed text-muted-foreground text-pretty capitalize">
-              {note.customer.address}
+            <p className="mt-1 text-[15px] leading-relaxed text-muted-foreground text-pretty">
+              {capitalize(note.customer.address)}
             </p>
           )}
         </div>
@@ -51,8 +51,8 @@ export function NoteCardPreview({ note }: { note: Note }) {
             {note.items.map((item) => (
               <li key={item.id} className="flex items-start justify-between gap-4 px-4 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-base font-medium leading-snug text-pretty capitalize">
-                    {item.description || 'Sin descripción'}
+                  <p className="text-base font-medium leading-snug text-pretty">
+                    {item.description ? capitalize(item.description) : 'Sin descripción'}
                   </p>
                   <p className="mt-0.5 text-sm tabular-nums text-muted-foreground">
                     {item.quantity} × {formatCurrency(item.unitPrice)}
@@ -85,7 +85,7 @@ export function NoteCardPreview({ note }: { note: Note }) {
 
       {note.notes && (
         <DetailSection title="Observaciones">
-          <p className="whitespace-pre-line text-base leading-relaxed text-pretty">{note.notes}</p>
+          <p className="whitespace-pre-line text-base leading-relaxed text-pretty">{capitalize(note.notes)}</p>
         </DetailSection>
       )}
     </div>
