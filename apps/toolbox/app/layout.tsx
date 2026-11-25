@@ -28,6 +28,8 @@ export default function RootLayout({
   return (
     <html
       lang="es-MX"
+      // Color de acento de las micro apps: 'brick' o 'violet' (ver theme.css)
+      data-accent="brick"
       suppressHydrationWarning
       className={`bg-background ${geist.variable} ${geistMono.variable}`}
     >

@@ -1,7 +1,7 @@
 # Micro apps compartidas (plan y estándar de trabajo)
 
-> Estado al 2026-11-25: plan acordado, **sin implementar**. Hoy no existe la
-> carpeta `packages/`.
+> Estado al 2026-11-25: fases 0 y 1 hechas en local, **sin desplegar**. Todavía no
+> existe la carpeta `packages/`.
 
 ## 1. La idea
 
@@ -38,7 +38,9 @@ apps/
 color de acento en botones, estados activos, anillos de foco, cargadores y
 skeletons. Las micro apps se ven igual en `toolbox` y en `os`.
 
-El acento es una variante (`data-accent` en `<html>`). Solo cambia estos valores:
+El tema vive en `apps/toolbox/app/theme.css` (en la fase 3 pasa a `packages/ui`).
+El acento es una variante (`data-accent` en `<html>`; sin atributo es `violet`).
+Solo cambia estos valores:
 
 | Variante | Token | Claro | Oscuro |
 | --- | --- | --- | --- |
@@ -57,8 +59,8 @@ Reglas:
 - En las micro apps solo tokens (`bg-primary`, `text-muted-foreground`...), sin
   colores fijos. Excepción: el documento que se exporta (PDF/imagen), que debe
   salir igual en cualquier tema.
-- La landing del toolbox conserva su paleta colorida, limitada a un contenedor
-  `.landing`. No se hereda a las micro apps.
+- La landing del toolbox conserva su paleta colorida: se activa cuando la página
+  tiene un elemento `.landing` (`globals.css`). No se hereda a las micro apps.
 - El `theme_color` del manifest debe coincidir con la variante de cada app.
 
 ## 4. Mobile first
@@ -69,6 +71,9 @@ Cada pantalla se diseña y se revisa primero a 360–375 px.
 - Campos con texto de 16 px para que iOS no haga zoom.
 - Acción principal al alcance del pulgar (barra inferior o botón flotante).
 - Avisos emergentes arriba, para no tapar esas acciones.
+- Lo que captura el usuario se muestra como lo escribió (a lo sumo, primera letra en
+  mayúscula en descripciones, direcciones y notas). Ayudar al teclado con
+  `autoCapitalize`, no transformar con CSS.
 - Detalles y formularios cortos en hoja inferior; diálogo en escritorio.
 - Respetar `env(safe-area-inset-*)`.
 - Sin desplazamiento horizontal.
@@ -132,18 +137,20 @@ Hecha y probada en local el 2026-11-25; **falta desplegar y comprobar en el siti
   La edición pasó de `/tools/sales-note/<id>/edit` a
   `/tools/sales-note/edit?id=<id>` para poder precargarla.
 - **Textos:** quitada la mayúscula en cada palabra de avisos y textos de ejemplo.
-
 - **Avisos:** salen arriba; abajo tapaban los botones Descargar y Compartir.
-
-Pendiente para la fase 1, visto en móvil:
-
-- Lo que captura el usuario se muestra con mayúscula en cada palabra ("Renta De
-  Mesas").
 
 ### Fase 1 — Estándar visual (dentro del toolbox, sin mover archivos)
 
-- Tema neutro + variantes de acento; paleta colorida limitada a la landing.
-- Revisar notas de venta contra la sección 4.
+Hecha y probada en local el 2026-11-25 a 360 px, en claro y oscuro; **falta
+desplegar**.
+
+- Tema neutro con variantes de acento (el toolbox usa `brick`); paleta colorida
+  solo en la landing; skeletons con el color de acento.
+- Zonas táctiles a 44 px: volver, cerrar diálogo, confirmar/cancelar y eliminar
+  concepto. La fecha del detalle ya no se parte mal.
+- Lo capturado se muestra como se escribió, también en el documento exportado.
+
+Visto y sin tocar: el teléfono se muestra agrupado como `656 1234 567`.
 
 ### Fase 2 — Puerto de almacenamiento (dentro del toolbox)
 
@@ -200,6 +207,6 @@ Corregir este estándar con lo aprendido y elegir la siguiente micro app
 
 | Decisión | Propuesta |
 | --- | --- |
-| Variante por defecto | `brick` en toolbox, `violet` en `os` |
+| Variante por defecto | `brick` en toolbox (aplicado en la fase 1), `violet` en `os` |
 | ¿Quién elige la variante? | Fija por app al inicio; selector por negocio después |
 | Base de los componentes compartidos | Los del toolbox (más recientes), con el aspecto del admin de `os` |

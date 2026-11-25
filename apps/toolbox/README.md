@@ -28,7 +28,7 @@ The tools run entirely in the browser: data (e.g. sales notes) is stored in the 
 ### 🎨 Styling Guidelines
 To maintain the minimalist and premium look of **arm-solutions**, follow these rules:
 
-1. **Colors**: Use the predefined shadcn violet palette. Refer to variable colors like `var(--primary)`, `var(--accent)`, and `var(--muted)`.
+1. **Colors**: Use only theme tokens (`bg-primary`, `text-muted-foreground`...). Micro apps use neutral surfaces plus one accent (`app/theme.css`); the colorful palette is for the landing page only. See [the visual standard](../../docs/PACKAGES-TOOLS.md).
 2. **Typography**: Use the Geist font family provided.
 3. **PWA First**: Layouts must be mobile-first and responsive. Ensure that tools are usable on small screens.
 4. **Minimalism**: Focus on whitespace, clean lines, and clear typography. Avoid clutter.

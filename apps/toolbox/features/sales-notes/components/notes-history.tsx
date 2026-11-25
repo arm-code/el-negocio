@@ -68,7 +68,7 @@ export function NotesHistory() {
     <div className="space-y-6 pb-28 sm:pb-8">
       {/* Navegación + encabezado */}
       <div>
-        <Button asChild variant="ghost" className="-ml-3 mb-2 text-muted-foreground hover:text-foreground">
+        <Button asChild variant="ghost" className="-ml-3 mb-2 h-11 text-muted-foreground hover:text-foreground">
           <Link href="/">
             <ArrowLeft aria-hidden="true" />
             Volver a herramientas
@@ -108,7 +108,7 @@ export function NotesHistory() {
           aria-hidden="true"
         />
         <span className="min-w-0 flex-1">
-          <span className={cn('block truncate text-[15px] font-medium', hasBusinessName && 'capitalize')}>
+          <span className="block truncate text-[15px] font-medium">
             {hasBusinessName ? business.name : 'Agrega el nombre de tu negocio'}
           </span>
           <span className="block truncate text-sm text-muted-foreground">
