@@ -29,7 +29,8 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-3">
       <dt className={LABEL}>{label}</dt>
-      <dd className="flex items-baseline gap-1.5 text-base font-medium">{children}</dd>
+      {/* flex-wrap: en pantallas angostas la parte secundaria baja completa a otra línea */}
+      <dd className="flex flex-wrap items-baseline justify-end gap-x-1.5 text-right text-base font-medium">{children}</dd>
     </div>
   )
 }
@@ -62,7 +63,7 @@ export function DetailDateRow({
   return (
     <DetailRow label={label}>
       <span className={cn(upcoming && "text-primary")}>{described.label}</span>
-      <span className="text-muted-foreground">· {described.relative}</span>
+      <span className="whitespace-nowrap text-muted-foreground">· {described.relative}</span>
     </DetailRow>
   )
 }

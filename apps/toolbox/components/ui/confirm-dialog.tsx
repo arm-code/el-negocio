@@ -11,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { TOUCH } from "@/components/ui/detail"
 
 interface ConfirmDialogProps {
   open: boolean
@@ -39,8 +40,9 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>No, volver</AlertDialogCancel>
+          <AlertDialogCancel className={TOUCH} disabled={isPending}>No, volver</AlertDialogCancel>
           <AlertDialogAction
+            className={TOUCH}
             variant="destructive"
             disabled={isPending}
             onClick={(e) => {

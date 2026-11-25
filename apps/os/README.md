@@ -2,12 +2,11 @@
 ---
 
 ### Pasos a seguir para poder ejecutar el proyecto
-- Clonar el proyecto desde el repositorio de github.
-- Ejecutar `pnpm install`.
-- Crear un archivo en la raiz del proyecto `.env.local` basandote de `.env.template`.
-- Colocar las credenciales de acceso solicitadas dentro del archivo.
+La guía completa (API, base de datos, usuario y front) está en el
+[README de la raíz](../../README.md#desarrollo-local).
+
+- Este front necesita el API encendido y un archivo `.env.local` basado en `template.env`.
 - Cada instancia atiende a un solo negocio: el API decide cuál con su variable `BUSINESS_SLUG`. El front no necesita saber su slug.
-- Ejecutar en local con `pnpm run dev`.
 ---
 
 ### Gestión de las ramas de git

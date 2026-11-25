@@ -4,5 +4,6 @@ const BASE = '/tools/sales-note'
 export const SALES_NOTES_ROUTES = {
   list: BASE,
   create: `${BASE}/new`,
-  edit: (id: string) => `${BASE}/${encodeURIComponent(id)}/edit`,
+  // El id va como parámetro para que la pantalla sea estática y abra sin red.
+  edit: (id: string) => `${BASE}/edit?id=${encodeURIComponent(id)}`,
 } as const

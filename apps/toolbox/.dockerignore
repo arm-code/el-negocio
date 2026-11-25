@@ -5,3 +5,7 @@ node_modules
 .env.*
 *.log
 tsconfig.tsbuildinfo
+public/sw.js
+public/sw.js.map
+public/swe-worker-*.js
+public/workbox-*.js

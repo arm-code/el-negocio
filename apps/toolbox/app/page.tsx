@@ -13,7 +13,8 @@ const focusRing = "outline-none focus-visible:ring-[3px] focus-visible:ring-ring
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    // landing: activa la paleta colorida (ver globals.css)
+    <div className="landing flex min-h-screen flex-col">
       <Header />
 
       <main className="flex-1">

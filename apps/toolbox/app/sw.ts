@@ -12,6 +12,11 @@ declare const self: ServiceWorkerGlobalScope;
 
 const serwist = new Serwist({
     precacheEntries: self.__SW_MANIFEST,
+    precacheOptions: {
+        // La pantalla de edición es una sola página: `?id=` lo lee el navegador,
+        // así que la copia precargada sirve para cualquier nota.
+        ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^id$/],
+    },
     skipWaiting: true,
     clientsClaim: true,
     navigationPreload: true,

@@ -56,7 +56,7 @@ export function NotesList({ notes, isLoading, isError, isFiltered, onRetry, onSe
                 </span>
 
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px] font-medium capitalize text-foreground">
+                  <span className="block truncate text-[15px] font-medium text-foreground">
                     {note.customer.name}
                   </span>
                   <span className="mt-0.5 flex items-center gap-1.5 text-[13px] text-muted-foreground">

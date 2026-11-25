@@ -181,5 +181,13 @@ un recurso aparte en Coolify, desde el mismo repo.
    ese registro CNAME.
 6. **Deploy** y abre el dominio: debe salir la landing con "Notas de venta".
 
+**Comprobar la PWA** después de desplegar:
+
+1. `curl -sI https://<dominio-del-toolbox>/sw.js` debe mostrar
+   `Cache-Control: no-cache, no-store, must-revalidate`. Si Cloudflare muestra otro
+   valor, purga `/sw.js` en su caché y revisa su ajuste *Browser Cache TTL*.
+2. Abre el sitio, espera unos segundos, activa el modo avión y entra a "Notas de
+   venta": debe abrir.
+
 Para actualizar: push a `main` → Redeploy. Si el front se reinicia en bucle o las imágenes dan 502,
 es el mismo problema de `IMAGE_OPTIMIZATION` de la sección 9.

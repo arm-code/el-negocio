@@ -12,10 +12,12 @@ Inspired by ILovePDF, this project is divided into micro-tools according to busi
 ### ⚙️ Getting Started
 This app lives in the `elchangarro` monorepo (`apps/toolbox`).
 1. Clone the repository
-2. `cd apps/toolbox && pnpm install`
-3. `pnpm dev`
+2. `pnpm --dir apps/toolbox install`
+3. `pnpm --dir apps/toolbox dev -p 3001`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
+Port 3001 avoids a clash with `apps/os`. The full guide (in Spanish) is in the
+[root README](../../README.md#desarrollo-local).
 
 #### No backend, no environment variables
 The tools run entirely in the browser: data (e.g. sales notes) is stored in the device's
@@ -26,7 +28,7 @@ The tools run entirely in the browser: data (e.g. sales notes) is stored in the 
 ### 🎨 Styling Guidelines
 To maintain the minimalist and premium look of **arm-solutions**, follow these rules:
 
-1. **Colors**: Use the predefined shadcn violet palette. Refer to variable colors like `var(--primary)`, `var(--accent)`, and `var(--muted)`.
+1. **Colors**: Use only theme tokens (`bg-primary`, `text-muted-foreground`...). Micro apps use neutral surfaces plus one accent (`app/theme.css`); the colorful palette is for the landing page only. See [the visual standard](../../docs/PACKAGES-TOOLS.md).
 2. **Typography**: Use the Geist font family provided.
 3. **PWA First**: Layouts must be mobile-first and responsive. Ensure that tools are usable on small screens.
 4. **Minimalism**: Focus on whitespace, clean lines, and clear typography. Avoid clutter.

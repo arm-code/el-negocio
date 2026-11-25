@@ -135,7 +135,8 @@ export function DocumentActions({ filename, children, exportNode, title, placeme
 
       <Dialog open={pendingAction !== null} onOpenChange={(open) => !open && setPendingAction(null)}>
         <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-xl sm:w-full">
-          <DialogHeader>
+          {/* px-8: deja libre la esquina del botón de cerrar */}
+          <DialogHeader className="px-8">
             <DialogTitle>¿Cómo quieres {pendingAction === 'share' ? 'compartirlo' : 'descargarlo'}?</DialogTitle>
           </DialogHeader>
           <div className="mt-2 grid grid-cols-2 gap-2">

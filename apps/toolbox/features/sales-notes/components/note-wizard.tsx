@@ -23,7 +23,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { AppBottomSheet } from '@/components/ui/app-bottom-sheet'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { toSlug } from '@/lib/display'
+import { capitalize, toSlug } from '@/lib/display'
 import { cn } from '@/lib/utils'
 
 type Step = 1 | 2 | 3
@@ -263,7 +263,8 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                   placeholder="Nombre completo / negocio"
                   maxLength={LIMITS.name}
                   autoComplete="off"
-                  className="h-11 text-base capitalize"
+                  autoCapitalize="words"
+                  className="h-11 text-base"
                   autoFocus
                 />
               </div>
@@ -288,9 +289,10 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                     value={customerAddress}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setCustomerAddress(e.target.value)}
                     placeholder="Lugar de entrega"
+                    autoCapitalize="sentences"
                     maxLength={LIMITS.address}
                     autoComplete="off"
-                    className="h-11 text-base capitalize"
+                    className="h-11 text-base"
                   />
                 </div>
               </div>
@@ -317,8 +319,8 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                   <AccordionTrigger className="rounded-none border-b px-4 py-4 hover:bg-muted/30 hover:no-underline sm:px-5">
                     <div className="flex w-full min-w-0 flex-1 items-center justify-between pr-4">
                       <div className="flex min-w-0 flex-col items-start gap-1">
-                        <span className="truncate text-[15px] font-semibold capitalize text-foreground">
-                          {item.description.trim() ? item.description : `Concepto ${index + 1}`}
+                        <span className="truncate text-[15px] font-semibold text-foreground">
+                          {item.description.trim() ? capitalize(item.description) : `Concepto ${index + 1}`}
                         </span>
                         <span className="text-xs font-normal text-muted-foreground">
                           {item.quantity} x {formatCurrency(item.unitPrice)}
@@ -339,9 +341,10 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                           value={item.description}
                           onChange={(e: ChangeEvent<HTMLInputElement>) => updateItem(item.id, { description: e.target.value })}
                           placeholder="Ej. Renta de mesa y sillas"
+                          autoCapitalize="sentences"
                           maxLength={LIMITS.description}
                           autoComplete="off"
-                          className="h-11 bg-background text-base capitalize"
+                          className="h-11 bg-background text-base"
                         />
                       </div>
 
@@ -382,8 +385,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                         <Button
                           type="button"
                           variant="ghost"
-                          size="sm"
-                          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                          className="h-11 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                           onClick={() => removeItem(item.id)}
                           disabled={items.length === 1}
                         >
