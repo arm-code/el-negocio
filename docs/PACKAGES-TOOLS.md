@@ -1,84 +1,192 @@
-# packages/tools — herramientas compartidas (plan de trabajo)
+# Micro apps compartidas (plan y estándar de trabajo)
 
-> Documento para arrancar la feature en una sesión nueva. Nada de esto está
-> implementado todavía: hoy no existe la carpeta `packages/`.
+> Estado al 2026-11-25: plan acordado, **sin implementar**. Hoy no existe la
+> carpeta `packages/`.
 
-## Objetivo
+## 1. La idea
 
-Que las herramientas (notas de venta, cotizaciones, etc.) vivan **una sola vez**
-y las usen dos apps:
+Cada micro app existe **una sola vez** y la usan dos aplicaciones:
 
-| App | Acceso | Persistencia |
-| --- | --- | --- |
-| `apps/os` | Solo quien tiene una instancia de negocio (login) | API + Postgres de la instancia |
-| `apps/toolbox` | Público y gratis, sin cuenta | Ninguna en servidor: navegador (`localStorage`) o nada |
+| App | Qué es | Acceso | Persistencia |
+| --- | --- | --- | --- |
+| `apps/toolbox` | Micro apps individuales y gratuitas | Público, sin cuenta | Navegador (`localStorage`) o nada |
+| `apps/os` | Versión pro: sesión, base de datos, landing y conexiones entre herramientas | Por instancia de negocio (login) | API + Postgres de la instancia |
 
-"Privado" significa **acceso a la app**, no visibilidad del repo (el repo puede
-seguir público).
+- El toolbox ya está desplegado en <https://elchangarro.dejuarez.mx/> (landing,
+  catálogo y una herramienta: notas de venta).
+- "Privado" significa acceso a la app, no visibilidad del repo.
+- Lo exclusivo de la versión pro (por ejemplo, vincular notas con eventos) vive en
+  `apps/os`. Nunca un `if (isPro)` dentro de un paquete: todo lo compartido llega
+  al navegador del público.
+- Por ahora se trabaja **solo con notas de venta**; lo aprendido define el estándar.
+- Se avanza por fases y cada fase deja las apps desplegables.
 
-## Diseño
+## 2. Estructura objetivo
 
-- `packages/tools` contiene UI + lógica de cada herramienta. **No sabe dónde se
-  guardan los datos.**
-- Cada herramienta recibe un **adaptador de almacenamiento** (puerto), por ejemplo:
-  ```ts
-  interface NotesStorage {
-    list(): Promise<Note[]>;
-    get(id: string): Promise<Note | null>;
-    save(note: Note): Promise<void>;
-    remove(id: string): Promise<void>;
-  }
-  ```
-  - toolbox inyecta un adaptador de `localStorage` (hoy en
-    `apps/toolbox/features/sales-notes/lib/storage.ts`).
-  - os inyecta uno que llama al API de la instancia (fase 3).
-- El catálogo (`apps/toolbox/lib/tools-catalog.ts`) pasa al paquete.
+```
+packages/
+  ui/                 @elchangarro/ui                tema y componentes base
+  tool-sales-notes/   @elchangarro/tool-sales-notes  pantallas, cálculos, tipos, puertos
+apps/
+  toolbox/            monta cada herramienta con localStorage
+  os/                 la monta con API, sesión e integraciones
+```
 
-## Punto de partida (estado actual)
+## 3. Estándar visual
 
-- `apps/toolbox/features/sales-notes/` tiene componentes, hooks
-  (`use-sales-notes`, `use-business-info`), `lib/` (calculations, export-document,
-  format, storage), `types.ts`, `routes.ts`, `index.ts`.
-- `apps/toolbox/lib/`: `tools-catalog.ts`, `display.ts`, `utils.ts`.
-- Rutas en `apps/toolbox/app/tools/sales-note/...`.
-- Cada app tiene su propio `package.json`, `pnpm-lock.yaml` y Dockerfile
-  (contexto de build = la carpeta de la app; `Base Directory` en Coolify).
-- Toolbox: Next 16.1.6, React 19, Tailwind 4, Serwist (PWA), jspdf, html-to-image,
-  react-hook-form + yup, radix-ui, shadcn.
+**Referencia: el panel de administración de `os`.** Superficies neutras y un solo
+color de acento en botones, estados activos, anillos de foco, cargadores y
+skeletons. Las micro apps se ven igual en `toolbox` y en `os`.
 
-## Fases
+El acento es una variante (`data-accent` en `<html>`). Solo cambia estos valores:
 
-1. **Workspace.** Crear `pnpm-workspace.yaml` en la raíz con **solo**
-   `apps/toolbox` y `packages/*` (NO incluir `apps/os` ni `apps/api`, para no
-   alterarles el flujo). Crear `packages/tools` (`package.json`, `tsconfig`,
-   exports). Un lockfile en la raíz; `apps/toolbox/pnpm-lock.yaml` desaparece.
-2. **Mover `sales-notes`** y el catálogo a `packages/tools`, con el adaptador de
-   almacenamiento; toolbox lo consume con el adaptador `localStorage`.
-   Verificar: `pnpm build` de toolbox, PWA/service worker, exportar PDF/imagen.
-   Ajustar `apps/toolbox/Dockerfile` (contexto = raíz del repo, copiar
-   `packages/tools`, `pnpm install --frozen-lockfile` con filtro) y, en Coolify,
-   `Base Directory` y ruta del Dockerfile **en el mismo momento** del merge.
-3. **Conectar `os`** (aparte): adaptador API, y su propia migración a workspace
-   y Dockerfile.
+| Variante | Token | Claro | Oscuro |
+| --- | --- | --- | --- |
+| `violet` | `--primary` | `oklch(0.541 0.281 293.009)` | `oklch(0.65 0.23 292.717)` |
+| `violet` | `--primary-foreground` | `oklch(0.969 0.016 293.756)` | `oklch(0.969 0.016 293.756)` |
+| `violet` | `--ring` | `oklch(0.702 0.183 293.541)` | `oklch(0.541 0.281 293.009)` |
+| `brick` | `--primary` | `oklch(0.48 0.19 32)` | `oklch(0.68 0.17 38)` |
+| `brick` | `--primary-foreground` | `oklch(0.97 0.008 74)` | `oklch(0.16 0.02 40)` |
+| `brick` | `--ring` | `oklch(0.48 0.19 32)` | `oklch(0.68 0.17 38)` |
 
-## Riesgos y cuidados
+Reglas:
 
-- **Despliegues actuales:** `api` y `os` no se tocan en las fases 1–2 (Coolify
-  construye con el contexto de su carpeta y no ve la raíz). Solo cambia toolbox.
-  Antes de la fase 2, confirmar si toolbox ya está desplegado en Coolify.
-- Un `pnpm-workspace.yaml` en la raíz puede afectar instalaciones locales dentro
-  de `apps/os`/`apps/api`: probar `pnpm install` en ambas antes de subir.
-- Next debe transpilar el paquete: `transpilePackages: ['@elchangarro/tools']`
-  (o compilar el paquete). Tailwind 4 necesita `@source` apuntando al paquete
-  para detectar sus clases.
-- Componentes de UI (shadcn) compartidos: decidir si viven en el paquete o se
-  quedan en cada app (no duplicar).
+- Fondos, tarjetas, textos y bordes: los neutros actuales de `os/app/globals.css`,
+  iguales en ambas variantes. Definir además `--destructive-foreground` y
+  `--success-foreground`, que hoy `os` no tiene.
+- En las micro apps solo tokens (`bg-primary`, `text-muted-foreground`...), sin
+  colores fijos. Excepción: el documento que se exporta (PDF/imagen), que debe
+  salir igual en cualquier tema.
+- La landing del toolbox conserva su paleta colorida, limitada a un contenedor
+  `.landing`. No se hereda a las micro apps.
+- El `theme_color` del manifest debe coincidir con la variante de cada app.
+
+## 4. Mobile first
+
+Cada pantalla se diseña y se revisa primero a 360–375 px.
+
+- Zonas táctiles de al menos 44 px (`TOUCH` = `h-12`).
+- Campos con texto de 16 px para que iOS no haga zoom.
+- Acción principal al alcance del pulgar (barra inferior o botón flotante).
+- Detalles y formularios cortos en hoja inferior; diálogo en escritorio.
+- Respetar `env(safe-area-inset-*)`.
+- Sin desplazamiento horizontal.
+
+## 5. Estándar de una micro app
+
+```
+packages/tool-<nombre>/src/
+  types.ts        dominio
+  ports.ts        contratos de almacenamiento
+  provider.tsx    recibe adaptadores, rutas, textos y huecos
+  lib/            reglas y cálculos puros
+  hooks/          react-query sobre los puertos
+  components/     pantallas
+  index.ts        API pública
+```
+
+1. Una herramienta **no importa otra herramienta**. Solo `ui` y librerías.
+2. No sabe dónde se guardan los datos: usa puertos asíncronos.
+3. No sabe en qué rutas vive: la app se las pasa, junto con los textos que dependen
+   del almacenamiento ("en este dispositivo").
+4. Las integraciones pro entran por huecos opcionales (por ejemplo, acciones extra
+   en el detalle). El toolbox los deja vacíos.
+5. `next`, `react`, `@tanstack/react-query` y `sonner` son `peerDependencies`.
+
+Contrato de notas de venta:
+
+```ts
+export interface NotesStorage {
+  list(): Promise<Note[]>
+  get(id: string): Promise<Note | null>
+  create(input: NoteInput): Promise<Note>              // pone id, folio y fecha
+  update(id: string, input: NoteInput): Promise<Note>  // reemplaza lo editable
+  remove(id: string): Promise<void>
+  subscribe?(onChange: () => void): () => void         // cambios externos
+}
+
+export interface BusinessInfoStorage {
+  get(): Promise<BusinessInfo>
+  save?(info: BusinessInfo): Promise<BusinessInfo>     // sin save = solo lectura
+}
+```
+
+**Terminada** significa: compila, funciona a 375 px en claro y oscuro, exporta y
+comparte (si aplica), conserva los datos ya guardados y está probada en el sitio
+desplegado.
+
+## 6. Fases
+
+### Fase 0 — Base sana del toolbox
+
+- **PWA rota en producción** (comprobado el 2026-11-25): `/sw.js` responde, pero
+  sus 30 archivos de precarga dan 404 y no hay service worker registrado.
+  Causa probable: `@serwist/next` no soporta Turbopack, que es el que usa el build;
+  el `public/sw.js` versionado quedó viejo. Probar `next build --webpack`, sacar de
+  git `public/sw.js` y `public/workbox-*.js`, y verificar instalación y uso sin red.
+- Textos con mayúscula en cada palabra por la clase `capitalize`: "Agrega El Nombre
+  De Tu Negocio" y los textos de ejemplo del asistente.
+
+### Fase 1 — Estándar visual (dentro del toolbox, sin mover archivos)
+
+- Tema neutro + variantes de acento; paleta colorida limitada a la landing.
+- Revisar notas de venta contra la sección 4.
+
+### Fase 2 — Puerto de almacenamiento (dentro del toolbox)
+
+- Puertos, provider y adaptador de `localStorage`.
+- **Mismas claves**, para no perder datos de usuarios actuales:
+  `bt:sales-notes:v1`, `bt:sales-notes:seq`, `bt:business-info:v1`.
+
+### Fase 3 — Paquetes
+
+- `pnpm-workspace.yaml` en la raíz solo con `apps/toolbox` y `packages/*`; un
+  lockfile en la raíz.
+- Mover a `packages/ui` y `packages/tool-sales-notes`. El catálogo exporta nombre,
+  descripción e ícono; cada app pone sus rutas.
+- Next: `transpilePackages` y `outputFileTracingRoot`. Tailwind 4: `@source`
+  apuntando a los paquetes.
+- Dockerfile con contexto en la raíz, nueva ruta de `server.js` y `.dockerignore`
+  en la raíz. En Coolify, cambiar `Base Directory` y ruta del Dockerfile **en el
+  mismo momento** del merge. Actualizar la sección 10 de `DEPLOY-COOLIFY.md`.
+- Probar `pnpm install` en `apps/os` y `apps/api`. `api` tiene su propio
+  `pnpm-workspace.yaml`; `os` no y probablemente necesite uno.
+
+### Fase 4 — `os` consume notas de venta
+
+- Migrar `os` a los paquetes y ajustar su Dockerfile.
+- El adaptador del API traduce:
+
+  | Paquete | API |
+  | --- | --- |
+  | `status: 'issued'` | `'note'` |
+  | `item.description` | `concept` |
+  | `customer.{name, phone, address}` | `customerName`, `customerPhone`, `customerAddress` |
+  | Campo vaciado | mandar `''`; si se omite, el `PATCH` conserva el anterior |
+  | Folio `NV-` | `COT-` o `NV-` según el tipo |
+  | `list()` completo | el listado está paginado |
+
+- El API exige cantidad ≥ 1; el asistente permite menos. Unificar la regla.
+- El vínculo nota–evento entra por un hueco. Hoy `noteId` y `eventId` pueden
+  desincronizarse al editar la nota por su propio endpoint.
+
+### Fase 5 — Cierre
+
+Corregir este estándar con lo aprendido y elegir la siguiente micro app
+(candidatas: control de gastos, inventario, contratos; punto de venta al final).
+
+## 7. Cuidados
+
+- `api` y `os` no se tocan en las fases 0–3.
 - Servidor de pruebas con CPU viejo: mantener `IMAGE_OPTIMIZATION=false`.
-- Un paso a la vez, confirmando que funciona antes de avanzar.
+- Cambios en una rama basada en `dev`; `main` es producción.
+- Un paquete compartido afecta a las dos apps: desde la fase 4, compilar ambas antes
+  de cada merge.
 
-## Prompt sugerido para la sesión nueva
+## 8. Decisiones pendientes
 
-> Lee `docs/PACKAGES-TOOLS.md` del monorepo `elchangarro` y empecemos por las
-> fases 1 y 2 (workspace + mover `sales-notes` a `packages/tools` con adaptador
-> de almacenamiento). Primero revisa cómo está hecho `sales-notes` y propón el
-> adaptador antes de mover código. Un paso a la vez.
+| Decisión | Propuesta |
+| --- | --- |
+| Variante por defecto | `brick` en toolbox, `violet` en `os` |
+| ¿Quién elige la variante? | Fija por app al inicio; selector por negocio después |
+| Base de los componentes compartidos | Los del toolbox (más recientes), con el aspecto del admin de `os` |
