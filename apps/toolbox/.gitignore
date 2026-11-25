@@ -17,6 +17,12 @@
 /.next/
 /out/
 
+# service worker: lo genera el build (ver next.config.ts)
+/public/sw.js
+/public/sw.js.map
+/public/swe-worker-*.js
+/public/workbox-*.js
+
 # production
 /build
 

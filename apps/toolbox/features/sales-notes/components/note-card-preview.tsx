@@ -51,8 +51,8 @@ export function NoteCardPreview({ note }: { note: Note }) {
             {note.items.map((item) => (
               <li key={item.id} className="flex items-start justify-between gap-4 px-4 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-base font-medium leading-snug text-pretty capitalize">
-                    {item.description || 'Sin descripción'}
+                  <p className="text-base font-medium leading-snug text-pretty">
+                    {item.description ? <span className="capitalize">{item.description}</span> : 'Sin descripción'}
                   </p>
                   <p className="mt-0.5 text-sm tabular-nums text-muted-foreground">
                     {item.quantity} × {formatCurrency(item.unitPrice)}

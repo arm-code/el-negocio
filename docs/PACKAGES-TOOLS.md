@@ -92,6 +92,8 @@ packages/tool-<nombre>/src/
 4. Las integraciones pro entran por huecos opcionales (por ejemplo, acciones extra
    en el detalle). El toolbox los deja vacíos.
 5. `next`, `react`, `@tanstack/react-query` y `sonner` son `peerDependencies`.
+6. Funciona sin red en el toolbox: sus pantallas son estáticas (el id va como
+   `?id=`) y están en `OFFLINE_ROUTES`.
 
 Contrato de notas de venta:
 
@@ -119,13 +121,22 @@ desplegado.
 
 ### Fase 0 — Base sana del toolbox
 
-- **PWA rota en producción** (comprobado el 2026-11-25): `/sw.js` responde, pero
-  sus 30 archivos de precarga dan 404 y no hay service worker registrado.
-  Causa probable: `@serwist/next` no soporta Turbopack, que es el que usa el build;
-  el `public/sw.js` versionado quedó viejo. Probar `next build --webpack`, sacar de
-  git `public/sw.js` y `public/workbox-*.js`, y verificar instalación y uso sin red.
-- Textos con mayúscula en cada palabra por la clase `capitalize`: "Agrega El Nombre
-  De Tu Negocio" y los textos de ejemplo del asistente.
+Hecha y probada en local el 2026-11-25; **falta desplegar y comprobar en el sitio**.
+
+- **PWA:** el build usaba Turbopack, con el que `@serwist/next` no genera el service
+  worker, y se publicaba un `public/sw.js` viejo guardado en git. Ahora compila con
+  `next build --webpack`, el archivo ya no se versiona, se sirve sin caché y la
+  página no se recarga sola al volver la red.
+- **Sin red:** las pantallas se precargan (`OFFLINE_ROUTES` en `next.config.ts`).
+  La edición pasó de `/tools/sales-note/<id>/edit` a
+  `/tools/sales-note/edit?id=<id>` para poder precargarla.
+- **Textos:** quitada la mayúscula en cada palabra de avisos y textos de ejemplo.
+
+Pendiente para la fase 1, visto en móvil:
+
+- El aviso emergente tapa los botones Descargar y Compartir.
+- Lo que captura el usuario se muestra con mayúscula en cada palabra ("Renta De
+  Mesas").
 
 ### Fase 1 — Estándar visual (dentro del toolbox, sin mover archivos)
 

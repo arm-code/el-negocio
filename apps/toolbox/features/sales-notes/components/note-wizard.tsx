@@ -263,7 +263,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                   placeholder="Nombre completo / negocio"
                   maxLength={LIMITS.name}
                   autoComplete="off"
-                  className="h-11 text-base capitalize"
+                  className="h-11 text-base capitalize placeholder:normal-case"
                   autoFocus
                 />
               </div>
@@ -290,7 +290,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                     placeholder="Lugar de entrega"
                     maxLength={LIMITS.address}
                     autoComplete="off"
-                    className="h-11 text-base capitalize"
+                    className="h-11 text-base capitalize placeholder:normal-case"
                   />
                 </div>
               </div>
@@ -341,7 +341,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                           placeholder="Ej. Renta de mesa y sillas"
                           maxLength={LIMITS.description}
                           autoComplete="off"
-                          className="h-11 bg-background text-base capitalize"
+                          className="h-11 bg-background text-base capitalize placeholder:normal-case"
                         />
                       </div>
 

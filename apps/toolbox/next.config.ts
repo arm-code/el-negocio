@@ -1,15 +1,53 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
+import { randomUUID } from "node:crypto";
 
+// Pantallas que se guardan al instalar el service worker para que abran sin red.
+// Solo rutas estáticas (una pantalla que reciba `?id=` cuenta; ver app/sw.ts).
+// Al agregar una herramienta, agrega aquí sus pantallas.
+const OFFLINE_ROUTES = [
+  "/",
+  "/tools/sales-note",
+  "/tools/sales-note/new",
+  "/tools/sales-note/edit",
+];
+// Cambia en cada build, así cada despliegue vuelve a descargar esas pantallas.
+const BUILD_REVISION = randomUUID();
+
+// El build usa `next build --webpack`: @serwist/next no genera el service worker
+// con Turbopack.
 const withSerwist = withSerwistInit({
   swSrc: "app/sw.ts",
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV !== "production",
+  // true (valor por defecto) recarga la página al volver la red y se pierde lo
+  // que se estuviera capturando.
+  reloadOnOnline: false,
+  manifestTransforms: [
+    async (entries) => ({
+      manifest: [
+        ...entries,
+        ...OFFLINE_ROUTES.map((url) => ({ url, revision: BUILD_REVISION, size: 0 })),
+      ],
+      warnings: [],
+    }),
+  ],
 });
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // `next dev` usa Turbopack; sin esta clave se queja de la configuración de webpack
   turbopack: {},
+  // Que ni el navegador ni Cloudflare guarden el service worker: si no, un
+  // despliegue nuevo tarda horas en llegar.
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }],
+      },
+    ];
+  },
   // Imagen de Docker mínima: copia solo lo necesario para `node server.js`
   output: "standalone",
   images: {
