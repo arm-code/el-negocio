@@ -27,10 +27,9 @@ async function bootstrap() {
         return callback(null, true);
       }
 
-      // 2. Permitir cualquier subdominio de dejuarez.mx o arm-solutions.com.mx
+      // 2. Permitir cualquier subdominio de dejuarez.mx
       const isDomainMatch =
         /^https:\/\/([a-z0-9-]+\.)*dejuarez\.mx$/.test(origin) ||
-        /^https:\/\/([a-z0-9-]+\.)*arm-solutions\.com\.mx$/.test(origin) ||
         origin.startsWith('http://localhost:');
 
       // 3. O que esté explícitamente en la variable ALLOWED_ORIGINS limpia
@@ -75,9 +74,9 @@ async function bootstrap() {
 
   // 3. Configuración de OpenAPI (Swagger) y Renderizado con Scalar
   const config = new DocumentBuilder()
-    .setTitle('ARM Solutions API')
+    .setTitle('El Negocio API')
     .setDescription(
-      'API central de herramientas personales y gestión de negocios',
+      'API de gestión de negocios (El Negocio OS)',
     )
     .setVersion('1.0')
     .addBearerAuth()

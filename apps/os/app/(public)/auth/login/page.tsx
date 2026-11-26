@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Loader2, LogIn, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { loginUser } from '@/actions/auth/login'
 import { useAuth } from '@/lib/auth'
+import { useTenant } from '@/components/providers/TenantProvider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,6 +23,7 @@ import { cn } from '@/lib/utils'
 export default function LoginPage() {
   const router = useRouter()
   const { refresh } = useAuth()
+  const { businessName } = useTenant()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -69,7 +71,7 @@ export default function LoginPage() {
             Iniciar sesión
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Panel de administración de tu negocio
+            Panel de administración de {businessName || 'tu negocio'}
           </p>
         </div>
 
@@ -181,17 +183,6 @@ export default function LoginPage() {
         <div className="mt-6 text-center">
           <p className="text-xs text-muted-foreground">
             Acceso exclusivo para administradores.
-          </p>
-          <p className="mt-4 text-xs text-muted-foreground">
-            ¿Tienes un negocio?{' '}
-            <a
-              href="https://dejuarez.mx"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
-            >
-              Conoce ChangarroOS
-            </a>
           </p>
         </div>
       </div>

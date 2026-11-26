@@ -22,7 +22,7 @@ export class PaymentCardResponseDto {
   @ApiPropertyOptional({ example: '012180012345678901', nullable: true })
   clabe: string | null;
 
-  @ApiProperty({ example: 'Eventos Mendoza' })
+  @ApiProperty({ example: 'Papelería López' })
   beneficiary: string;
 
   static fromEntity(entity: PaymentCard): PaymentCardResponseDto {
@@ -173,7 +173,7 @@ export class BusinessConfigResponseDto {
   @ApiProperty({ example: 'cfg-123456' })
   id: string;
 
-  @ApiProperty({ example: 'Eventos Mendoza' })
+  @ApiProperty({ example: 'Papelería López' })
   name: string;
 
   @ApiPropertyOptional({ example: 'https://api.ejemplo.mx/files/abc/logo/uuid.png', nullable: true })
@@ -185,7 +185,7 @@ export class BusinessConfigResponseDto {
   @ApiPropertyOptional({ example: '526561234567', nullable: true })
   whatsapp: string | null;
 
-  @ApiPropertyOptional({ example: 'contacto@eventosmendoza.com', nullable: true })
+  @ApiPropertyOptional({ example: 'contacto@papelerialopez.com', nullable: true })
   email: string | null;
 
   @ApiPropertyOptional({ example: 'Av. Principal #123, Cd. Juárez', nullable: true })

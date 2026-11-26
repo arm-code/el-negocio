@@ -1,7 +1,11 @@
-### arm-solutions-api
+# El Negocio API
 
-Impulsando el futuro con arm-solutions
-Desarrollo de software a la medida y servicios profesionales de TI diseñados para escalar tu empresa al siguiente nivel.
+Backend de [El Negocio OS](../os/README.md): NestJS sobre Postgres propio, sesión con
+cookie JWT y archivos en disco. Cada instancia atiende a un solo negocio
+(`BUSINESS_SLUG`).
 
-Visítanos en: https://www.arm-solutions.com.mx/
+- Arrancar en local: [README principal](../../README.md#desarrollo-local).
+- Desplegar una instancia: [`docs/DEPLOY-COOLIFY.md`](../../docs/DEPLOY-COOLIFY.md).
+- Documentación de los endpoints: `/docs` en el API (pide `DOCS_USER` y `DOCS_PASSWORD`).
 
+Autor: Ing. Alexis Romero Mendoza.

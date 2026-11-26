@@ -27,7 +27,7 @@ import { TransactionCategory } from '../../categories/entities/transaction-categ
  *  - `ownerId` -> multi-tenant: cada usuario solo ve sus propios
  *    movimientos (se refuerza con Row Level Security en la base de datos).
  */
-@Entity({ name: 'transactions', schema: 'armsolutions' })
+@Entity({ name: 'transactions', schema: 'elnegocio' })
 @Index(['businessId', 'transactionDate'])
 @Index(['businessId', 'type'])
 export class Transaction extends BaseEntity {

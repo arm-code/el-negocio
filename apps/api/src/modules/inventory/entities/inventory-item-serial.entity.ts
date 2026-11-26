@@ -4,7 +4,7 @@ import { InventoryItemStatus } from '../enums/inventory-item-status.enum';
 import { InventoryItem } from './inventory-item.entity';
 
 /** Serial individual de un ítem del tipo `serialized`. */
-@Entity({ name: 'item_serials_inv', schema: 'armsolutions' })
+@Entity({ name: 'item_serials_inv', schema: 'elnegocio' })
 @Index(['itemId'])
 export class InventoryItemSerial extends BaseEntity {
   @ManyToOne(() => InventoryItem, (item) => item.serials, {

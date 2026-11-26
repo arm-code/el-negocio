@@ -68,7 +68,7 @@ export function AdminSidebar() {
                         {user?.name || 'Usuario'}
                     </p>
                     <p className="truncate text-xs text-muted-foreground">
-                        {user?.email || 'admin@eventosmendoza.com'}
+                        {user?.email}
                     </p>
                 </div>
                 <Button

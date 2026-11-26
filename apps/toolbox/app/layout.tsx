@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Toaster } from 'sonner'
 import { Analytics } from '@vercel/analytics/next'
 import { Providers } from '@/components/providers'
+import { BRAND } from '@/lib/brand'
 
 import './globals.css'
 
@@ -11,8 +12,9 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-geist-sans" })
 const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" })
 
 export const metadata: Metadata = {
-  title: 'El Changarro - Herramientas sencillas para tu negocio',
-  description: 'Notas de venta listas desde tu celular, y más herramientas en camino. Herramientas simples para changarros, tiendas y emprendedores.',
+  title: `${BRAND.name} - Herramientas gratuitas para tu negocio`,
+  applicationName: BRAND.name,
+  description: 'Notas de venta listas desde tu celular, y más herramientas en camino. Herramientas gratuitas para pequeños negocios, tiendas y emprendedores.',
   manifest: "/manifest.json",
   icons: {
     icon: '/icon_192x192.png',

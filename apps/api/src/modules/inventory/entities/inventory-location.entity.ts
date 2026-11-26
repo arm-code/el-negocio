@@ -2,7 +2,7 @@ import { Column, Entity, Index } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { InventoryLocationType } from '../enums/inventory-location-type.enum';
 
-@Entity({ name: 'locations_inv', schema: 'armsolutions' })
+@Entity({ name: 'locations_inv', schema: 'elnegocio' })
 @Index(['businessId'])
 @Index(['ownerId'])
 export class InventoryLocation extends BaseEntity {

@@ -11,7 +11,7 @@ import { Transaction } from '../../transactions/entities/transaction.entity';
  * datos permite: agregar nuevos métodos sin tocar código, desactivar
  * métodos obsoletos sin borrar histórico, y evitar errores de tipeo.
  */
-@Entity({ name: 'payment_methods', schema: 'armsolutions' })
+@Entity({ name: 'payment_methods', schema: 'elnegocio' })
 @Index(['businessId', 'code'], { unique: true })
 export class PaymentMethod extends BaseEntity {
   /** Negocio al que pertenece este método de pago. */

@@ -7,7 +7,7 @@ import { EventStatus } from '../enums/event-status.enum';
  * Evento / proyecto / servicio de alquiler de mobiliario
  * al que pueden asociarse una o más transacciones.
  */
-@Entity({ name: 'business_events', schema: 'armsolutions' })
+@Entity({ name: 'business_events', schema: 'elnegocio' })
 @Index(['businessId', 'name'])
 @Index(['businessId', 'folioNumber'])
 @Index(['ownerId', 'name'])

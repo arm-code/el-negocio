@@ -4,7 +4,7 @@ import { BusinessEvent } from '../../events/entities/business-event.entity';
 import { SalesNoteStatus } from '../enums/sales-note-status.enum';
 import { SalesNoteItem } from './sales-note-item.entity';
 
-@Entity({ name: 'sales_notes', schema: 'armsolutions' })
+@Entity({ name: 'sales_notes', schema: 'elnegocio' })
 @Index(['businessId'])
 @Index(['ownerId'])
 @Index(['status'])

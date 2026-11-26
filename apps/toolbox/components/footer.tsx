@@ -2,6 +2,7 @@
 import Link from "next/link"
 import { Wrench } from "lucide-react"
 import { availableTools } from "@/lib/tools-catalog"
+import { BRAND } from "@/lib/brand"
 
 const focusRing = "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
 
@@ -15,10 +16,10 @@ export function Footer() {
                             <span className="flex size-9 items-center justify-center rounded-lg bg-primary">
                                 <Wrench className="size-5 text-primary-foreground" aria-hidden="true" />
                             </span>
-                            <span className="text-xl font-semibold tracking-tight">El Changarro</span>
+                            <span className="text-xl font-semibold tracking-tight">{BRAND.name}</span>
                         </Link>
                         <p className="max-w-xs text-pretty text-[15px] leading-relaxed text-muted-foreground">
-                            Herramientas simples para changarros, tiendas y emprendedores.
+                            Herramientas gratuitas para pequeños negocios, tiendas y emprendedores.
                         </p>
                     </div>
 
@@ -40,7 +41,7 @@ export function Footer() {
                 </div>
 
                 <div className="flex flex-col gap-2 border-t pt-6 text-[15px] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-                    <p>&copy; {new Date().getFullYear()} El Changarro. Hecho en Ciudad Juárez.</p>
+                    <p>&copy; {new Date().getFullYear()} {BRAND.name}. Hecho en Ciudad Juárez.</p>
                     <p>
                         Desarrollado por{" "}
                         <a

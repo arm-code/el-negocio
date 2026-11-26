@@ -4,7 +4,7 @@ import { useState } from "react"
 import { X } from "lucide-react"
 import { useHasMounted } from "@/hooks/useHasMounted"
 
-const STORAGE_KEY = "changarro:pwa-banner-dismissed"
+const STORAGE_KEY = "el-negocio:pwa-banner-dismissed"
 
 export function InstallBanner() {
   const hasMounted = useHasMounted()

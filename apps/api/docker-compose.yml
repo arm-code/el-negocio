@@ -1,4 +1,4 @@
-# Postgres propio + API. Reemplaza la base de datos de Supabase (Fase 1).
+# El Negocio API: Postgres propio + API. Reemplaza la base de datos de Supabase (Fase 1).
 #
 # Uso local:
 #   docker compose up -d postgres        # solo la base
@@ -8,21 +8,24 @@
 # Variables opcionales (en .env o en el shell):
 #   POSTGRES_PASSWORD   contraseña de la base (cámbiala fuera de local)
 
+# Nombre fijo: contenedores y volúmenes no dependen del nombre de la carpeta
+name: el-negocio-api
+
 services:
   postgres:
     build: ./docker/postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: changarro
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changarro_local}
-      POSTGRES_DB: changarro
+      POSTGRES_USER: elnegocio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-elnegocio_local}
+      POSTGRES_DB: elnegocio
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
       # Solo accesible desde la propia máquina, nunca expuesto a la red
       - "127.0.0.1:5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U changarro -d changarro"]
+      test: ["CMD-SHELL", "pg_isready -U elnegocio -d elnegocio"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -39,9 +42,9 @@ services:
     environment: &db-env
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: changarro
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-changarro_local}
-      DB_NAME: changarro
+      DB_USERNAME: elnegocio
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-elnegocio_local}
+      DB_NAME: elnegocio
       DB_SSL: "false"
     command: ["pnpm", "run", "typeorm", "migration:run"]
 

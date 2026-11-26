@@ -2,7 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { BusinessConfig } from './business-config.entity';
 
-@Entity({ name: 'payment_cards_info', schema: 'armsolutions' })
+@Entity({ name: 'payment_cards_info', schema: 'elnegocio' })
 @Index(['configId'])
 export class PaymentCard extends BaseEntity {
   @ManyToOne(() => BusinessConfig, (config) => config.paymentCards, {

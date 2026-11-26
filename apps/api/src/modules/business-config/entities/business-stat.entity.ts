@@ -6,7 +6,7 @@ import { BusinessConfig } from './business-config.entity';
  * Estadística destacada del negocio para la sección "En números"
  * del landing público. Ejemplos: "+500 eventos", "8 años de experiencia".
  */
-@Entity({ name: 'business_stats', schema: 'armsolutions' })
+@Entity({ name: 'business_stats', schema: 'elnegocio' })
 @Index(['configId'])
 export class BusinessStat extends BaseEntity {
   @ManyToOne(() => BusinessConfig, (config) => config.stats, {

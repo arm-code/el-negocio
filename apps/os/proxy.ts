@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
 /** Debe coincidir con SESSION_COOKIE_NAME del API. */
-const SESSION_COOKIE = 'cb_session';
+const SESSION_COOKIE = 'en_session';
 
 /**
  * Verifica la firma y vigencia del JWT de sesión (mismo JWT_SECRET que el API).

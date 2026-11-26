@@ -7,7 +7,7 @@ import { GalleryItem } from './gallery-item.entity';
 import { PaymentCard } from './payment-card.entity';
 import { Testimonial } from './testimonial.entity';
 
-@Entity({ name: 'business_configs', schema: 'armsolutions' })
+@Entity({ name: 'business_configs', schema: 'elnegocio' })
 export class BusinessConfig extends BaseEntity {
   /**
    * Negocio al que pertenece esta configuración.
@@ -16,7 +16,7 @@ export class BusinessConfig extends BaseEntity {
   @Column({ name: 'business_id', type: 'uuid', nullable: true })
   businessId: string | null;
 
-  @Column({ type: 'varchar', length: 150, default: 'Eventos Mendoza' })
+  @Column({ type: 'varchar', length: 150, default: '' })
   name: string;
 
   @Column({ name: 'logo_url', type: 'text', nullable: true })

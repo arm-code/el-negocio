@@ -3,18 +3,18 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 /**
  * Esquema inicial del módulo financiero (ex-hoja de cálculo `business.xlsx`).
  *
- * Todas las entidades se crean dentro del schema "armsolutions" para evitar
+ * Todas las entidades se crean dentro del schema "elnegocio" para evitar
  * colisiones con otros proyectos que comparten el mismo proyecto de Supabase.
  *
  * Entidades creadas (normalizadas a 3FN):
- *   - armsolutions.payment_methods        (catálogo)
- *   - armsolutions.transaction_categories (catálogo)
- *   - armsolutions.business_events        (eventos/clientes)
- *   - armsolutions.transactions           (tabla de hechos, FK a las 3 anteriores)
+ *   - elnegocio.payment_methods        (catálogo)
+ *   - elnegocio.transaction_categories (catálogo)
+ *   - elnegocio.business_events        (eventos/clientes)
+ *   - elnegocio.transactions           (tabla de hechos, FK a las 3 anteriores)
  *
  * Además:
- *   - Enum nativo `armsolutions.transactions_type_enum` (INPUT/OUTPUT).
- *   - Secuencia `armsolutions.transactions_folio_seq` para folios consecutivos.
+ *   - Enum nativo `elnegocio.transactions_type_enum` (INPUT/OUTPUT).
+ *   - Secuencia `elnegocio.transactions_folio_seq` para folios consecutivos.
  *   - Row Level Security (RLS) para aislar los datos por usuario de Supabase.
  *   - Seed de catálogos con los valores encontrados en el Excel original.
  */
@@ -23,24 +23,24 @@ export class CreateFinanceSchema1752710400000 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Extensión necesaria para gen_random_uuid()
-    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
+    await queryRunner.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;`);
 
     // Aseguramos que el schema exista (por si acaso)
     await queryRunner.query(
-      `CREATE SCHEMA IF NOT EXISTS "armsolutions";`,
+      `CREATE SCHEMA IF NOT EXISTS "elnegocio";`,
     );
 
     // ---------- Enum de tipo de transacción ----------
     await queryRunner.query(`
       DO $$ BEGIN
-        CREATE TYPE "armsolutions"."transactions_type_enum" AS ENUM ('INPUT', 'OUTPUT');
+        CREATE TYPE "elnegocio"."transactions_type_enum" AS ENUM ('INPUT', 'OUTPUT');
       EXCEPTION WHEN duplicate_object THEN NULL;
       END $$;
     `);
 
     // ---------- payment_methods ----------
     await queryRunner.query(`
-      CREATE TABLE IF NOT EXISTS "armsolutions"."payment_methods" (
+      CREATE TABLE IF NOT EXISTS "elnegocio"."payment_methods" (
         "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "code" varchar(30) NOT NULL,
         "name" varchar(100) NOT NULL,
@@ -54,7 +54,7 @@ export class CreateFinanceSchema1752710400000 implements MigrationInterface {
 
     // ---------- transaction_categories ----------
     await queryRunner.query(`
-      CREATE TABLE IF NOT EXISTS "armsolutions"."transaction_categories" (
+      CREATE TABLE IF NOT EXISTS "elnegocio"."transaction_categories" (
         "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "code" varchar(50) NOT NULL,
         "name" varchar(100) NOT NULL,
@@ -69,7 +69,7 @@ export class CreateFinanceSchema1752710400000 implements MigrationInterface {
 
     // ---------- business_events ----------
     await queryRunner.query(`
-      CREATE TABLE IF NOT EXISTS "armsolutions"."business_events" (
+      CREATE TABLE IF NOT EXISTS "elnegocio"."business_events" (
         "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "owner_id" uuid NOT NULL,
         "name" varchar(150) NOT NULL,
@@ -86,22 +86,22 @@ export class CreateFinanceSchema1752710400000 implements MigrationInterface {
     `);
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS "IDX_business_events_owner_name"
-        ON "armsolutions"."business_events" ("owner_id", "name");
+        ON "elnegocio"."business_events" ("owner_id", "name");
     `);
 
     // ---------- secuencia de folios ----------
     await queryRunner.query(
-      `CREATE SEQUENCE IF NOT EXISTS "armsolutions"."transactions_folio_seq" START WITH 1;`,
+      `CREATE SEQUENCE IF NOT EXISTS "elnegocio"."transactions_folio_seq" START WITH 1;`,
     );
 
     // ---------- transactions ----------
     await queryRunner.query(`
-      CREATE TABLE IF NOT EXISTS "armsolutions"."transactions" (
+      CREATE TABLE IF NOT EXISTS "elnegocio"."transactions" (
         "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "owner_id" uuid NOT NULL,
-        "folio_number" integer NOT NULL DEFAULT nextval('"armsolutions"."transactions_folio_seq"'),
+        "folio_number" integer NOT NULL DEFAULT nextval('"elnegocio"."transactions_folio_seq"'),
         "transaction_date" date NOT NULL,
-        "type" "armsolutions"."transactions_type_enum" NOT NULL,
+        "type" "elnegocio"."transactions_type_enum" NOT NULL,
         "description" varchar(255),
         "amount" numeric(12,2) NOT NULL,
         "category_id" uuid NOT NULL,
@@ -114,34 +114,34 @@ export class CreateFinanceSchema1752710400000 implements MigrationInterface {
         CONSTRAINT "FK_transactions_owner" FOREIGN KEY ("owner_id")
           REFERENCES "auth"."users" ("id") ON DELETE CASCADE,
         CONSTRAINT "FK_transactions_category" FOREIGN KEY ("category_id")
-          REFERENCES "armsolutions"."transaction_categories" ("id") ON DELETE RESTRICT,
+          REFERENCES "elnegocio"."transaction_categories" ("id") ON DELETE RESTRICT,
         CONSTRAINT "FK_transactions_payment_method" FOREIGN KEY ("payment_method_id")
-          REFERENCES "armsolutions"."payment_methods" ("id") ON DELETE RESTRICT,
+          REFERENCES "elnegocio"."payment_methods" ("id") ON DELETE RESTRICT,
         CONSTRAINT "FK_transactions_business_event" FOREIGN KEY ("business_event_id")
-          REFERENCES "armsolutions"."business_events" ("id") ON DELETE SET NULL
+          REFERENCES "elnegocio"."business_events" ("id") ON DELETE SET NULL
       );
     `);
     await queryRunner.query(
       `CREATE UNIQUE INDEX IF NOT EXISTS "IDX_transactions_owner_folio"
-        ON "armsolutions"."transactions" ("owner_id", "folio_number");`,
+        ON "elnegocio"."transactions" ("owner_id", "folio_number");`,
     );
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS "IDX_transactions_owner_date"
-        ON "armsolutions"."transactions" ("owner_id", "transaction_date");`,
+        ON "elnegocio"."transactions" ("owner_id", "transaction_date");`,
     );
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS "IDX_transactions_owner_type"
-        ON "armsolutions"."transactions" ("owner_id", "type");`,
+        ON "elnegocio"."transactions" ("owner_id", "type");`,
     );
 
     // ---------- Row Level Security ----------
     for (const table of ['business_events', 'transactions']) {
       await queryRunner.query(
-        `ALTER TABLE "armsolutions"."${table}" ENABLE ROW LEVEL SECURITY;`,
+        `ALTER TABLE "elnegocio"."${table}" ENABLE ROW LEVEL SECURITY;`,
       );
       await queryRunner.query(`
         DO $$ BEGIN
-          CREATE POLICY "owner_can_manage_${table}" ON "armsolutions"."${table}"
+          CREATE POLICY "owner_can_manage_${table}" ON "elnegocio"."${table}"
           USING (owner_id = auth.uid())
           WITH CHECK (owner_id = auth.uid());
         EXCEPTION WHEN duplicate_object THEN NULL;
@@ -151,11 +151,11 @@ export class CreateFinanceSchema1752710400000 implements MigrationInterface {
     // Catálogos: lectura para usuarios autenticados, escritura solo service_role
     for (const table of ['payment_methods', 'transaction_categories']) {
       await queryRunner.query(
-        `ALTER TABLE "armsolutions"."${table}" ENABLE ROW LEVEL SECURITY;`,
+        `ALTER TABLE "elnegocio"."${table}" ENABLE ROW LEVEL SECURITY;`,
       );
       await queryRunner.query(`
         DO $$ BEGIN
-          CREATE POLICY "authenticated_can_read_${table}" ON "armsolutions"."${table}"
+          CREATE POLICY "authenticated_can_read_${table}" ON "elnegocio"."${table}"
           FOR SELECT
           USING (auth.role() = 'authenticated');
         EXCEPTION WHEN duplicate_object THEN NULL;
@@ -165,13 +165,13 @@ export class CreateFinanceSchema1752710400000 implements MigrationInterface {
 
     // ---------- Seed de catálogos ----------
     await queryRunner.query(`
-      INSERT INTO "armsolutions"."payment_methods" ("code", "name") VALUES
+      INSERT INTO "elnegocio"."payment_methods" ("code", "name") VALUES
         ('CASH', 'Efectivo'),
         ('TRANSFER', 'Transferencia')
       ON CONFLICT ("code") DO NOTHING;
     `);
     await queryRunner.query(`
-      INSERT INTO "armsolutions"."transaction_categories" ("code", "name") VALUES
+      INSERT INTO "elnegocio"."transaction_categories" ("code", "name") VALUES
         ('RENTA', 'Renta de mobiliario/equipo'),
         ('GASOLINA', 'Gasolina'),
         ('COMIDAS', 'Comidas'),
@@ -184,22 +184,22 @@ export class CreateFinanceSchema1752710400000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `DROP TABLE IF EXISTS "armsolutions"."transactions" CASCADE;`,
+      `DROP TABLE IF EXISTS "elnegocio"."transactions" CASCADE;`,
     );
     await queryRunner.query(
-      `DROP SEQUENCE IF EXISTS "armsolutions"."transactions_folio_seq";`,
+      `DROP SEQUENCE IF EXISTS "elnegocio"."transactions_folio_seq";`,
     );
     await queryRunner.query(
-      `DROP TABLE IF EXISTS "armsolutions"."business_events" CASCADE;`,
+      `DROP TABLE IF EXISTS "elnegocio"."business_events" CASCADE;`,
     );
     await queryRunner.query(
-      `DROP TABLE IF EXISTS "armsolutions"."transaction_categories" CASCADE;`,
+      `DROP TABLE IF EXISTS "elnegocio"."transaction_categories" CASCADE;`,
     );
     await queryRunner.query(
-      `DROP TABLE IF EXISTS "armsolutions"."payment_methods" CASCADE;`,
+      `DROP TABLE IF EXISTS "elnegocio"."payment_methods" CASCADE;`,
     );
     await queryRunner.query(
-      `DROP TYPE IF EXISTS "armsolutions"."transactions_type_enum";`,
+      `DROP TYPE IF EXISTS "elnegocio"."transactions_type_enum";`,
     );
   }
 }

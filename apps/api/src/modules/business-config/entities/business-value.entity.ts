@@ -6,7 +6,7 @@ import { BusinessConfig } from './business-config.entity';
  * Valor corporativo que el negocio comunica en su landing público.
  * Ejemplos: "Responsabilidad", "Higiene", "Trato humano".
  */
-@Entity({ name: 'business_values', schema: 'armsolutions' })
+@Entity({ name: 'business_values', schema: 'elnegocio' })
 @Index(['configId'])
 export class BusinessValue extends BaseEntity {
   @ManyToOne(() => BusinessConfig, (config) => config.values, {

@@ -28,7 +28,7 @@ $$;
 
 -- TypeORM guarda su tabla de migraciones en este schema y la necesita ANTES
 -- de la primera migración (en Supabase ya existía).
-CREATE SCHEMA IF NOT EXISTS armsolutions;
+CREATE SCHEMA IF NOT EXISTS elnegocio;
 
 -- Roles que Supabase trae por defecto y que referencian algunas políticas RLS
 -- (p. ej. contact_messages). Sin login: solo existen para que el SQL cargue.

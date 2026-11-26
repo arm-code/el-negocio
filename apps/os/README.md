@@ -1,4 +1,8 @@
-# El Changarro OS
+# El Negocio OS
+
+Sistema de gestión de **un** negocio: su página pública y su panel de administración.
+Cada cliente tiene una instancia propia, que muestra su nombre y su logo. No enlaza ni
+comparte nada con el sitio de herramientas gratuitas ([El Negocio](../toolbox/README.md)).
 ---
 
 ### Pasos a seguir para poder ejecutar el proyecto
