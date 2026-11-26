@@ -88,22 +88,109 @@ docker exec -it $API node dist/src/scripts/user-admin.js set-password correo@eje
 
 ## 5. Backups (hazlo desde el primer día)
 
-Cron en el servidor, todos los días a las 3am (ajusta rutas y contenedor):
+[`apps/api/scripts/backup-instance.sh`](../apps/api/scripts/backup-instance.sh) guarda la
+base y los archivos subidos de una instancia. Encuentra sus contenedores por el **id
+del recurso** (está en la dirección del recurso en Coolify y en el nombre de sus
+contenedores), así que sigue funcionando después de cada redeploy. El mismo script
+sirve para todas las instancias. Los comandos se ejecutan en el servidor.
+
+### 5.1 Disco aparte (recomendado)
+
+Una sola vez, si el servidor tiene un disco para respaldos:
+
+```bash
+lsblk -o NAME,SIZE,MODEL,FSTYPE,LABEL,MOUNTPOINT   # identifica el disco
+sudo mkfs.ext4 -L respaldos /dev/sdX               # ⚠ BORRA todo el disco
+sudo blkid /dev/sdX                                # copia su UUID
+```
+
+Agrega a `/etc/fstab` (con `nofail` el servidor arranca aunque el disco falte):
 
 ```
-0 3 * * * CONTAINER=<contenedor-postgres> BACKUP_DIR=/srv/backups/elnegocio /ruta/al/repo/apps/api/scripts/backup.sh >> /srv/backups/elnegocio/backup.log 2>&1
+UUID=<uuid> /mnt/respaldos ext4 defaults,nofail 0 2
 ```
 
-Guarda además una copia fuera del servidor (otro disco, tu PC). Los archivos subidos
-(`storage`) cambian poco: respáldalos con el `tar` de la sección 3. El **contenedor de
-Postgres puede cambiar de nombre** tras un redeploy; comprueba el nombre si el cron falla.
+```bash
+sudo mkdir -p /mnt/respaldos
+sudo systemctl daemon-reload
+sudo mount /mnt/respaldos
+```
+
+Si es un disco usado, revisa antes su salud: `sudo smartctl -H -A /dev/sdX`
+(paquete `smartmontools`).
+
+### 5.2 Instalar y probar
+
+```bash
+sudo curl -fsSL -o /usr/local/sbin/respaldo-elnegocio https://raw.githubusercontent.com/arm-code/el-negocio/main/apps/api/scripts/backup-instance.sh
+sudo chmod 755 /usr/local/sbin/respaldo-elnegocio
+sudo respaldo-elnegocio <id-del-recurso> /mnt/respaldos
+```
+
+Debe responder `OK` con el número de tablas y las dos rutas. Sin disco aparte, omite
+`/mnt/respaldos`: guardará en `/srv/backups/elnegocio`.
+
+> Si instalaste la primera versión del script (solo recibe el id y ya apunta al
+> disco), puede seguir así. Si la reemplazas por esta, agrega **en el mismo momento**
+> `/mnt/respaldos` a la línea del cron.
+
+### 5.3 Programarlo cada noche
+
+La tarea usa la hora del servidor. Para ajustarla:
+
+```bash
+sudo timedatectl set-timezone America/Ciudad_Juarez
+sudo systemctl restart cron
+```
+
+Archivo `/etc/cron.d/respaldo-elnegocio`, con una línea por instancia:
+
+```
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 3 * * * root /usr/local/sbin/respaldo-elnegocio <id-del-recurso> /mnt/respaldos >> /var/log/respaldo-elnegocio.log 2>&1
+```
+
+- Revisa que esté corriendo: `sudo tail -n 3 /var/log/respaldo-elnegocio.log`.
+  Los errores quedan ahí, pero **no se envía ninguna alerta**.
+- Se conservan 14 días.
+
+### 5.4 Copia fuera del servidor
+
+Un segundo disco no protege si se daña o se pierde el equipo. Copia de vez en cuando
+un respaldo a otro lugar. Los archivos solo los lee `root`:
+
+```bash
+# en el servidor
+sudo cat /mnt/respaldos/elnegocio/<id>/base-<fecha>.sql.gz > ~/base.sql.gz
+sudo cat /mnt/respaldos/elnegocio/<id>/archivos-<fecha>.tgz > ~/archivos.tgz
+```
+
+Descárgalos con `scp` desde tu PC y bórralos de tu carpeta en el servidor. Contienen
+datos de tu cliente.
+
+### 5.5 Restaurar
+
+> Restaurar un respaldo hecho con este script **no se ha ensayado de principio a
+> fin**. Pruébalo en una instancia aparte antes de necesitarlo.
+
+⚠ Reemplaza los datos actuales: haz primero un respaldo nuevo.
+
+```bash
+sudo docker stop <contenedor-api>
+curl -fsSL -o restore-backup.sh https://raw.githubusercontent.com/arm-code/el-negocio/main/apps/api/scripts/restore-backup.sh
+sudo CONTAINER=<contenedor-postgres> bash restore-backup.sh base-<fecha>.sql.gz
+sudo docker start <contenedor-api>
+```
+
+Después recupera las imágenes con el paso 2 de la sección 3, usando
+`archivos-<fecha>.tgz`.
 
 ## 6. Actualizar y volver atrás
 
 - Actualizar: push a `main` → Redeploy (o activa el despliegue automático en Coolify).
   Las migraciones corren solas antes de arrancar el API.
 - Volver atrás: redeploy del commit anterior. Si una migración ya se aplicó y hay que
-  deshacerla, restaura el último respaldo (sección 3, paso 1).
+  deshacerla, restaura el último respaldo (sección 5.5).
 
 ## 7. Un cliente nuevo
 
@@ -114,6 +201,8 @@ Otro recurso en Coolify con el **mismo repo** y variables propias (`BUSINESS_SLU
 docker exec -it $API node dist/src/scripts/user-admin.js create-business "Nombre del negocio" slug-del-negocio
 docker exec -it $API node dist/src/scripts/user-admin.js set-password dueno@correo.com --business slug-del-negocio
 ```
+
+Por último, agrega su línea a la tarea de respaldos (sección 5.3).
 
 ## 8. Si algo falla
 
@@ -224,7 +313,27 @@ CONTAINER=$PG bash apps/api/scripts/rename-db-to-elnegocio.sh
 
 Todos tendrán que **iniciar sesión otra vez** (cambió el nombre de la cookie). Los
 respaldos antiguos se pueden seguir restaurando: `restore-backup.sh` los convierte.
-Actualiza también la ruta de los respaldos en el cron (sección 5).
+Actualiza también la ruta de los respaldos en el cron (sección 5). Si tu usuario no
+pertenece al grupo `docker`, antepón `sudo` a `docker` y usa
+`sudo CONTAINER=... bash ...` para los scripts.
+
+#### Volver atrás
+
+Ten el script en el servidor **antes** de convertir. Devuelve los nombres anteriores
+sin borrar ni restaurar datos:
+
+```bash
+docker stop <contenedor-api>        # el que esté encendido, si hay alguno
+CONTAINER=<contenedor-postgres> bash apps/api/scripts/revert-db-rename.sh
+```
+
+Después enciende la versión anterior. Los nombres de los contenedores cambian en cada
+despliegue; compruébalos con `docker ps -a`.
+
+- Si **no se desplegó nada** (p. ej., falló la compilación) y los contenedores
+  anteriores siguen ahí: `docker start <contenedor-api-anterior>`.
+- Si ya fueron reemplazados: en Coolify, despliega el **commit anterior** (anótalo
+  antes, en el historial de despliegues).
 
 ### 11.3 Cambiar el dominio del sitio gratuito
 
