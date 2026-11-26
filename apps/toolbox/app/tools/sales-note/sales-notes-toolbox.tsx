@@ -1,7 +1,7 @@
 "use client"
 
 // Cómo monta el toolbox las notas de venta: datos en el navegador, sin cuenta.
-import { SalesNotesProvider, type SalesNotesConfig } from "@/features/sales-notes"
+import { SalesNotesProvider, type SalesNotesConfig } from "@el-negocio/tool-sales-notes"
 import { localBusinessInfoStorage, localNotesStorage } from "@/lib/sales-notes-storage"
 
 const BASE = "/tools/sales-note"

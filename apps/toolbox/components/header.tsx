@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useTheme } from "next-themes"
 import { Sun, Moon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@el-negocio/ui/button"
 import { useHasMounted } from "@/hooks/useHasMounted"
 import { BRAND } from "@/lib/brand"
 

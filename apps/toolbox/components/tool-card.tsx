@@ -1,9 +1,9 @@
 import Link from "next/link"
 import { LucideIcon } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@el-negocio/ui/card"
+import { Button } from "@el-negocio/ui/button"
+import { Badge } from "@el-negocio/ui/badge"
+import { cn } from "@el-negocio/ui/utils"
 
 interface ToolCardProps {
     title: string

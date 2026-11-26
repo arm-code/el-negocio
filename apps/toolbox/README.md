@@ -10,10 +10,10 @@ para celular e instalable (PWA). Es independiente del sistema de paga
 
 ## Arrancar en local
 
-Desde la raíz del repo:
+Desde la raíz del repo (instala la app y `packages/`):
 
 ```bash
-pnpm --dir apps/toolbox install
+pnpm install
 pnpm --dir apps/toolbox dev -p 3001
 ```
 
@@ -25,6 +25,24 @@ Abre [http://localhost:3001](http://localhost:3001). El puerto 3001 evita chocar
 
 Todo corre en el navegador: los datos (p. ej. las notas de venta) se guardan en el
 `localStorage` del dispositivo. No hay nada que configurar.
+
+## Dónde va cada cosa
+
+Cada herramienta vive en su propio paquete; esta app solo la monta y le pone su marco.
+Ver [el estándar de las micro apps](../../docs/PACKAGES-TOOLS.md).
+
+```text
+apps/toolbox/
+├── app/
+│   ├── page.tsx           # Página de inicio
+│   └── tools/<tool>/      # Pantallas, con sus rutas y textos
+├── components/            # Solo la portada y el marco de la app
+└── lib/                   # Adaptadores de datos, respaldo y catálogo
+
+packages/
+├── ui/                    # Tema y componentes compartidos
+└── tool-<nombre>/         # Pantallas, lógica, tipos y puertos de una herramienta
+```
 
 ## Reglas de identidad
 
@@ -41,5 +59,6 @@ Para que nadie confunda este sitio con el panel de un negocio:
 ## Estilo
 
 Usa solo los tokens del tema (`bg-primary`, `text-muted-foreground`...). Las micro apps
-llevan superficies neutras y un acento (`app/theme.css`); la paleta colorida es solo de
-la página de inicio. Ver [el estándar visual](../../docs/PACKAGES-TOOLS.md).
+llevan superficies neutras y un acento (`packages/ui/src/theme.css`); la paleta colorida
+es solo de la página de inicio. Ver
+[el estándar visual](../../docs/PACKAGES-TOOLS.md).

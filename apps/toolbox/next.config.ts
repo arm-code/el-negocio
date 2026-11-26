@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 import withSerwistInit from "@serwist/next";
 import { randomUUID } from "node:crypto";
+import path from "node:path";
+
+// Raíz del monorepo: de ahí salen los paquetes compartidos y las dependencias.
+const REPO_ROOT = path.join(__dirname, "..", "..");
 
 // Pantallas que se guardan al instalar el service worker para que abran sin red.
 // Solo rutas estáticas (una pantalla que reciba `?id=` cuenta; ver app/sw.ts).
@@ -36,8 +40,11 @@ const withSerwist = withSerwistInit({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Los paquetes se publican como TypeScript: Next los compila junto con la app
+  transpilePackages: ["@el-negocio/ui", "@el-negocio/tool-sales-notes"],
+  outputFileTracingRoot: REPO_ROOT,
   // `next dev` usa Turbopack; sin esta clave se queja de la configuración de webpack
-  turbopack: {},
+  turbopack: { root: REPO_ROOT },
   // Que ni el navegador ni Cloudflare guarden el service worker: si no, un
   // despliegue nuevo tarda horas en llegar.
   async headers() {

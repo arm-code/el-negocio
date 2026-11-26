@@ -8,7 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { DatabaseBackup } from "lucide-react"
 import { BackupSheet } from "@/components/backup-sheet"
-import { Button } from "@/components/ui/button"
+import { Button } from "@el-negocio/ui/button"
 import { BRAND } from "@/lib/brand"
 
 export function ToolBar() {
