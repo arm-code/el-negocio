@@ -1,7 +1,7 @@
 # Micro apps compartidas (plan y estándar de trabajo)
 
-> Estado al 2026-11-25: fases 0 y 1 en `main`, pero el sitio todavía servía la
-> versión anterior. Fase 2 hecha en local. Todavía no existe la carpeta `packages/`.
+> Estado al 2026-11-26: fases 0 a 2 desplegadas. Fase 3 hecha en local sobre la marca
+> "El Negocio"; **antes de llevarla a `main`, lee su apartado**: cambia el despliegue.
 
 ## 1. La idea
 
@@ -24,7 +24,7 @@ Cada micro app existe **una sola vez** y la usan dos aplicaciones:
 - Por ahora se trabaja **solo con notas de venta**; lo aprendido define el estándar.
 - Se avanza por fases y cada fase deja las apps desplegables.
 
-## 2. Estructura objetivo
+## 2. Estructura
 
 ```
 packages/
@@ -32,7 +32,9 @@ packages/
   tool-sales-notes/   @el-negocio/tool-sales-notes   pantallas, cálculos, tipos, puertos
 apps/
   toolbox/            monta cada herramienta con localStorage
-  os/                 la monta con API, sesión e integraciones
+  os/                 (fase 4) la montará con API, sesión e integraciones
+pnpm-workspace.yaml   toolbox + packages; versiones compartidas en `catalog`
+pnpm-lock.yaml        un solo lockfile para toolbox y paquetes
 ```
 
 ## 3. Estándar visual
@@ -41,7 +43,7 @@ apps/
 color de acento en botones, estados activos, anillos de foco, cargadores y
 skeletons. Las micro apps se ven igual en `toolbox` y en `os`.
 
-El tema vive en `apps/toolbox/app/theme.css` (en la fase 3 pasa a `packages/ui`).
+El tema vive en `packages/ui/src/theme.css` (`@el-negocio/ui/theme.css`).
 El acento es una variante (`data-accent` en `<html>`; sin atributo es `violet`).
 Solo cambia estos valores:
 
@@ -92,6 +94,7 @@ packages/tool-<nombre>/src/
   hooks/          react-query sobre los puertos
   components/     pantallas
   index.ts        API pública
+  meta.ts         ficha para catálogos: id, título, descripción e ícono
 ```
 
 1. Una herramienta **no importa otra herramienta**. Solo `ui` y librerías.
@@ -103,6 +106,16 @@ packages/tool-<nombre>/src/
 5. `next`, `react`, `@tanstack/react-query` y `sonner` son `peerDependencies`.
 6. Funciona sin red en el toolbox: sus pantallas son estáticas (el id va como
    `?id=`) y están en `OFFLINE_ROUTES`.
+
+Para agregar una herramienta al toolbox:
+
+1. Crear `packages/tool-<nombre>` copiando `package.json` y `tsconfig.json` de notas
+   de venta. Las versiones compartidas se declaran como `catalog:`.
+2. En `apps/toolbox`: dependencia `workspace:*`, nombre en `transpilePackages`
+   (`next.config.ts`) y una línea `@source` en `app/globals.css`.
+3. Pantallas en `app/tools/<nombre>/` con su provider, adaptador en `lib/`, entrada en
+   `lib/tools-catalog.ts` y rutas en `OFFLINE_ROUTES`.
+4. `pnpm install` en la raíz y `pnpm --dir packages/tool-<nombre> typecheck`.
 
 Contrato de notas de venta:
 
@@ -172,7 +185,7 @@ Visto y sin tocar: el teléfono se muestra agrupado como `656 1234 567`.
 
 ### Fase 2 — Puerto de almacenamiento (dentro del toolbox)
 
-Hecha y probada en local el 2026-11-25.
+Hecha y probada en local el 2026-11-25; en `main`.
 
 - Puertos (`ports.ts`) y provider en la micro app; ya no conoce rutas ni
   `localStorage`.
@@ -189,17 +202,26 @@ Hecha y probada en local el 2026-11-25.
 
 ### Fase 3 — Paquetes
 
-- `pnpm-workspace.yaml` en la raíz solo con `apps/toolbox` y `packages/*`; un
-  lockfile en la raíz.
-- Mover a `packages/ui` y `packages/tool-sales-notes`. El catálogo exporta nombre,
-  descripción e ícono; cada app pone sus rutas.
-- Next: `transpilePackages` y `outputFileTracingRoot`. Tailwind 4: `@source`
-  apuntando a los paquetes.
-- Dockerfile con contexto en la raíz, nueva ruta de `server.js` y `.dockerignore`
-  en la raíz. En Coolify, cambiar `Base Directory` y ruta del Dockerfile **en el
-  mismo momento** del merge. Actualizar la sección 10 de `DEPLOY-COOLIFY.md`.
-- Probar `pnpm install` en `apps/os` y `apps/api`. `api` tiene su propio
-  `pnpm-workspace.yaml`; `os` no y probablemente necesite uno.
+Hecha y probada en local el 2026-11-26.
+
+- Código compartido en `packages/ui` y `packages/tool-sales-notes`; el toolbox solo
+  conserva páginas, adaptador, rutas, textos y la landing.
+- Workspace en la raíz con las mismas versiones que antes. `apps/os` recibió su propio
+  `pnpm-workspace.yaml` para seguir instalándose aparte.
+- **Cambia el despliegue del toolbox.** El build usa la raíz del repo: en Coolify,
+  `Base Directory` pasa a `/` y `Dockerfile Location` a `/apps/toolbox/Dockerfile`.
+  Hay que cambiarlo junto con la llegada de esta fase a `main` (sección 10 de
+  `DEPLOY-COOLIFY.md`).
+
+Pendiente:
+
+- `apps/toolbox/components.json` (CLI de shadcn) aún apunta a la ubicación anterior:
+  por ahora los componentes nuevos se agregan a mano en `packages/ui`.
+- Sin uso hoy, movidos o conservados sin borrar: `back-link`, `compact-page-header`,
+  `dropdown-menu`, `load-more`, `pagination-controls`, `states`, `table`, `tabs`,
+  `tool-card` (con `badge`), `useDebouncedValue` y las dependencias de formularios
+  del toolbox (`react-hook-form`, `yup`).
+- El lint del toolbox no revisa `packages/`.
 
 ### Fase 4 — `os` consume notas de venta
 
@@ -216,6 +238,9 @@ Hecha y probada en local el 2026-11-25.
   | `list()` completo | el listado está paginado |
 
 - El API exige cantidad ≥ 1; el asistente permite menos. Unificar la regla.
+- Error actual de `os`: pide las notas sin límite y el API devuelve 10, así que las
+  más antiguas no salen en la lista ni al vincularlas a un evento. El adaptador debe
+  traer todas las páginas.
 - El vínculo nota–evento entra por un hueco. Hoy `noteId` y `eventId` pueden
   desincronizarse al editar la nota por su propio endpoint.
 
@@ -226,7 +251,7 @@ Corregir este estándar con lo aprendido y elegir la siguiente micro app
 
 ## 7. Cuidados
 
-- `api` y `os` no se tocan en las fases 0–3.
+- `api` y `os` no cambian su código en las fases 0–3.
 - Servidor de pruebas con CPU viejo: mantener `IMAGE_OPTIMIZATION=false`.
 - Cambios en una rama basada en `dev`; `main` es producción.
 - Un paquete compartido afecta a las dos apps: desde la fase 4, compilar ambas antes

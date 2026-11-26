@@ -1,13 +1,16 @@
 /* app/globals.css */
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import './theme.css';
+@import '@el-negocio/ui/theme.css';
+
+/* Tailwind no revisa solo los paquetes: agrega una línea por cada herramienta */
+@source '../../../packages/tool-sales-notes/src';
 
 @custom-variant dark (&:is(.dark *));
 
 /* === Landing: Desierto Chihuahuense ===
    Solo la página con `.landing` lleva esta paleta; las micro apps usan el tema de
-   theme.css. Se aplica sobre <html> para que cubra también el fondo de la página
+   @el-negocio/ui. Se aplica sobre <html> para que cubra también el fondo de la página
    y los avisos emergentes.
    - Las cards son MÁS CLARAS que el fondo, para que "floten" sin sombras.
    - --accent es una arena suave (superficie de hover). */

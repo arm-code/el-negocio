@@ -259,7 +259,8 @@ un recurso aparte en Coolify, desde el mismo repo.
 
 1. **Project → New Resource → Public Git Repository**: `https://github.com/arm-code/el-negocio`,
    rama `main`.
-2. **Build Pack: Dockerfile**. *Base Directory* `/apps/toolbox` y *Dockerfile Location* `/Dockerfile`.
+2. **Build Pack: Dockerfile**. *Base Directory* `/` y *Dockerfile Location*
+   `/apps/toolbox/Dockerfile`. El build parte de la raíz porque usa los paquetes de `packages/`.
    (No uses Docker Compose aquí: el `docker-compose.yml` de la raíz es del otro stack.)
 3. **Variables de entorno**: solo `IMAGE_OPTIMIZATION` (`false` por defecto; `true` en servidores
    modernos, con *Buildtime* marcado; ver sección 9). No hay más.
@@ -269,6 +270,11 @@ un recurso aparte en Coolify, desde el mismo repo.
    (el mismo destino que usa la instancia del pos). Si el dominio apunta hoy a Vercel, borra antes
    ese registro CNAME.
 6. **Deploy** y abre el dominio: debe salir la landing con "Notas de venta".
+
+> **Recurso creado antes de `packages/`:** usaba *Base Directory* `/apps/toolbox` y
+> *Dockerfile Location* `/Dockerfile`. Cambia ambos valores justo cuando `main` reciba la
+> carpeta `packages/`: con la configuración vieja ese build falla, y la nueva no sirve para
+> commits anteriores. Para volver a una versión anterior, restaura los valores viejos.
 
 **Comprobar la PWA** después de desplegar:
 

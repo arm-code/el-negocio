@@ -4,8 +4,8 @@ import { useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Download, Loader2, Upload } from "lucide-react"
 import { toast } from "sonner"
-import { AppBottomSheet } from "@/components/ui/app-bottom-sheet"
-import { Button } from "@/components/ui/button"
+import { AppBottomSheet } from "@el-negocio/ui/app-bottom-sheet"
+import { Button } from "@el-negocio/ui/button"
 import { BackupError, createBackup, importBackup } from "@/lib/backup"
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`

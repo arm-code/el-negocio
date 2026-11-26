@@ -3,11 +3,11 @@ import Link from "next/link"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
+import { Button } from "@el-negocio/ui/button"
 import { InstallBanner } from "@/components/home/install-banner"
 import { ReceiptPreview } from "@/components/home/receipt-preview"
 import { availableTools, upcomingTools } from "@/lib/tools-catalog"
-import { cn } from "@/lib/utils"
+import { cn } from "@el-negocio/ui/utils"
 
 const focusRing = "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
 

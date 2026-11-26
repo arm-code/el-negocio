@@ -3,7 +3,7 @@
 // IMPORTANTE: las claves y el formato son los que ya tienen los usuarios en su
 // navegador. Cambiarlos hace que dejen de ver sus notas.
 
-import { genId, type BusinessInfo, type BusinessInfoStorage, type Note, type NotesStorage } from '@/features/sales-notes'
+import { genId, type BusinessInfo, type BusinessInfoStorage, type Note, type NotesStorage } from '@el-negocio/tool-sales-notes'
 
 const NOTES_KEY = 'bt:sales-notes:v1'
 const SEQ_KEY = 'bt:sales-notes:seq'

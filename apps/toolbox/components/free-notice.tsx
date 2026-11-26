@@ -12,7 +12,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@el-negocio/ui/alert-dialog"
 import { useHasMounted } from "@/hooks/useHasMounted"
 import { BRAND } from "@/lib/brand"
 
