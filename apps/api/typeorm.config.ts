@@ -10,7 +10,7 @@ export default new DataSource({
     username: process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    schema: 'armsolutions',
+    schema: 'elnegocio',
     entities: ['dist/src/**/*.entity{.ts,.js}'],
     migrations: ['dist/src/migrations/*{.ts,.js}'],
     // SSL solo cuando la base lo requiere (Supabase). Postgres local: DB_SSL=false

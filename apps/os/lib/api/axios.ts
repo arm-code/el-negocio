@@ -10,7 +10,7 @@ export const axiosInstance = axios.create({
   withCredentials: true,
 });
 
-// Interceptor para desempaquetar la respuesta de la API de ARM Solutions
+// Interceptor para desempaquetar la respuesta de la El Negocio API
 axiosInstance.interceptors.response.use(
   (response) => {
     // La API responde con { success: true, message: "...", data: { ... } }

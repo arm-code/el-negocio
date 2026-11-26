@@ -10,7 +10,7 @@ import {
 export class UpdateBusinessConfigDto {
   @ApiPropertyOptional({
     description: 'Nombre comercial o razón social de la empresa.',
-    example: 'Eventos Mendoza',
+    example: 'Papelería López',
   })
   @IsOptional()
   @IsString()
@@ -45,7 +45,7 @@ export class UpdateBusinessConfigDto {
 
   @ApiPropertyOptional({
     description: 'Correo electrónico institucional.',
-    example: 'contacto@eventosmendoza.com',
+    example: 'contacto@papelerialopez.com',
   })
   @IsOptional()
   @IsEmail({}, { message: 'email debe ser un correo válido.' })

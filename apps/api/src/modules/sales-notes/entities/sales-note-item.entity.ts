@@ -2,7 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/entities/base.entity';
 import { SalesNote } from './sales-note.entity';
 
-@Entity({ name: 'sales_note_items', schema: 'armsolutions' })
+@Entity({ name: 'sales_note_items', schema: 'elnegocio' })
 @Index(['noteId'])
 export class SalesNoteItem extends BaseEntity {
   @ManyToOne(() => SalesNote, (note) => note.items, {

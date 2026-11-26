@@ -38,6 +38,22 @@ function readNotes(): Note[] {
   return [...notes].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
 }
 
+/** Todo lo que las notas de venta guardan en este dispositivo (para respaldar). */
+export function readLocalData() {
+  return {
+    salesNotes: readNotes(),
+    seq: read<number>(SEQ_KEY, 0),
+    businessInfo: { name: '', phone: '', ...read<Partial<BusinessInfo>>(BUSINESS_KEY, {}) },
+  }
+}
+
+/** Reemplaza los datos locales. Las notas van primero: es lo que puede no caber. */
+export function writeLocalData(data: ReturnType<typeof readLocalData>) {
+  write(NOTES_KEY, data.salesNotes)
+  write(SEQ_KEY, data.seq)
+  write(BUSINESS_KEY, data.businessInfo)
+}
+
 export const localNotesStorage: NotesStorage = {
   async list() {
     return readNotes()

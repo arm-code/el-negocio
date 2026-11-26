@@ -186,7 +186,7 @@ export function BusinessInfoSheet({ open, onOpenChange }: { open: boolean; onOpe
                 </div>
 
                 <FormField id="name" label="Nombre del negocio" error={errors.name?.message}>
-                    <Input id="name" autoComplete="organization" maxLength={100} placeholder="Ej. Eventos Mendoza" {...invalid('name')} {...register('name')} />
+                    <Input id="name" autoComplete="organization" maxLength={100} placeholder="Ej. Papelería López" {...invalid('name')} {...register('name')} />
                 </FormField>
 
                 <div className="space-y-3 p-4 bg-gray-50 rounded-2xl border border-gray-100">

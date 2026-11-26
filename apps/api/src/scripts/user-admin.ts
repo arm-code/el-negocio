@@ -75,9 +75,9 @@ async function main() {
       const { rows } = await db.query(
         `SELECT u.email, u.is_active, (u.password_hash IS NOT NULL) AS has_password,
                 coalesce(string_agg(b.slug || ':' || bu.role, ', '), '-') AS negocios
-           FROM armsolutions.users u
-           LEFT JOIN armsolutions.business_users bu ON bu.user_id = u.id
-           LEFT JOIN armsolutions.businesses b ON b.id = bu.business_id
+           FROM elnegocio.users u
+           LEFT JOIN elnegocio.business_users bu ON bu.user_id = u.id
+           LEFT JOIN elnegocio.businesses b ON b.id = bu.business_id
           GROUP BY u.id ORDER BY u.email`,
       );
       console.table(rows);
@@ -96,7 +96,7 @@ async function main() {
       const hash = await bcrypt.hash(password, 12);
 
       const { rows } = await db.query(
-        `INSERT INTO armsolutions.users (email, password_hash) VALUES ($1, $2)
+        `INSERT INTO elnegocio.users (email, password_hash) VALUES ($1, $2)
          ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, updated_at = now()
          RETURNING id`,
         [email, hash],
@@ -105,10 +105,10 @@ async function main() {
       console.log(`OK: contraseña guardada para ${email}`);
 
       if (slug) {
-        const biz = await db.query(`SELECT id FROM armsolutions.businesses WHERE slug = $1`, [slug]);
+        const biz = await db.query(`SELECT id FROM elnegocio.businesses WHERE slug = $1`, [slug]);
         if (!biz.rows[0]) throw new Error(`No existe el negocio "${slug}".`);
         await db.query(
-          `INSERT INTO armsolutions.business_users (business_id, user_id, role)
+          `INSERT INTO elnegocio.business_users (business_id, user_id, role)
            VALUES ($1, $2, 'admin') ON CONFLICT (business_id, user_id) DO NOTHING`,
           [biz.rows[0].id, userId],
         );
@@ -124,25 +124,25 @@ async function main() {
         throw new Error('El slug solo puede tener minúsculas, números y guiones.');
       }
       // Una instancia = un negocio (los códigos de catálogo son únicos en toda la base)
-      const existing = await db.query(`SELECT slug FROM armsolutions.businesses LIMIT 1`);
+      const existing = await db.query(`SELECT slug FROM elnegocio.businesses LIMIT 1`);
       if (existing.rows[0]) {
         throw new Error(`Esta instancia ya tiene un negocio ("${existing.rows[0].slug}"). Usa una base nueva para otro negocio.`);
       }
       await db.query('BEGIN');
       try {
         const { rows } = await db.query(
-          `INSERT INTO armsolutions.businesses (name, slug) VALUES ($1, $2) RETURNING id`,
+          `INSERT INTO elnegocio.businesses (name, slug) VALUES ($1, $2) RETURNING id`,
           [name, slug],
         );
         const id = rows[0].id as string;
         await db.query(
-          `INSERT INTO armsolutions.payment_methods (code, name, business_id) VALUES
+          `INSERT INTO elnegocio.payment_methods (code, name, business_id) VALUES
              ('CASH','Efectivo',$1), ('TRANSFER','Transferencia',$1), ('CARD','Tarjeta',$1)
            ON CONFLICT DO NOTHING`,
           [id],
         );
         await db.query(
-          `INSERT INTO armsolutions.transaction_categories (code, name, business_id) VALUES
+          `INSERT INTO elnegocio.transaction_categories (code, name, business_id) VALUES
              ('RENTA','Renta de mobiliario/equipo',$1), ('GASOLINA','Gasolina',$1),
              ('COMIDAS','Comidas',$1), ('SUELDOS','Sueldos',$1), ('FLETES','Fletes',$1),
              ('MANTENIMIENTO','Mantenimiento',$1), ('OTROS','Otros',$1)

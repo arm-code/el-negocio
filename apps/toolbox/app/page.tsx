@@ -24,8 +24,11 @@ export default function HomePage() {
 
           <div className="mx-auto grid max-w-4xl gap-10 px-4 pb-14 pt-10 sm:pt-16 md:grid-cols-[1.15fr_0.85fr] md:items-center md:gap-12 md:pb-20">
             <div className="space-y-6">
+              <p className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                Gratis y sin cuenta
+              </p>
               <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
-                Tu changarro, organizado desde el celular
+                Tu negocio, organizado desde el celular
               </h1>
               <p className="max-w-prose text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
                 Haz notas de venta y resuelve lo del día a día con herramientas

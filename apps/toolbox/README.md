@@ -1,61 +1,45 @@
-# Business Toolbox by arm-solutions
+# El Negocio — herramientas gratuitas
 
-A minimalist toolbox for business management, designed to be fast, responsive, and mobile-friendly (PWA).
+Sitio público de micro aplicaciones para pequeños negocios: sin cuenta, pensado primero
+para celular e instalable (PWA). Es independiente del sistema de paga
+([El Negocio OS](../os/README.md)): no comparte datos, sesión ni servidor con él.
 
-#### About Author
+#### Autor
 - Ing. Alexis Romero Mendoza
-- Date started: 2026-01-29
+- Inicio: 2026-01-29
 
-#### Project Vision
-Inspired by ILovePDF, this project is divided into micro-tools according to business needs (Sales, Quotes, Notes, etc.). It aims to provide a "single-purpose tool" experience for small businesses.
+## Arrancar en local
 
-### ⚙️ Getting Started
-This app lives in the `elchangarro` monorepo (`apps/toolbox`).
-1. Clone the repository
-2. `pnpm --dir apps/toolbox install`
-3. `pnpm --dir apps/toolbox dev -p 3001`
+Desde la raíz del repo:
 
-Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
-Port 3001 avoids a clash with `apps/os`. The full guide (in Spanish) is in the
-[root README](../../README.md#desarrollo-local).
-
-#### No backend, no environment variables
-The tools run entirely in the browser: data (e.g. sales notes) is stored in the device's
-`localStorage` and there is no account or login. Nothing needs to be configured.
-
----
-
-### 🎨 Styling Guidelines
-To maintain the minimalist and premium look of **arm-solutions**, follow these rules:
-
-1. **Colors**: Use only theme tokens (`bg-primary`, `text-muted-foreground`...). Micro apps use neutral surfaces plus one accent (`app/theme.css`); the colorful palette is for the landing page only. See [the visual standard](../../docs/PACKAGES-TOOLS.md).
-2. **Typography**: Use the Geist font family provided.
-3. **PWA First**: Layouts must be mobile-first and responsive. Ensure that tools are usable on small screens.
-4. **Minimalism**: Focus on whitespace, clean lines, and clear typography. Avoid clutter.
-5. **Interactive**: Use subtle micro-animations and hover effects to make the app feel alive.
-
----
-
-### 📂 Folders Structure
-Follow this organization for new features:
-
-- **Lo específico vive dentro de la herramienta** (`app/tools/[tool-name]`)
-- **Lo reutilizable vive en carpetas globales** (`components/`, `lib/`, `types/`)
-
-```text
-app/
-├── layout.tsx
-├── page.tsx               # Landing Page
-├── catalog/
-│   └── page.tsx           # Services Catalog (ILovePDF style)
-└── tools/
-    └── sale-note/         # Tool-specific logic
-        ├── page.tsx
-        ├── components/
-        └── services/
-
-components/
-├── ui/                    # shadcn components
-├── layout/                # Navbar, Footer
-└── shared/                # Global components (Logo, etc.)
+```bash
+pnpm --dir apps/toolbox install
+pnpm --dir apps/toolbox dev -p 3001
 ```
+
+Abre [http://localhost:3001](http://localhost:3001). El puerto 3001 evita chocar con
+`apps/os`. La guía completa está en el
+[README principal](../../README.md#desarrollo-local).
+
+## Sin backend ni variables de entorno
+
+Todo corre en el navegador: los datos (p. ej. las notas de venta) se guardan en el
+`localStorage` del dispositivo. No hay nada que configurar.
+
+## Reglas de identidad
+
+Para que nadie confunda este sitio con el panel de un negocio:
+
+- Toda micro app se monta bajo `app/tools/`: así hereda la barra fija **"El Negocio ·
+  Gratis"**, el aviso de la primera vez y el botón de **Respaldo**
+  (`app/tools/layout.tsx`).
+- El nombre de la marca sale de `lib/brand.ts`.
+- El color ladrillo es de este sitio; las instancias de El Negocio OS usan violeta.
+- Una micro app nueva que guarde datos debe incluirlos en `lib/backup.ts`.
+- No cambies las claves de `localStorage` ya publicadas: la gente dejaría de ver sus datos.
+
+## Estilo
+
+Usa solo los tokens del tema (`bg-primary`, `text-muted-foreground`...). Las micro apps
+llevan superficies neutras y un acento (`app/theme.css`); la paleta colorida es solo de
+la página de inicio. Ver [el estándar visual](../../docs/PACKAGES-TOOLS.md).

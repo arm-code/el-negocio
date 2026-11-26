@@ -16,7 +16,7 @@ export class NormalizeFileUrls1755000000000 implements MigrationInterface {
     ];
     for (const [table, column] of targets) {
       await queryRunner.query(`
-        UPDATE armsolutions.${table}
+        UPDATE elnegocio.${table}
            SET ${column} = regexp_replace(${column}, '^https?://[^/]+(/files/)', '\\1')
          WHERE ${column} ~ '^https?://[^/]+/files/'
       `);

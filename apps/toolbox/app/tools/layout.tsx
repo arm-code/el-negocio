@@ -1,14 +1,19 @@
 // app/tools/layout.tsx
+import { FreeNotice } from '@/components/free-notice'
+import { ToolBar } from '@/components/tool-bar'
+
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
   return (
     // min-h-dvh: en móvil 100vh incluye la barra del navegador y provoca scroll de más.
     <div className="flex min-h-dvh flex-col">
+      <ToolBar />
       <main className="flex-1">
-        {/* Los max() equivalen al py-8 de antes, pero respetan el notch y la barra de gestos en la PWA instalada */}
-        <div className="mx-auto max-w-4xl px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(2rem,env(safe-area-inset-top))]">
+        {/* El max() respeta la barra de gestos en la PWA instalada; el notch lo cubre la barra */}
+        <div className="mx-auto max-w-4xl px-4 pb-[max(2rem,env(safe-area-inset-bottom))] pt-6">
           {children}
         </div>
       </main>
+      <FreeNotice />
     </div>
   )
 }

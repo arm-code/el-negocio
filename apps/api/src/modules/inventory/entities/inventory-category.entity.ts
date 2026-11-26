@@ -11,7 +11,7 @@ export interface CategoryAttributeDefinition {
   required: boolean;
 }
 
-@Entity({ name: 'categories_inv', schema: 'armsolutions' })
+@Entity({ name: 'categories_inv', schema: 'elnegocio' })
 @Index(['businessId'])
 @Index(['ownerId'])
 export class InventoryCategory extends BaseEntity {

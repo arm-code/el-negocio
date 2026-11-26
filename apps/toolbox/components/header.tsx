@@ -7,6 +7,7 @@ import { useTheme } from "next-themes"
 import { Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useHasMounted } from "@/hooks/useHasMounted"
+import { BRAND } from "@/lib/brand"
 
 function ThemeToggle() {
     const { resolvedTheme, setTheme } = useTheme()
@@ -40,13 +41,13 @@ export function Header() {
                 >
                     <Image
                         src="/icon_192x192_nobg.png"
-                        alt="El Changarro"
+                        alt=""
                         width={36}
                         height={36}
                         className="rounded-lg object-contain"
                         priority
                     />
-                    <span className="text-lg font-semibold tracking-tight sm:text-xl">El Changarro</span>
+                    <span className="text-lg font-semibold tracking-tight sm:text-xl">{BRAND.name}</span>
                 </Link>
 
                 <div className="flex items-center gap-1 sm:gap-2">

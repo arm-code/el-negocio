@@ -10,7 +10,7 @@ import { Transaction } from '../../transactions/entities/transaction.entity';
  * `PaymentMethod`: es un dominio cerrado pero extensible, y normalizarlo
  * evita duplicación y errores de escritura del valor de texto.
  */
-@Entity({ name: 'transaction_categories', schema: 'armsolutions' })
+@Entity({ name: 'transaction_categories', schema: 'elnegocio' })
 @Index(['businessId', 'code'], { unique: true })
 export class TransactionCategory extends BaseEntity {
   /** Negocio al que pertenece esta categoría. */

@@ -7,7 +7,7 @@ export class AddPublicLandingFieldsToBusinessConfig1754700000000
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      ALTER TABLE armsolutions.business_configs
+      ALTER TABLE elnegocio.business_configs
         ADD COLUMN IF NOT EXISTS description TEXT,
         ADD COLUMN IF NOT EXISTS history TEXT,
         ADD COLUMN IF NOT EXISTS mission TEXT,
@@ -18,7 +18,7 @@ export class AddPublicLandingFieldsToBusinessConfig1754700000000
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      ALTER TABLE armsolutions.business_configs
+      ALTER TABLE elnegocio.business_configs
         DROP COLUMN IF EXISTS description,
         DROP COLUMN IF EXISTS history,
         DROP COLUMN IF EXISTS mission,

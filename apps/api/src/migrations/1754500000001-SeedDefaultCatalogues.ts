@@ -20,10 +20,10 @@ export class SeedDefaultCatalogues1754500000001 implements MigrationInterface {
       DECLARE
         biz RECORD;
       BEGIN
-        FOR biz IN SELECT id FROM armsolutions.businesses LOOP
+        FOR biz IN SELECT id FROM elnegocio.businesses LOOP
 
           -- payment_methods por negocio
-          INSERT INTO armsolutions.payment_methods (code, name, business_id)
+          INSERT INTO elnegocio.payment_methods (code, name, business_id)
           VALUES
             ('CASH',     'Efectivo',       biz.id),
             ('TRANSFER', 'Transferencia',  biz.id),
@@ -31,7 +31,7 @@ export class SeedDefaultCatalogues1754500000001 implements MigrationInterface {
           ON CONFLICT DO NOTHING;
 
           -- transaction_categories por negocio
-          INSERT INTO armsolutions.transaction_categories (code, name, business_id)
+          INSERT INTO elnegocio.transaction_categories (code, name, business_id)
           VALUES
             ('RENTA',         'Renta de mobiliario/equipo', biz.id),
             ('GASOLINA',      'Gasolina',                   biz.id),
@@ -57,23 +57,23 @@ export class SeedDefaultCatalogues1754500000001 implements MigrationInterface {
         old_cat RECORD;
         new_cat_id UUID;
       BEGIN
-        FOR biz IN SELECT id FROM armsolutions.businesses LOOP
+        FOR biz IN SELECT id FROM elnegocio.businesses LOOP
 
           -- Reasignar payment_method_id en transactions al equivalente del negocio
           FOR old_pm IN
             SELECT DISTINCT pm.id, pm.code
-            FROM armsolutions.payment_methods pm
-            JOIN armsolutions.transactions t ON t.payment_method_id = pm.id
+            FROM elnegocio.payment_methods pm
+            JOIN elnegocio.transactions t ON t.payment_method_id = pm.id
             WHERE t.business_id = biz.id
               AND pm.business_id IS NULL
           LOOP
             SELECT id INTO new_pm_id
-            FROM armsolutions.payment_methods
+            FROM elnegocio.payment_methods
             WHERE code = old_pm.code AND business_id = biz.id
             LIMIT 1;
 
             IF new_pm_id IS NOT NULL THEN
-              UPDATE armsolutions.transactions
+              UPDATE elnegocio.transactions
                 SET payment_method_id = new_pm_id
                 WHERE business_id = biz.id
                   AND payment_method_id = old_pm.id;
@@ -83,18 +83,18 @@ export class SeedDefaultCatalogues1754500000001 implements MigrationInterface {
           -- Reasignar category_id en transactions al equivalente del negocio
           FOR old_cat IN
             SELECT DISTINCT tc.id, tc.code
-            FROM armsolutions.transaction_categories tc
-            JOIN armsolutions.transactions t ON t.category_id = tc.id
+            FROM elnegocio.transaction_categories tc
+            JOIN elnegocio.transactions t ON t.category_id = tc.id
             WHERE t.business_id = biz.id
               AND tc.business_id IS NULL
           LOOP
             SELECT id INTO new_cat_id
-            FROM armsolutions.transaction_categories
+            FROM elnegocio.transaction_categories
             WHERE code = old_cat.code AND business_id = biz.id
             LIMIT 1;
 
             IF new_cat_id IS NOT NULL THEN
-              UPDATE armsolutions.transactions
+              UPDATE elnegocio.transactions
                 SET category_id = new_cat_id
                 WHERE business_id = biz.id
                   AND category_id = old_cat.id;
@@ -108,19 +108,19 @@ export class SeedDefaultCatalogues1754500000001 implements MigrationInterface {
     // Eliminar registros globales (business_id IS NULL) de catálogos
     // que ya no se usan por ninguna transacción activa
     await queryRunner.query(`
-      DELETE FROM armsolutions.payment_methods
+      DELETE FROM elnegocio.payment_methods
         WHERE business_id IS NULL
           AND id NOT IN (
-            SELECT DISTINCT payment_method_id FROM armsolutions.transactions
+            SELECT DISTINCT payment_method_id FROM elnegocio.transactions
             WHERE payment_method_id IS NOT NULL
           );
     `);
 
     await queryRunner.query(`
-      DELETE FROM armsolutions.transaction_categories
+      DELETE FROM elnegocio.transaction_categories
         WHERE business_id IS NULL
           AND id NOT IN (
-            SELECT DISTINCT category_id FROM armsolutions.transactions
+            SELECT DISTINCT category_id FROM elnegocio.transactions
             WHERE category_id IS NOT NULL
           );
     `);
@@ -129,22 +129,22 @@ export class SeedDefaultCatalogues1754500000001 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Eliminar registros de catálogos que tienen business_id (revertir a globales)
     await queryRunner.query(`
-      DELETE FROM armsolutions.payment_methods WHERE business_id IS NOT NULL;
+      DELETE FROM elnegocio.payment_methods WHERE business_id IS NOT NULL;
     `);
     await queryRunner.query(`
-      DELETE FROM armsolutions.transaction_categories WHERE business_id IS NOT NULL;
+      DELETE FROM elnegocio.transaction_categories WHERE business_id IS NOT NULL;
     `);
 
     // Re-crear los catálogos globales originales
     await queryRunner.query(`
-      INSERT INTO armsolutions.payment_methods (code, name)
+      INSERT INTO elnegocio.payment_methods (code, name)
       VALUES
         ('CASH', 'Efectivo'),
         ('TRANSFER', 'Transferencia')
       ON CONFLICT (code) DO NOTHING;
     `);
     await queryRunner.query(`
-      INSERT INTO armsolutions.transaction_categories (code, name)
+      INSERT INTO elnegocio.transaction_categories (code, name)
       VALUES
         ('RENTA',         'Renta de mobiliario/equipo'),
         ('GASOLINA',      'Gasolina'),

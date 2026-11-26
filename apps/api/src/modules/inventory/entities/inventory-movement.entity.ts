@@ -15,7 +15,7 @@ export interface StockSnapshot {
   rented: number;
 }
 
-@Entity({ name: 'movements_inv', schema: 'armsolutions' })
+@Entity({ name: 'movements_inv', schema: 'elnegocio' })
 @Index(['businessId'])
 @Index(['ownerId'])
 @Index(['itemId'])
