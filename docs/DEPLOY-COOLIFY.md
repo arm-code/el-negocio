@@ -224,7 +224,27 @@ CONTAINER=$PG bash apps/api/scripts/rename-db-to-elnegocio.sh
 
 Todos tendrán que **iniciar sesión otra vez** (cambió el nombre de la cookie). Los
 respaldos antiguos se pueden seguir restaurando: `restore-backup.sh` los convierte.
-Actualiza también la ruta de los respaldos en el cron (sección 5).
+Actualiza también la ruta de los respaldos en el cron (sección 5). Si tu usuario no
+pertenece al grupo `docker`, antepón `sudo` a `docker` y usa
+`sudo CONTAINER=... bash ...` para los scripts.
+
+#### Volver atrás
+
+Ten el script en el servidor **antes** de convertir. Devuelve los nombres anteriores
+sin borrar ni restaurar datos:
+
+```bash
+docker stop <contenedor-api>        # el que esté encendido, si hay alguno
+CONTAINER=<contenedor-postgres> bash apps/api/scripts/revert-db-rename.sh
+```
+
+Después enciende la versión anterior. Los nombres de los contenedores cambian en cada
+despliegue; compruébalos con `docker ps -a`.
+
+- Si **no se desplegó nada** (p. ej., falló la compilación) y los contenedores
+  anteriores siguen ahí: `docker start <contenedor-api-anterior>`.
+- Si ya fueron reemplazados: en Coolify, despliega el **commit anterior** (anótalo
+  antes, en el historial de despliegues).
 
 ### 11.3 Cambiar el dominio del sitio gratuito
 
