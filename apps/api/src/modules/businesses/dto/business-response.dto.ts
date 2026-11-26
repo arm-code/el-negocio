@@ -7,10 +7,10 @@ export class BusinessResponseDto {
   @ApiProperty({ example: 'f1a1b2c4-1234-4d5e-8f6a-000000000001' })
   id: string;
 
-  @ApiProperty({ example: 'Eventos Mendoza' })
+  @ApiProperty({ example: 'Papelería López' })
   name: string;
 
-  @ApiProperty({ example: 'eventos-mendoza' })
+  @ApiProperty({ example: 'papeleria-lopez' })
   slug: string;
 
   @ApiProperty({ example: 'https://cdn.example.com/logo.png', nullable: true })

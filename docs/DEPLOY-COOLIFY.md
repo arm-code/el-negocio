@@ -15,14 +15,14 @@ y `/files` hacia él (mismo origen: sin CORS ni cookies entre dominios).
 
 ## 0. Antes de empezar
 
-- El repo `arm-code/elchangarro` en GitHub (rama `main`).
-- Dominio de la instancia, p. ej. `eventosmendoza.dejuarez.mx`, apuntando al tunnel
+- El repo `arm-code/el-negocio` en GitHub (rama `main`).
+- Dominio de la instancia, p. ej. `mi-negocio.dejuarez.mx`, apuntando al tunnel
   de Cloudflare → proxy de Coolify.
 - Un respaldo reciente de tu base y los archivos subidos (ver sección 3).
 
 ## 1. Crear el recurso
 
-1. **Project → New Resource → Docker Compose** (origen: GitHub, repo `arm-code/elchangarro`,
+1. **Project → New Resource → Docker Compose** (origen: GitHub, repo `arm-code/el-negocio`,
    rama `main`, *Base Directory* `/`, *Compose file* `/docker-compose.yml`).
 2. **Variables de entorno** (ver `.env.example`):
 
@@ -30,14 +30,14 @@ y `/files` hacia él (mismo origen: sin CORS ni cookies entre dominios).
    |---|---|
    | `POSTGRES_PASSWORD` | `openssl rand -hex 24` |
    | `JWT_SECRET` | `openssl rand -hex 48` (el mismo lo usan API y front) |
-   | `BUSINESS_SLUG` | `eventosmendoza` |
-   | `SITE_URL` | `https://eventosmendoza.dejuarez.mx` (sin `/` final) |
+   | `BUSINESS_SLUG` | `mi-negocio` |
+   | `SITE_URL` | `https://mi-negocio.dejuarez.mx` (sin `/` final) |
    | `DOCS_PASSWORD` | cualquier valor largo |
    | `IMAGE_OPTIMIZATION` | `false` en CPUs viejos (máquina de pruebas); `true` en servidores modernos (ver sección 9) |
 
    `SITE_URL` e `IMAGE_OPTIMIZATION` se incorporan al compilar el front: si los cambias, hay que
    volver a desplegar (en Coolify, mantén marcada la casilla *Buildtime* de ambas).
-3. **Dominio**: en el servicio `web`, dominio `https://eventosmendoza.dejuarez.mx`, puerto **3000**.
+3. **Dominio**: en el servicio `web`, dominio `https://mi-negocio.dejuarez.mx`, puerto **3000**.
    Los demás servicios no llevan dominio.
 4. **Deploy.** La primera vez corre las migraciones sobre una base vacía y el API arranca,
    pero el sitio mostrará "no encontrado" hasta cargar los datos (sección 3).
@@ -53,7 +53,7 @@ y `/files` hacia él (mismo origen: sin CORS ni cookies entre dominios).
 
 ```bash
 cd apps/api
-./scripts/backup.sh                       # → backups/changarro-<fecha>.sql.gz
+./scripts/backup.sh                       # → backups/elnegocio-<fecha>.sql.gz
 docker run --rm -v <volumen_storage_local>:/data alpine tar czf - -C /data . > storage.tgz
 ```
 (`docker volume ls | grep storage` te dice el nombre del volumen local.)
@@ -64,8 +64,8 @@ docker run --rm -v <volumen_storage_local>:/data alpine tar czf - -C /data . > s
 # nombres reales: docker ps --format '{{.Names}}'
 PG=<contenedor-postgres>;  API=<contenedor-api>
 
-# 1) Base de datos (pide escribir "changarro" para confirmar; REEMPLAZA los datos)
-CONTAINER=$PG ./apps/api/scripts/restore-backup.sh changarro-XXXX.sql.gz
+# 1) Base de datos (pide escribir "elnegocio" para confirmar; REEMPLAZA los datos)
+CONTAINER=$PG ./apps/api/scripts/restore-backup.sh elnegocio-XXXX.sql.gz
 
 # 2) Archivos subidos al volumen del API (el volumen exacto se lee del propio contenedor)
 VOL=$(docker inspect $API --format '{{range .Mounts}}{{if eq .Destination "/app/storage"}}{{.Name}}{{end}}{{end}}')
@@ -83,7 +83,7 @@ Los usuarios y sus contraseñas ya vienen en el respaldo. Para crear o cambiar u
 
 ```bash
 docker exec -it $API node dist/src/scripts/user-admin.js list
-docker exec -it $API node dist/src/scripts/user-admin.js set-password correo@ejemplo.com --business eventosmendoza
+docker exec -it $API node dist/src/scripts/user-admin.js set-password correo@ejemplo.com --business mi-negocio
 ```
 
 ## 5. Backups (hazlo desde el primer día)
@@ -91,7 +91,7 @@ docker exec -it $API node dist/src/scripts/user-admin.js set-password correo@eje
 Cron en el servidor, todos los días a las 3am (ajusta rutas y contenedor):
 
 ```
-0 3 * * * CONTAINER=<contenedor-postgres> BACKUP_DIR=/srv/backups/changarro /ruta/al/repo/apps/api/scripts/backup.sh >> /srv/backups/changarro/backup.log 2>&1
+0 3 * * * CONTAINER=<contenedor-postgres> BACKUP_DIR=/srv/backups/elnegocio /ruta/al/repo/apps/api/scripts/backup.sh >> /srv/backups/elnegocio/backup.log 2>&1
 ```
 
 Guarda además una copia fuera del servidor (otro disco, tu PC). Los archivos subidos
@@ -168,7 +168,7 @@ sin SSE4.2). Al pasar a la máquina de producción, repasa esta lista en orden.
 backups** (las notas de venta se guardan en el navegador de cada visitante). Se despliega como
 un recurso aparte en Coolify, desde el mismo repo.
 
-1. **Project → New Resource → Public Git Repository**: `https://github.com/arm-code/elchangarro`,
+1. **Project → New Resource → Public Git Repository**: `https://github.com/arm-code/el-negocio`,
    rama `main`.
 2. **Build Pack: Dockerfile**. *Base Directory* `/apps/toolbox` y *Dockerfile Location* `/Dockerfile`.
    (No uses Docker Compose aquí: el `docker-compose.yml` de la raíz es del otro stack.)
@@ -191,3 +191,50 @@ un recurso aparte en Coolify, desde el mismo repo.
 
 Para actualizar: push a `main` → Redeploy. Si el front se reinicia en bucle o las imágenes dan 502,
 es el mismo problema de `IMAGE_OPTIMIZATION` de la sección 9.
+
+## 11. Cambio de nombre a "El Negocio"
+
+Solo para lo que ya estaba desplegado o instalado con los nombres anteriores. Hazlo
+en este orden.
+
+### 11.1 Repositorio
+
+1. En GitHub: **Settings → General → Repository name** → `el-negocio`.
+2. En cada recurso de Coolify, cambia el repositorio a `arm-code/el-negocio`.
+3. En tu máquina: `git remote set-url origin https://github.com/arm-code/el-negocio.git`
+
+### 11.2 Una instancia de El Negocio OS que ya tiene datos
+
+La base y su usuario pasan de `changarro` a `elnegocio`, y el schema de
+`armsolutions` a `elnegocio`. **Si redespliegas sin convertirla, `migrate` falla** y
+el sitio no arranca (los datos no se tocan).
+
+```bash
+PG=<contenedor-postgres>;  API=<contenedor-api>
+
+# 1) Respaldo con los nombres anteriores
+docker exec $PG pg_dump -U changarro -d changarro --no-owner --no-acl | gzip > antes-del-cambio.sql.gz
+
+# 2) Detener el API y convertir (la contraseña se conserva)
+docker stop $API
+CONTAINER=$PG bash apps/api/scripts/rename-db-to-elnegocio.sh
+
+# 3) Redeploy en Coolify
+```
+
+Todos tendrán que **iniciar sesión otra vez** (cambió el nombre de la cookie). Los
+respaldos antiguos se pueden seguir restaurando: `restore-backup.sh` los convierte.
+Actualiza también la ruta de los respaldos en el cron (sección 5).
+
+### 11.3 Cambiar el dominio del sitio gratuito
+
+Los datos de cada visitante viven en su navegador **y ligados al dominio**. En un
+dominio nuevo no aparecen sus notas, y redirigir el dominio viejo las deja
+inaccesibles.
+
+1. Despliega primero esta versión **en el dominio actual**: ya trae el botón
+   **Respaldo**.
+2. Publica el dominio nuevo y deja el anterior funcionando un tiempo.
+3. Pide a quien tenga notas que descargue su respaldo en el dominio viejo y lo cargue
+   en el nuevo (y que vuelva a instalar la app).
+4. Solo entonces redirige o apaga el dominio viejo.

@@ -28,19 +28,22 @@ case "${1:-}" in
     ;;
   restore)
     [ -s import/armsolutions.sql ] || { echo "Falta import/armsolutions.sql" >&2; exit 1; }
-    PSQL=(docker compose exec -T postgres psql -U changarro -d changarro -v ON_ERROR_STOP=1)
+    PSQL=(docker compose exec -T postgres psql -U elnegocio -d elnegocio -v ON_ERROR_STOP=1)
 
     # Seguridad: no pisar una base que ya tiene tablas
-    N=$("${PSQL[@]}" -tA -c "select count(*) from information_schema.tables where table_schema='armsolutions'")
-    [ "$N" = "0" ] || { echo "armsolutions ya tiene $N tablas; usa un volumen nuevo" >&2; exit 1; }
+    N=$("${PSQL[@]}" -tA -c "select count(*) from information_schema.tables where table_schema='elnegocio'")
+    [ "$N" = "0" ] || { echo "elnegocio ya tiene $N tablas; usa un volumen nuevo" >&2; exit 1; }
 
     # 1) usuarios primero (las FK de business_users apuntan a auth.users)
     if [ -s import/auth_users.csv ]; then
       "${PSQL[@]}" -c "\copy auth.users (id, email) from stdin with csv" < import/auth_users.csv
     fi
-    # 2) esquema + datos (el schema ya existe por el init de compose)
-    grep -v '^CREATE SCHEMA armsolutions;' import/armsolutions.sql | "${PSQL[@]}" -q
-    echo "OK: tablas cargadas: $("${PSQL[@]}" -tA -c "select count(*) from information_schema.tables where table_schema='armsolutions'")"
+    # 2) esquema + datos. En Supabase el esquema se llama `armsolutions`: se carga así
+    #    y se renombra, en lugar del vacío que creó el init de compose.
+    "${PSQL[@]}" -q -c "DROP SCHEMA IF EXISTS elnegocio;"
+    "${PSQL[@]}" -q < import/armsolutions.sql
+    "${PSQL[@]}" -q -c "ALTER SCHEMA armsolutions RENAME TO elnegocio;"
+    echo "OK: tablas cargadas: $("${PSQL[@]}" -tA -c "select count(*) from information_schema.tables where table_schema='elnegocio'")"
     ;;
   *) echo "Uso: $0 export|restore" >&2; exit 1 ;;
 esac

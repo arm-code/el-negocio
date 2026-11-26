@@ -16,16 +16,16 @@ docker run --rm postgres:17-alpine psql "$SUPABASE_DB_URL" \
   -c "\copy (select id, lower(email), encrypted_password from auth.users where encrypted_password is not null and email is not null) to stdout with csv" \
   > import/users_hashes.csv
 
-PSQL=(docker compose exec -T postgres psql -U changarro -d changarro -v ON_ERROR_STOP=1)
+PSQL=(docker compose exec -T postgres psql -U elnegocio -d elnegocio -v ON_ERROR_STOP=1)
 
 {
   echo "create temp table tmp_hashes (id uuid, email text, hash text);"
   echo "\\copy tmp_hashes from stdin with csv"
   cat import/users_hashes.csv
   echo "\\."
-  echo "update armsolutions.users u set password_hash = t.hash, updated_at = now()"
+  echo "update elnegocio.users u set password_hash = t.hash, updated_at = now()"
   echo "  from tmp_hashes t where u.id = t.id and t.hash like '\$2%';"
-  echo "select count(*) as con_contrasena from armsolutions.users where password_hash is not null;"
+  echo "select count(*) as con_contrasena from elnegocio.users where password_hash is not null;"
 } | "${PSQL[@]}" -q
 
 rm -f import/users_hashes.csv

@@ -68,8 +68,8 @@ export class AuthController {
   }
 
   /**
-   * - COOKIE_DOMAIN: p. ej. ".dejuarez.mx" para compartir la cookie entre el
-   *   front (eventosmendoza.dejuarez.mx) y el API (api.dejuarez.mx).
+   * - COOKIE_DOMAIN: déjalo VACÍO. El front y el API comparten origen, y un dominio
+   *   común (".dejuarez.mx") compartiría la sesión entre las instancias de clientes.
    * - COOKIE_SECURE=false solo en desarrollo local sin HTTPS.
    */
   private cookieOptions(): CookieOptions {

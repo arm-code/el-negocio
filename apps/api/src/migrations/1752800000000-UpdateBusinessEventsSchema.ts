@@ -13,25 +13,25 @@ export class UpdateBusinessEventsSchema1752800000000
   public async up(queryRunner: QueryRunner): Promise<void> {
     // 1. Secuencia para folios correlativos de eventos
     await queryRunner.query(
-      `CREATE SEQUENCE IF NOT EXISTS "armsolutions"."business_events_folio_seq" START WITH 1;`,
+      `CREATE SEQUENCE IF NOT EXISTS "elnegocio"."business_events_folio_seq" START WITH 1;`,
     );
 
     // 2. Enum de estados del evento
     await queryRunner.query(`
       DO $$ BEGIN
-        CREATE TYPE "armsolutions"."business_events_status_enum" AS ENUM ('pending', 'delivered', 'collected', 'cancelled');
+        CREATE TYPE "elnegocio"."business_events_status_enum" AS ENUM ('pending', 'delivered', 'collected', 'cancelled');
       EXCEPTION WHEN duplicate_object THEN NULL;
       END $$;
     `);
 
     // 3. Añadir nuevas columnas a business_events
     await queryRunner.query(`
-      ALTER TABLE "armsolutions"."business_events"
-        ADD COLUMN IF NOT EXISTS "folio_number" integer NOT NULL DEFAULT nextval('"armsolutions"."business_events_folio_seq"'),
+      ALTER TABLE "elnegocio"."business_events"
+        ADD COLUMN IF NOT EXISTS "folio_number" integer NOT NULL DEFAULT nextval('"elnegocio"."business_events_folio_seq"'),
         ADD COLUMN IF NOT EXISTS "client_phone" varchar(30),
         ADD COLUMN IF NOT EXISTS "event_address" varchar(255),
         ADD COLUMN IF NOT EXISTS "cost" numeric(12,2) NOT NULL DEFAULT 0,
-        ADD COLUMN IF NOT EXISTS "status" "armsolutions"."business_events_status_enum" NOT NULL DEFAULT 'pending',
+        ADD COLUMN IF NOT EXISTS "status" "elnegocio"."business_events_status_enum" NOT NULL DEFAULT 'pending',
         ADD COLUMN IF NOT EXISTS "guarantee_document" varchar(150),
         ADD COLUMN IF NOT EXISTS "note_id" uuid;
     `);
@@ -39,24 +39,24 @@ export class UpdateBusinessEventsSchema1752800000000
     // 4. Índices para optimizar búsquedas y unicidad
     await queryRunner.query(`
       CREATE UNIQUE INDEX IF NOT EXISTS "IDX_business_events_owner_folio"
-        ON "armsolutions"."business_events" ("owner_id", "folio_number");
+        ON "elnegocio"."business_events" ("owner_id", "folio_number");
     `);
 
     await queryRunner.query(`
       CREATE INDEX IF NOT EXISTS "IDX_business_events_status"
-        ON "armsolutions"."business_events" ("status");
+        ON "elnegocio"."business_events" ("status");
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `DROP INDEX IF EXISTS "armsolutions"."IDX_business_events_status";`,
+      `DROP INDEX IF EXISTS "elnegocio"."IDX_business_events_status";`,
     );
     await queryRunner.query(
-      `DROP INDEX IF EXISTS "armsolutions"."IDX_business_events_owner_folio";`,
+      `DROP INDEX IF EXISTS "elnegocio"."IDX_business_events_owner_folio";`,
     );
     await queryRunner.query(`
-      ALTER TABLE "armsolutions"."business_events"
+      ALTER TABLE "elnegocio"."business_events"
         DROP COLUMN IF EXISTS "note_id",
         DROP COLUMN IF EXISTS "guarantee_document",
         DROP COLUMN IF EXISTS "status",
@@ -66,10 +66,10 @@ export class UpdateBusinessEventsSchema1752800000000
         DROP COLUMN IF EXISTS "folio_number";
     `);
     await queryRunner.query(
-      `DROP TYPE IF EXISTS "armsolutions"."business_events_status_enum";`,
+      `DROP TYPE IF EXISTS "elnegocio"."business_events_status_enum";`,
     );
     await queryRunner.query(
-      `DROP SEQUENCE IF EXISTS "armsolutions"."business_events_folio_seq";`,
+      `DROP SEQUENCE IF EXISTS "elnegocio"."business_events_folio_seq";`,
     );
   }
 }

@@ -34,10 +34,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const image = data.config?.gallery?.[0]?.url || data.logoUrl;
 
   return {
-    title: name,
+    // absolute: sin el sufijo de la plantilla, que repetiría el nombre
+    title: { absolute: name },
     description,
     // Vista previa al compartir por WhatsApp/Facebook
-    openGraph: { title: name, description, type: 'website', images: image ? [image] : undefined },
+    openGraph: { title: name, siteName: name, description, type: 'website', images: image ? [image] : undefined },
   };
 }
 

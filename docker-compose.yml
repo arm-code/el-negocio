@@ -1,4 +1,4 @@
-# Stack de UNA instancia (un negocio): Postgres + API + front.
+# El Negocio OS: stack de UNA instancia (un negocio): Postgres + API + front.
 # Es lo que despliega Coolify (recurso "Docker Compose", este archivo).
 #
 #   web  → único servicio público (puerto 3000). Reenvía /api y /files al API.
@@ -14,13 +14,13 @@ services:
     build: ./apps/api/docker/postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: changarro
+      POSTGRES_USER: elnegocio
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
-      POSTGRES_DB: changarro
+      POSTGRES_DB: elnegocio
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U changarro -d changarro"]
+      test: ["CMD-SHELL", "pg_isready -U elnegocio -d elnegocio"]
       interval: 5s
       timeout: 3s
       retries: 12
@@ -36,9 +36,9 @@ services:
     environment: &db-env
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: changarro
+      DB_USERNAME: elnegocio
       DB_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD}
-      DB_NAME: changarro
+      DB_NAME: elnegocio
       DB_SSL: "false"
     command: ["pnpm", "run", "typeorm", "migration:run"]
 

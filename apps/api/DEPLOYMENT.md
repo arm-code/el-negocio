@@ -1,4 +1,7 @@
-# 🚀 Guía de Despliegue — arm-solutions-api
+# 🚀 Guía de Despliegue — el-negocio-api
+
+> **Guía antigua** (API suelto, con Supabase). El despliegue vigente es el de
+> [`docs/DEPLOY-COOLIFY.md`](../../docs/DEPLOY-COOLIFY.md).
 
 **Stack:** NestJS · TypeScript · Node.js 22 · pnpm · PostgreSQL (Supabase)  
 **Módulos extra:** `DownloaderModule` requiere `yt-dlp` + `ffmpeg` en el entorno
@@ -45,7 +48,7 @@ cp .env.template .env
 | `DB_USERNAME` | Usuario de la BD | `postgres` |
 | `DB_PASSWORD` | Contraseña de la BD | `tu_password` |
 | `DB_NAME` | Nombre de la BD | `postgres` |
-| `ALLOWED_ORIGINS` | Orígenes CORS separados por coma | `https://arm-solutions.com.mx` |
+| `ALLOWED_ORIGINS` | Orígenes CORS separados por coma | `https://ejemplo.com` |
 | `SUPABASE_JWT_SECRET` | Secret JWT de Supabase (Project Settings → API) | `IUkV...` |
 | `SUPABASE_URL` | URL del proyecto Supabase | `https://xxx.supabase.co` |
 | `SUPABASE_ANON_KEY` | Anon Key de Supabase | `eyJh...` |
@@ -199,11 +202,11 @@ yt-dlp --version
 ```bash
 # Clonar
 cd /var/www   # o la carpeta que prefieras
-sudo git clone https://github.com/TU_ORG/arm-solutions-api.git
-cd arm-solutions-api
+sudo git clone https://github.com/arm-code/el-negocio.git
+cd el-negocio-api
 
 # Ajustar propietario si es necesario
-sudo chown -R $USER:$USER /var/www/arm-solutions-api
+sudo chown -R $USER:$USER /var/www/el-negocio-api
 
 # Instalar dependencias de producción
 pnpm install --frozen-lockfile
@@ -224,28 +227,28 @@ pnpm run build
 
 ```bash
 # Iniciar la aplicación
-pm2 start dist/src/main.js --name arm-solutions-api
+pm2 start dist/src/main.js --name el-negocio-api
 
 # Guardar la lista de procesos para que sobreviva reinicios
 pm2 save
 
 # Ver estado
 pm2 status
-pm2 logs arm-solutions-api
+pm2 logs el-negocio-api
 ```
 
 #### 10. Actualizar la aplicación en producción
 
 ```bash
-cd /var/www/arm-solutions-api
+cd /var/www/el-negocio-api
 
 git pull origin main
 
 pnpm install --frozen-lockfile
 pnpm run build
 
-pm2 restart arm-solutions-api
-pm2 logs arm-solutions-api --lines 50
+pm2 restart el-negocio-api
+pm2 logs el-negocio-api --lines 50
 ```
 
 ---
@@ -285,9 +288,9 @@ docker --version
 #### 2. Construir la imagen
 
 ```bash
-cd /var/www/arm-solutions-api
+cd /var/www/el-negocio-api
 
-docker build -t arm-solutions-api:latest .
+docker build -t el-negocio-api:latest .
 ```
 
 > La primera build tarda varios minutos porque descarga `yt-dlp` y las dependencias de Node. Las builds posteriores son rápidas gracias al cache de capas.
@@ -300,7 +303,7 @@ docker run -d \
   --restart unless-stopped \
   -p 3500:3500 \
   --env-file .env \
-  arm-solutions-api:latest
+  el-negocio-api:latest
 ```
 
 #### 4. Verificar que está corriendo
@@ -316,7 +319,7 @@ docker logs arm-api --tail 50 -f
 git pull origin main
 
 # Reconstruir imagen
-docker build -t arm-solutions-api:latest .
+docker build -t el-negocio-api:latest .
 
 # Reemplazar el contenedor
 docker stop arm-api
@@ -326,7 +329,7 @@ docker run -d \
   --restart unless-stopped \
   -p 3500:3500 \
   --env-file .env \
-  arm-solutions-api:latest
+  el-negocio-api:latest
 ```
 
 ---
@@ -344,7 +347,7 @@ sudo apt install -y nginx certbot python3-certbot-nginx
 ### 2. Configurar el virtual host
 
 ```bash
-sudo nano /etc/nginx/sites-available/arm-solutions-api
+sudo nano /etc/nginx/sites-available/el-negocio-api
 ```
 
 Pega la siguiente configuración:
@@ -352,7 +355,7 @@ Pega la siguiente configuración:
 ```nginx
 server {
     listen 80;
-    server_name api.arm-solutions.com.mx;
+    server_name api.ejemplo.com;
 
     # Redirige todo el tráfico HTTP a HTTPS
     return 301 https://$host$request_uri;
@@ -360,11 +363,11 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name api.arm-solutions.com.mx;
+    server_name api.ejemplo.com;
 
     # SSL — Certbot lo llenará automáticamente
-    ssl_certificate     /etc/letsencrypt/live/api.arm-solutions.com.mx/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/api.arm-solutions.com.mx/privkey.pem;
+    ssl_certificate     /etc/letsencrypt/live/api.ejemplo.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.ejemplo.com/privkey.pem;
     include             /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
 
@@ -397,7 +400,7 @@ server {
 
 ```bash
 # Activar el sitio
-sudo ln -s /etc/nginx/sites-available/arm-solutions-api \
+sudo ln -s /etc/nginx/sites-available/el-negocio-api \
            /etc/nginx/sites-enabled/
 
 # Verificar sintaxis
@@ -410,7 +413,7 @@ sudo systemctl reload nginx
 ### 4. Obtener certificado SSL con Let's Encrypt
 
 ```bash
-sudo certbot --nginx -d api.arm-solutions.com.mx
+sudo certbot --nginx -d api.ejemplo.com
 
 # Verificar auto-renovación
 sudo certbot renew --dry-run
@@ -438,7 +441,7 @@ yt-dlp --version
 Reconstruye la imagen — el `Dockerfile` siempre descarga la versión `latest` de yt-dlp en el momento del build:
 
 ```bash
-docker build --no-cache -t arm-solutions-api:latest .
+docker build --no-cache -t el-negocio-api:latest .
 ```
 
 ---
@@ -449,11 +452,11 @@ docker build --no-cache -t arm-solutions-api:latest .
 
 ```bash
 pm2 status                           # Ver estado de todos los procesos
-pm2 logs arm-solutions-api           # Ver logs en tiempo real
-pm2 logs arm-solutions-api --lines 100  # Ver últimas 100 líneas
-pm2 restart arm-solutions-api        # Reiniciar sin downtime
-pm2 stop arm-solutions-api           # Detener
-pm2 delete arm-solutions-api         # Eliminar proceso de PM2
+pm2 logs el-negocio-api           # Ver logs en tiempo real
+pm2 logs el-negocio-api --lines 100  # Ver últimas 100 líneas
+pm2 restart el-negocio-api        # Reiniciar sin downtime
+pm2 stop el-negocio-api           # Detener
+pm2 delete el-negocio-api         # Eliminar proceso de PM2
 ```
 
 ### Docker
@@ -480,5 +483,5 @@ docker exec arm-api ffmpeg -version
 curl -i http://localhost:3500/
 
 # Con dominio público
-curl -i https://api.arm-solutions.com.mx/
+curl -i https://api.ejemplo.com/
 ```

@@ -7,7 +7,7 @@ import { Business } from './business.entity';
  * Tabla de unión muchos-a-muchos entre `businesses` y `users`.
  * Define el rol que tiene un usuario dentro de un negocio específico.
  */
-@Entity({ name: 'business_users', schema: 'armsolutions' })
+@Entity({ name: 'business_users', schema: 'elnegocio' })
 @Index(['businessId', 'userId'], { unique: true })
 @Index(['userId'])
 export class BusinessUser extends BaseEntity {

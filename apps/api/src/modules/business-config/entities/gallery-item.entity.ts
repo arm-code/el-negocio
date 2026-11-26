@@ -6,7 +6,7 @@ import { BusinessConfig } from './business-config.entity';
  * Imagen de galería del catálogo público de un negocio.
  * Se muestra en el carrusel del landing público.
  */
-@Entity({ name: 'business_gallery_items', schema: 'armsolutions' })
+@Entity({ name: 'business_gallery_items', schema: 'elnegocio' })
 @Index(['configId'])
 export class GalleryItem extends BaseEntity {
   @ManyToOne(() => BusinessConfig, (config) => config.gallery, {

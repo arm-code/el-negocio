@@ -6,7 +6,7 @@ import { BusinessConfig } from './business-config.entity';
  * Testimonio/reseña de un cliente para la sección
  * "Lo que dicen nuestros clientes" del landing público.
  */
-@Entity({ name: 'business_testimonials', schema: 'armsolutions' })
+@Entity({ name: 'business_testimonials', schema: 'elnegocio' })
 @Index(['configId'])
 export class Testimonial extends BaseEntity {
   @ManyToOne(() => BusinessConfig, (config) => config.testimonials, {

@@ -13,7 +13,10 @@ Cada micro app existe **una sola vez** y la usan dos aplicaciones:
 | `apps/os` | Versión pro: sesión, base de datos, landing y conexiones entre herramientas | Por instancia de negocio (login) | API + Postgres de la instancia |
 
 - El toolbox ya está desplegado en <https://elchangarro.dejuarez.mx/> (landing,
-  catálogo y una herramienta: notas de venta).
+  catálogo y una herramienta: notas de venta). Ese dominio es anterior al nombre
+  "El Negocio"; antes de cambiarlo, leer la sección 11.3 de `DEPLOY-COOLIFY.md`.
+- **Mismas herramientas, distinta casa:** la micro app es igual en ambas; el marco
+  (barra, marca, color, avisos) es de cada app y no va en los paquetes.
 - "Privado" significa acceso a la app, no visibilidad del repo.
 - Lo exclusivo de la versión pro (por ejemplo, vincular notas con eventos) vive en
   `apps/os`. Nunca un `if (isPro)` dentro de un paquete: todo lo compartido llega
@@ -25,8 +28,8 @@ Cada micro app existe **una sola vez** y la usan dos aplicaciones:
 
 ```
 packages/
-  ui/                 @elchangarro/ui                tema y componentes base
-  tool-sales-notes/   @elchangarro/tool-sales-notes  pantallas, cálculos, tipos, puertos
+  ui/                 @el-negocio/ui                 tema y componentes base
+  tool-sales-notes/   @el-negocio/tool-sales-notes   pantallas, cálculos, tipos, puertos
 apps/
   toolbox/            monta cada herramienta con localStorage
   os/                 la monta con API, sesión e integraciones

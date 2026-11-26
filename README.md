@@ -1,12 +1,20 @@
-# El Changarro
+# El Negocio
 
-Monorepo de **El Changarro OS**: sistema de control para negocios pequeños
-(notas de venta, finanzas, eventos, inventario y landing pública).
+Herramientas para negocios pequeños, en un solo repositorio.
+
+| Producto | Carpeta | Qué es |
+| --- | --- | --- |
+| **El Negocio** | `apps/toolbox` | Micro apps gratuitas y sin cuenta; los datos se quedan en el navegador |
+| **El Negocio OS** | `apps/os` | Sistema de paga de un negocio: su página pública y su panel de administración |
+| **El Negocio API** | `apps/api` | Backend de El Negocio OS |
+
+El Negocio y El Negocio OS no comparten datos, sesión ni servidor. Una instancia de
+El Negocio OS muestra el nombre y el logo de **su** negocio y no enlaza al sitio gratuito.
 
 ```
 apps/
 ├── api/   API (NestJS + Postgres propio). Auth con cookie JWT, archivos en disco.
-├── os/    Front del pos (Next.js): landing pública + panel de administración.
+├── os/    Front de El Negocio OS (Next.js): landing pública + panel de administración.
 └── toolbox/  Herramientas gratuitas para el público (Next.js, sin backend; datos en el navegador).
 ```
 
@@ -174,11 +182,19 @@ Las apps se diseñan primero para móvil. En Chrome o Edge: `F12`, luego
 | `port is already allocated` (5432 o 3500) | Otro contenedor o un Postgres instalado usa el puerto. Revisa con `docker ps` y detenlo |
 | Puerto 3000 o 3001 ocupado, o Next avisa que ya hay un servidor de desarrollo | Cierra la otra terminal que lo esté corriendo |
 | El login no entra o regresa a la pantalla de acceso | Revisa que `JWT_SECRET` sea igual en ambos archivos y que `COOKIE_SECURE=false`. Reinicia `pnpm dev`; si cambiaste el `.env` del API, `docker compose up -d --wait api` |
-| `database "changarro" does not exist` o `no pg_hba.conf entry` | La primera inicialización de Postgres quedó a medias. `docker compose down -v` y repite el paso 2. **Borra la base y los archivos locales** |
+| `database "elnegocio" does not exist` o `no pg_hba.conf entry` | La primera inicialización de Postgres quedó a medias. `docker compose down -v` y repite el paso 2. **Borra la base y los archivos locales** |
 | `create-business` dice que ya hay un negocio | Esa base ya tiene uno: usa su identificador en `BUSINESS_SLUG` |
 | `pnpm` avisa `Ignored build scripts` | En las pruebas de esta guía no impidió arrancar `os` |
 | La primera carga tarda | Normal en desarrollo: Next compila cada página al abrirla |
 | El toolbox no se instala como app ni funciona sin red | La PWA está desactivada en desarrollo |
+
+### Si ya tenías el entorno con los nombres anteriores
+
+La base y su usuario pasaron de `changarro` a `elnegocio`, y el schema de
+`armsolutions` a `elnegocio`. Los contenedores locales ahora se llaman
+`el-negocio-api-*` y usan volúmenes nuevos. Si no te importan los datos locales,
+detén los contenedores viejos y repite "OS: primera vez". Para conservarlos, ver la
+sección 11 de [`docs/DEPLOY-COOLIFY.md`](docs/DEPLOY-COOLIFY.md).
 
 Para trabajar con una copia de datos reales, ver `apps/api/scripts/` y la sección 3
 de [`docs/DEPLOY-COOLIFY.md`](docs/DEPLOY-COOLIFY.md).

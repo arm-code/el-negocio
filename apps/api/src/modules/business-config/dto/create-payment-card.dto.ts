@@ -31,7 +31,7 @@ export class CreatePaymentCardDto {
 
   @ApiProperty({
     description: 'Nombre completo del titular de la cuenta.',
-    example: 'Eventos Mendoza',
+    example: 'Papelería López',
   })
   @IsString()
   @IsNotEmpty({ message: 'beneficiary es requerido.' })

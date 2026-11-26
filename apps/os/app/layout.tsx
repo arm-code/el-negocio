@@ -9,54 +9,40 @@ import QueryProvider from '@/components/providers/QueryProvider';
 import { AuthProvider } from '@/lib/auth';
 import { BusinessProvider } from '@/lib/business';
 import { DataProvider } from '@/lib/data-store';
+import { getInstanceBrand, PLATFORM_NAME } from '@/lib/instance-brand';
 
 // Dominio público de esta instancia (vista previa al compartir por WhatsApp, canonical)
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dejuarez.mx';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
-  title: {
-    default: 'NegocioFácil – Administra tu negocio desde el celular',
-    template: '%s | NegocioFácil',
-  },
-  description:
-    'Sistema de gestión para negocios locales de Ciudad Juárez. Inventario, cotizaciones, finanzas y más. Sin complicaciones, en español.',
-  keywords: [
-    'punto de venta',
-    'sistema para negocios',
-    'inventario',
-    'cotizaciones',
-    'Ciudad Juárez',
-    'NegocioFácil',
-    'tienda',
-    'abarrotes',
-    'software para negocios',
-  ],
-  authors: [{ name: 'Alexis Romero Mendoza' }],
-  creator: 'NegocioFácil',
-  openGraph: {
-    type: 'website',
-    locale: 'es_MX',
-    url: BASE_URL,
-    siteName: 'NegocioFácil',
-    title: 'NegocioFácil – Administra tu negocio desde el celular',
-    description:
-      'Inventario, cotizaciones y finanzas para negocios de Ciudad Juárez. ¡Fácil de usar desde el celular!',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'NegocioFácil – Administra tu negocio',
-    description: 'Sistema de gestión para negocios locales en Ciudad Juárez.',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true },
-  },
-  alternates: {
-    canonical: BASE_URL,
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getInstanceBrand();
+  const name = brand.name ?? PLATFORM_NAME;
+  const description = brand.name
+    ? `Sitio y panel de administración de ${brand.name}.`
+    : 'Sistema de gestión para negocios: inventario, cotizaciones y finanzas.';
+
+  return {
+    metadataBase: new URL(SITE_URL || 'http://localhost:3000'),
+    title: { default: name, template: `%s | ${name}` },
+    applicationName: name,
+    description,
+    openGraph: {
+      type: 'website',
+      locale: 'es_MX',
+      url: SITE_URL,
+      siteName: name,
+      title: name,
+      description,
+    },
+    twitter: { card: 'summary_large_image', title: name, description },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
+    },
+    alternates: SITE_URL ? { canonical: SITE_URL } : undefined,
+  };
+}
 
 export default function RootLayout({
   children,

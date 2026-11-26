@@ -13,7 +13,7 @@ cd "$(dirname "$0")/.."
 PUBLIC_URL="${STORAGE_PUBLIC_URL:-/files}"
 PUBLIC_URL="${PUBLIC_URL%/}"
 MARK='/storage/v1/object/public/businesses/'
-PSQL=(docker compose exec -T postgres psql -U changarro -d changarro -v ON_ERROR_STOP=1 -tA -F $'\t')
+PSQL=(docker compose exec -T postgres psql -U elnegocio -d elnegocio -v ON_ERROR_STOP=1 -tA -F $'\t')
 
 # tabla.columna que pueden contener URLs de imágenes
 TARGETS=("business_configs logo_url" "business_gallery_items url" "businesses logo_url")
@@ -30,12 +30,12 @@ for t in "${TARGETS[@]}"; do
     fi
     dir="/app/storage/$(dirname "$rel")"
     if docker compose exec -T api sh -c "mkdir -p '$dir' && curl -fsSL -o '/app/storage/$rel' '$url'" < /dev/null; then
-      "${PSQL[@]}" -c "update armsolutions.$table set $col = '$PUBLIC_URL/$rel' where id = '$id'" >/dev/null < /dev/null
+      "${PSQL[@]}" -c "update elnegocio.$table set $col = '$PUBLIC_URL/$rel' where id = '$id'" >/dev/null < /dev/null
       echo "OK   $rel"; ok=$((ok+1))
     else
       echo "FALLO $url" >&2; fail=$((fail+1))
     fi
-  done < <("${PSQL[@]}" -c "select id, $col from armsolutions.$table where $col like '%$MARK%'")
+  done < <("${PSQL[@]}" -c "select id, $col from elnegocio.$table where $col like '%$MARK%'")
 done
 
 echo "Listo: $ok migradas, $fail con problemas"

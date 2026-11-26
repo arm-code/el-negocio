@@ -6,7 +6,7 @@ import { BusinessConfig } from './business-config.entity';
  * Pregunta frecuente configurable por el negocio.
  * Se muestra en la sección FAQ del landing público.
  */
-@Entity({ name: 'business_faqs', schema: 'armsolutions' })
+@Entity({ name: 'business_faqs', schema: 'elnegocio' })
 @Index(['configId'])
 export class Faq extends BaseEntity {
   @ManyToOne(() => BusinessConfig, (config) => config.faqs, {

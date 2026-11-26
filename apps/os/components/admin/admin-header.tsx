@@ -77,7 +77,7 @@ export function AdminHeader() {
                                 {user?.name || 'Usuario'}
                             </span>
                             <span className="text-xs font-normal text-muted-foreground">
-                                {user?.email || 'admin@eventosmendoza.com'}
+                                {user?.email}
                             </span>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />

@@ -1,7 +1,7 @@
 {
-  "name": "El Changarro",
-  "short_name": "El Changarro",
-  "description": "Herramientas sencillas para tu negocio: notas de venta, y más en camino.",
+  "name": "El Negocio",
+  "short_name": "El Negocio",
+  "description": "Herramientas gratuitas para tu negocio. Los datos se guardan en tu dispositivo.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

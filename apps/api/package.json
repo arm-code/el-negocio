@@ -1,7 +1,7 @@
 {
-  "name": "arm-solutions-api",
+  "name": "el-negocio-api",
   "version": "0.0.1",
-  "description": "API REST de herramientas para arm-solutions.com.mx",
+  "description": "API REST de El Negocio OS",
   "author": "Ing. Alexis Romero Mendoza",
   "private": false,
   "license": "UNLICENSED",

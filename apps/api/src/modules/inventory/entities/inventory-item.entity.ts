@@ -13,7 +13,7 @@ import { InventoryCategory } from './inventory-category.entity';
 import { InventoryItemSerial } from './inventory-item-serial.entity';
 import { InventoryLocation } from './inventory-location.entity';
 
-@Entity({ name: 'items_inv', schema: 'armsolutions' })
+@Entity({ name: 'items_inv', schema: 'elnegocio' })
 @Index(['businessId'])
 @Index(['businessId', 'sku'], { unique: true })
 @Index(['ownerId'])

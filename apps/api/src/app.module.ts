@@ -31,7 +31,7 @@ import { DownloaderModule } from './modules/downloader/downloader.module';
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        schema: 'armsolutions',
+        schema: 'elnegocio',
         autoLoadEntities: true,
         synchronize: false, // ¡Falso en producción! Usaremos migraciones.
         // Supabase requiere SSL; Postgres propio no (DB_SSL=false)

@@ -6,7 +6,7 @@ import { BusinessUser } from './business-user.entity';
  * Representa un negocio (tenant) en el sistema.
  * Un usuario puede pertenecer a múltiples negocios a través de `business_users`.
  */
-@Entity({ name: 'businesses', schema: 'armsolutions' })
+@Entity({ name: 'businesses', schema: 'elnegocio' })
 @Index(['slug'], { unique: true })
 export class Business extends BaseEntity {
   /** Nombre visible del negocio. */
@@ -15,7 +15,7 @@ export class Business extends BaseEntity {
 
   /**
    * Identificador URL-amigable único. Generado automáticamente si no se provee.
-   * Ej: "eventos-mendoza", "papeleria-lopez"
+   * Ej: "papeleria-lopez", "papeleria-lopez"
    */
   @Column({ type: 'varchar', length: 100, unique: true })
   slug: string;

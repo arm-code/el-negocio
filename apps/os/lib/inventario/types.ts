@@ -1,4 +1,4 @@
-// Tipos del Módulo de Inventario — mapeados 1:1 con la API de ARM Solutions
+// Tipos del Módulo de Inventario — mapeados 1:1 con El Negocio API
 
 export type InventoryItemType = 'product' | 'serialized' | 'combo' | 'consumable' | 'service';
 export type InventoryItemStatus = 'available' | 'rented' | 'maintenance' | 'damaged' | 'lost' | 'retired';
