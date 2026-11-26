@@ -1,0 +1,22 @@
+# Contexto de build en la raíz: lo usa apps/toolbox/Dockerfile.
+# (apps/api y apps/os se construyen desde su carpeta, con su propio .dockerignore.)
+
+# Se excluye todo y se permite solo lo que el toolbox necesita
+*
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!tsconfig.base.json
+!packages
+!apps/toolbox
+
+**/node_modules
+**/.next
+**/.env
+**/.env.*
+**/*.log
+**/*.tsbuildinfo
+apps/toolbox/public/sw.js
+apps/toolbox/public/sw.js.map
+apps/toolbox/public/swe-worker-*.js
+apps/toolbox/public/workbox-*.js

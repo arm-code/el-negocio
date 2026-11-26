@@ -4,7 +4,7 @@
 // El archivo que se carga viene de fuera: se valida campo por campo y solo se
 // copian los campos conocidos.
 
-import type { BusinessInfo, Note, NoteItem } from '@/features/sales-notes'
+import type { BusinessInfo, Note, NoteItem } from '@el-negocio/tool-sales-notes'
 import { readLocalData, writeLocalData } from '@/lib/sales-notes-storage'
 
 const APP_ID = 'el-negocio'

@@ -1,0 +1,4 @@
+# os se instala por separado, con su propio lockfile. Sin este archivo, pnpm tomaria
+# el workspace de la raiz. Se revisa cuando os consuma los paquetes (fase 4).
+packages:
+  - .

@@ -16,10 +16,14 @@ apps/
 ├── api/   API (NestJS + Postgres propio). Auth con cookie JWT, archivos en disco.
 ├── os/    Front de El Negocio OS (Next.js): landing pública + panel de administración.
 └── toolbox/  Herramientas gratuitas para el público (Next.js, sin backend; datos en el navegador).
+packages/
+├── ui/                Tema y componentes compartidos.
+└── tool-sales-notes/  Micro app de notas de venta.
 ```
 
-Cada app es independiente (su propio `package.json`, lockfile y Dockerfile), así
-que se despliega por separado desde su carpeta (`Base Directory` en Coolify).
+Cada app se despliega por separado. `api` y `os` son independientes (su propio
+lockfile y Dockerfile, construidos desde su carpeta). `toolbox` forma un workspace de
+pnpm con `packages/` (lockfile en la raíz) y se construye desde la raíz.
 El plan para compartir micro apps entre `os` y `toolbox` está en
 [`docs/PACKAGES-TOOLS.md`](docs/PACKAGES-TOOLS.md).
 
@@ -50,9 +54,12 @@ se corre.
 No usa API, base de datos ni variables de entorno. Desde la raíz del repo:
 
 ```bash
-pnpm --dir apps/toolbox install
+pnpm install
 pnpm --dir apps/toolbox dev -p 3001
 ```
+
+`pnpm install` en la raíz instala el toolbox y los paquetes. Los cambios en
+`packages/` también se ven al guardar.
 
 El `-p 3001` evita chocar con `os`, que usa el puerto 3000.
 
@@ -143,8 +150,8 @@ sin perder datos, desde `apps/api`: `docker compose stop`.
 Dependencias, desde la raíz:
 
 ```bash
+pnpm install
 pnpm --dir apps/os install
-pnpm --dir apps/toolbox install
 ```
 
 El API corre dentro de un contenedor y **no recarga solo**. Si cambió algo en
@@ -162,7 +169,7 @@ La instalación y el uso sin red solo funcionan en un build de producción. Con
 Docker, desde la raíz:
 
 ```bash
-docker build -t toolbox-local apps/toolbox
+docker build -f apps/toolbox/Dockerfile -t toolbox-local .
 docker run --rm -p 127.0.0.1:3010:3000 toolbox-local
 ```
 
@@ -185,6 +192,7 @@ Las apps se diseñan primero para móvil. En Chrome o Edge: `F12`, luego
 | `database "elnegocio" does not exist` o `no pg_hba.conf entry` | La primera inicialización de Postgres quedó a medias. `docker compose down -v` y repite el paso 2. **Borra la base y los archivos locales** |
 | `create-business` dice que ya hay un negocio | Esa base ya tiene uno: usa su identificador en `BUSINESS_SLUG` |
 | `pnpm` avisa `Ignored build scripts` | En las pruebas de esta guía no impidió arrancar `os` |
+| `pnpm install` falla con `EPERM` en Windows | Detén los servidores de desarrollo (`Ctrl+C`) y repite |
 | La primera carga tarda | Normal en desarrollo: Next compila cada página al abrirla |
 | El toolbox no se instala como app ni funciona sin red | La PWA está desactivada en desarrollo |
 

@@ -10,3 +10,6 @@ storage/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Dependencias (workspace de la raíz y paquetes)
+node_modules/

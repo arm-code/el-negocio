@@ -1,9 +1,9 @@
 // lib/tools-catalog.ts
 // Fuente única de verdad de las micro apps. La landing y el footer leen de aquí,
-// así que cuando una herramienta salga basta con moverla de `upcomingTools`
-// a `availableTools` y agregarle su `href`.
+// así que cuando una herramienta salga basta con quitarla de `upcomingTools` y
+// agregar a `availableTools` la ficha de su paquete junto con su `href`.
+import { salesNotesMeta } from "@el-negocio/tool-sales-notes/meta"
 import {
-    Receipt,
     FileText,
     FileSignature,
     Wallet,
@@ -30,13 +30,7 @@ export interface AvailableTool extends ToolBase {
 export type UpcomingTool = ToolBase
 
 export const availableTools: readonly AvailableTool[] = [
-    {
-        id: "sales-note",
-        title: "Notas de venta",
-        description: "Haz recibos para tus clientes en segundos",
-        icon: Receipt,
-        href: "/tools/sales-note",
-    },
+    { ...salesNotesMeta, href: "/tools/sales-note" },
 ]
 
 export const upcomingTools: readonly UpcomingTool[] = [
