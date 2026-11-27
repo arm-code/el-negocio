@@ -1,8 +1,7 @@
 # Micro apps compartidas (plan y estándar de trabajo)
 
-> Estado al 2026-11-27: fases 0 a 4 en producción (sitio gratuito y la instancia desplegada).
-> Estándar corregido en la fase 5. Fase 6, **entradas y salidas** en las dos apps: falta
-> llevarla a `main` y desplegar.
+> Estado al 2026-11-27: fases 0 a 6 en producción (sitio gratuito y la instancia
+> desplegada). Micro apps en las dos: notas de venta y entradas y salidas.
 
 ## 1. La idea
 
@@ -320,7 +319,6 @@ Pendiente:
 - `os` conserva sus propios componentes base para el resto de sus pantallas, y su
   `document-actions` para el contrato de eventos.
 - El API no garantiza el orden de los conceptos de una nota.
-- Los PDF exportados pesan varios megabytes (la imagen va sin comprimir).
 
 ### Fase 5 — Cierre
 
@@ -363,7 +361,7 @@ Acordado el 2026-11-27:
    Adaptador en `apps/toolbox/lib/cash-storage.ts`; si lo guardado está dañado, avisa y
    no lo sobrescribe. El respaldo suma los movimientos (misma versión: los anteriores
    siguen cargando).
-3. **`os` (hecho en local):** misma pantalla en `/tools/finanzas` (la dirección no cambió),
+3. **`os` (hecho):** misma pantalla en `/tools/finanzas` (la dirección no cambió),
    con adaptador en `apps/os/lib/cash-storage.ts`:
 
    | Paquete | API |
