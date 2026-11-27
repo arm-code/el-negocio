@@ -11,6 +11,7 @@ import { PaymentMethodResponseDto } from './dto/payment-method-response.dto';
 import { QueryPaymentMethodDto } from './dto/query-payment-method.dto';
 import { UpdatePaymentMethodDto } from './dto/update-payment-method.dto';
 import { PaymentMethod } from './entities/payment-method.entity';
+import { sortColumn } from '../../common/utils/sort-column';
 
 @Injectable()
 export class PaymentMethodsService {
@@ -68,7 +69,13 @@ export class PaymentMethodsService {
       );
     }
 
-    const sortBy = query.sortBy ?? 'createdAt';
+    const sortBy = sortColumn(query.sortBy, [
+      'createdAt',
+      'updatedAt',
+      'id',
+      'name',
+      'code',
+    ]);
     qb.orderBy(`paymentMethod.${sortBy}`, query.sortOrder)
       .skip(query.skip)
       .take(query.limit);

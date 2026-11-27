@@ -14,6 +14,7 @@ import { UpdateBusinessEventDto } from './dto/update-business-event.dto';
 import { BusinessEvent } from './entities/business-event.entity';
 import { EventStatus } from './enums/event-status.enum';
 import { SalesNote } from '../sales-notes/entities/sales-note.entity';
+import { sortColumn } from '../../common/utils/sort-column';
 
 @Injectable()
 export class EventsService {
@@ -105,7 +106,17 @@ export class EventsService {
       );
     }
 
-    const sortBy = query.sortBy ?? 'createdAt';
+    const sortBy = sortColumn(query.sortBy, [
+      'createdAt',
+      'updatedAt',
+      'id',
+      'folioNumber',
+      'eventDate',
+      'name',
+      'clientName',
+      'status',
+      'cost',
+    ]);
     qb.orderBy(`event.${sortBy}`, query.sortOrder)
       .skip(query.skip)
       .take(query.limit);

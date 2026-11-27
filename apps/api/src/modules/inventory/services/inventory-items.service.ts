@@ -15,6 +15,7 @@ import { InventoryItem } from '../entities/inventory-item.entity';
 import { InventoryMovement } from '../entities/inventory-movement.entity';
 import { InventoryItemType } from '../enums/inventory-item-type.enum';
 import { InventoryMovementType } from '../enums/inventory-movement-type.enum';
+import { sortColumn } from '../../../common/utils/sort-column';
 
 @Injectable()
 export class InventoryItemsService {
@@ -62,7 +63,17 @@ export class InventoryItemsService {
       );
     }
 
-    const sortBy = query.sortBy ?? 'createdAt';
+    const sortBy = sortColumn(query.sortBy, [
+      'createdAt',
+      'updatedAt',
+      'id',
+      'name',
+      'sku',
+      'type',
+      'status',
+      'stockTotal',
+      'stockAvailable',
+    ]);
     qb.orderBy(`item.${sortBy}`, query.sortOrder)
       .skip(query.skip)
       .take(query.limit);

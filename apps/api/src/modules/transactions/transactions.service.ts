@@ -15,6 +15,7 @@ import { QueryTransactionDto } from './dto/query-transaction.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { Transaction } from './entities/transaction.entity';
+import { sortColumn } from '../../common/utils/sort-column';
 
 @Injectable()
 export class TransactionsService {
@@ -103,18 +104,17 @@ export class TransactionsService {
       });
     }
 
-    const sortableColumns: Record<string, string> = {
-      transactionDate: 'transaction.transactionDate',
-      amount: 'transaction.amount',
-      createdAt: 'transaction.createdAt',
-      folioNumber: 'transaction.folioNumber',
-    };
-    const sortColumn =
-      sortableColumns[query.sortBy ?? ''] ?? 'transaction.transactionDate';
-    qb.orderBy(sortColumn, query.sortOrder);
+    const sortBy = sortColumn(query.sortBy, [
+      'transactionDate',
+      'amount',
+      'createdAt',
+      'folioNumber',
+      'id',
+    ]);
+    qb.orderBy(`transaction.${sortBy}`, query.sortOrder);
     // Desempate fijo: hay varios movimientos por día y, sin él, al pasar de una
     // página a otra pueden repetirse o quedarse fuera
-    if (sortColumn !== 'transaction.folioNumber') {
+    if (sortBy !== 'folioNumber') {
       qb.addOrderBy('transaction.folioNumber', query.sortOrder);
     }
     qb.addOrderBy('transaction.id', query.sortOrder)

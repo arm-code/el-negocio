@@ -10,6 +10,7 @@ import { UpdateSalesNoteDto } from './dto/update-sales-note.dto';
 import { SalesNoteItem } from './entities/sales-note-item.entity';
 import { SalesNote } from './entities/sales-note.entity';
 import { SalesNoteStatus } from './enums/sales-note-status.enum';
+import { sortColumn } from '../../common/utils/sort-column';
 
 @Injectable()
 export class SalesNotesService {
@@ -112,7 +113,15 @@ export class SalesNotesService {
       );
     }
 
-    const sortBy = query.sortBy ?? 'createdAt';
+    const sortBy = sortColumn(query.sortBy, [
+      'createdAt',
+      'updatedAt',
+      'id',
+      'folioNumber',
+      'customerName',
+      'status',
+      'total',
+    ]);
     qb.orderBy(`note.${sortBy}`, query.sortOrder)
       .skip(query.skip)
       .take(query.limit);
