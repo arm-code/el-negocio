@@ -1,11 +1,13 @@
 'use client'
 
 import { createContext, useContext, type ReactNode } from 'react'
-import type { EventsStorage } from './ports'
+import type { EventsStorage, PaymentsStorage } from './ports'
 
 export interface AgendaRoutes {
   /** A dónde lleva el enlace para salir de la herramienta. */
   home: string
+  /** Pantalla de entradas y salidas, donde se ven y corrigen los cobros. */
+  cash?: string
 }
 
 /** Textos que dependen de la aplicación o de dónde guarda los datos. */
@@ -23,6 +25,7 @@ export interface AgendaCopy {
 /** Todo lo que la aplicación le entrega a la micro-app. */
 export interface AgendaConfig {
   events: EventsStorage
+  payments: PaymentsStorage
   routes: AgendaRoutes
   copy: AgendaCopy
 }

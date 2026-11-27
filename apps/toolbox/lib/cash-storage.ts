@@ -7,12 +7,13 @@ import type {
   CatalogKind,
   CatalogStorage,
   Movement,
+  MovementInput,
   MovementKind,
   MovementsStorage,
   Period,
 } from '@el-negocio/tool-cash'
 
-const MOVEMENTS_KEY = 'el-negocio:cash:movements:v1'
+export const MOVEMENTS_KEY = 'el-negocio:cash:movements:v1'
 const CATALOG_KEYS: Record<CatalogKind, string> = {
   category: 'el-negocio:cash:categories:v1',
   method: 'el-negocio:cash:methods:v1',
@@ -45,6 +46,8 @@ export interface StoredMovement {
   categoryId: string
   methodId: string
   description?: string
+  /** Lo agendado que se está cobrando; lo pone la Agenda. */
+  eventId?: string
   createdAt: string
   updatedAt?: string
 }
@@ -106,6 +109,17 @@ export function readCashData() {
   }
 }
 
+function insertMovement(input: MovementInput & { eventId?: string }) {
+  const stored: StoredMovement = { ...input, id: newId('mv'), createdAt: new Date().toISOString() }
+  write(MOVEMENTS_KEY, [stored, ...readMovements()])
+  return stored
+}
+
+/** Anota el cobro de algo agendado como un movimiento más de la Caja. */
+export function addEventPayment(eventId: string, input: MovementInput) {
+  insertMovement({ ...input, eventId })
+}
+
 /** Reemplaza los datos locales. Los movimientos van primero: es lo que puede no caber. */
 export function writeCashData(data: ReturnType<typeof readCashData>) {
   write(MOVEMENTS_KEY, data.movements)
@@ -114,6 +128,9 @@ export function writeCashData(data: ReturnType<typeof readCashData>) {
 }
 
 export const localMovementsStorage: MovementsStorage = {
+  // La Agenda también anota aquí: se lee de nuevo cada vez
+  staleTime: 0,
+
   async list(period, page) {
     const chosen = readMovements()
       .filter((m) => inPeriod(m, period))
@@ -140,9 +157,7 @@ export const localMovementsStorage: MovementsStorage = {
   },
 
   async create(input) {
-    const stored: StoredMovement = { ...input, id: newId('mv'), createdAt: new Date().toISOString() }
-    write(MOVEMENTS_KEY, [stored, ...readMovements()])
-    return resolver()(stored)
+    return resolver()(insertMovement(input))
   },
 
   async update(id, input) {
@@ -152,6 +167,8 @@ export const localMovementsStorage: MovementsStorage = {
     const updated: StoredMovement = {
       ...input,
       id: current.id,
+      // Corregir un cobro no lo desliga de lo agendado
+      eventId: current.eventId,
       createdAt: current.createdAt,
       updatedAt: new Date().toISOString(),
     }
