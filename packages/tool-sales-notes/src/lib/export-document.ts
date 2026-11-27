@@ -77,7 +77,8 @@ export async function exportNodeToPdf(node: HTMLElement, filename: string, actio
     renderHeight = img.height * scale
     y = (pageHeight - renderHeight) / 2
   }
-  pdf.addImage(dataUrl, 'PNG', (pageWidth - renderWidth) / 2, y, renderWidth, renderHeight)
+  // 'FAST' comprime la imagen sin perder calidad; sin esto el PDF pesa varios MB
+  pdf.addImage(dataUrl, 'PNG', (pageWidth - renderWidth) / 2, y, renderWidth, renderHeight, undefined, 'FAST')
 
   const fullFilename = `${filename}.pdf`
   if (action === 'download') {
