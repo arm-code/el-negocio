@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@el-negocio/tool-cash": "workspace:*",
     "@el-negocio/tool-sales-notes": "workspace:*",
     "@el-negocio/ui": "workspace:*",
     "@hookform/resolvers": "^5.9.1",

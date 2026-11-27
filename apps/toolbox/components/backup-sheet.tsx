@@ -22,7 +22,7 @@ function download() {
         // Algunos navegadores leen el archivo después del clic
         setTimeout(() => URL.revokeObjectURL(url), 10_000)
         toast.success("Respaldo descargado", {
-            description: `${plural(backup.noteCount, "nota", "notas")} en ${backup.fileName}`,
+            description: `${plural(backup.noteCount, "nota", "notas")} y ${plural(backup.movementCount, "movimiento", "movimientos")} en ${backup.fileName}`,
         })
     } catch {
         toast.error("No se pudo crear el respaldo.")
@@ -48,8 +48,8 @@ export function BackupSheet({ open, onOpenChange, onInstall }: BackupSheetProps)
             const { added, updated, invalid } = await importBackup(file)
             await queryClient.invalidateQueries()
             const parts = [
-                plural(added, "nota agregada", "notas agregadas"),
-                plural(updated, "actualizada", "actualizadas"),
+                plural(added, "registro agregado", "registros agregados"),
+                plural(updated, "actualizado", "actualizados"),
             ]
             if (invalid) parts.push(plural(invalid, "no se pudo leer", "no se pudieron leer"))
             toast.success("Respaldo cargado", { description: `${parts.join(", ")}.` })
@@ -98,7 +98,7 @@ export function BackupSheet({ open, onOpenChange, onInstall }: BackupSheetProps)
                     }}
                 />
                 <p className="text-sm text-muted-foreground">
-                    Cargar un respaldo no borra nada: agrega las notas que falten.
+                    Cargar un respaldo no borra nada: agrega lo que falte.
                 </p>
                 {installState !== "installed" && (
                     <Button

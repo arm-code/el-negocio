@@ -43,7 +43,7 @@ muestra el nombre y el logo de **su** negocio y no enlaza al sitio gratuito.
 
 ```mermaid
 flowchart LR
-    PKG["packages/<br/>ui · tool-sales-notes"]
+    PKG["packages/<br/>ui · tool-sales-notes · tool-cash"]
 
     subgraph GRATIS["El Negocio (gratis)"]
         TB["apps/toolbox"] --> LS[("Navegador<br/>localStorage")]
@@ -72,7 +72,8 @@ El API decide su negocio con `BUSINESS_SLUG`; no hay multi-tenant.
 │   └── toolbox/             Herramientas gratuitas (Next.js, sin backend, PWA)
 ├── packages/
 │   ├── ui/                  Tema y componentes compartidos
-│   └── tool-sales-notes/    Micro app de notas de venta
+│   ├── tool-sales-notes/    Micro app de notas de venta
+│   └── tool-cash/           Micro app de entradas y salidas
 ├── docs/                    Guías de despliegue y de las micro apps
 ├── docker-compose.yml       Stack de una instancia en producción
 └── pnpm-workspace.yaml      Workspace: os, toolbox y packages
@@ -113,6 +114,7 @@ Un cambio en `packages/` afecta a las dos apps: compila ambas.
 ```bash
 pnpm --dir packages/ui typecheck
 pnpm --dir packages/tool-sales-notes typecheck
+pnpm --dir packages/tool-cash typecheck
 pnpm --dir apps/os build
 pnpm --dir apps/toolbox build
 ```

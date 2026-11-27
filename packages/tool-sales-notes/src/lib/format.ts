@@ -1,18 +1,10 @@
-const currencyFmt = new Intl.NumberFormat('es-MX', {
-  style: 'currency',
-  currency: 'MXN',
-  minimumFractionDigits: 2,
-})
+export { formatCurrency } from '@el-negocio/ui/display'
 
 const dateFmt = new Intl.DateTimeFormat('es-MX', {
   day: '2-digit',
   month: 'short',
   year: 'numeric',
 })
-
-export function formatCurrency(value: number): string {
-  return currencyFmt.format(Number.isFinite(value) ? value : 0)
-}
 
 export function formatDate(iso?: string | null): string {
   if (!iso) return ''
