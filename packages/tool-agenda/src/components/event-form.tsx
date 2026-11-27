@@ -4,7 +4,7 @@
 // agrega con un toque y queda abierto la próxima vez.
 
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { Clock, Loader2, MapPin, NotebookPen, Plus, User, X } from 'lucide-react'
+import { Banknote, Clock, IdCard, Loader2, MapPin, NotebookPen, Plus, Undo2, User, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppBottomSheet } from '@el-negocio/ui/app-bottom-sheet'
 import { Button } from '@el-negocio/ui/button'
@@ -12,13 +12,15 @@ import { Input } from '@el-negocio/ui/input'
 import { Skeleton } from '@el-negocio/ui/skeleton'
 import { InlineError } from '@el-negocio/ui/states'
 import { LABEL, TOUCH } from '@el-negocio/ui/detail'
+import { formatCurrency } from '@el-negocio/ui/display'
 import { cn } from '@el-negocio/ui/utils'
-import { useEvent, useSaveEvent } from '../hooks/use-agenda'
+import { useEvent, useEvents, usePaymentMethods, useRecordPayment, useSaveEvent } from '../hooks/use-agenda'
 import { useAgendaConfig } from '../provider'
 import { LIMITS } from '../lib/limits'
 import { dayFromToday } from '../lib/when'
-import { readBlocks, rememberBlocks, type Block } from '../lib/prefs'
+import { BLOCKS, readBlocks, readMethod, rememberBlocks, rememberMethod, type Block } from '../lib/prefs'
 import type { AgendaEvent } from '../types'
+import { AmountInput, MethodChips, toAmount } from './money-fields'
 
 /** Qué se está capturando: algo nuevo, o la corrección de algo. */
 export type FormTarget = { new: true } | { editId: string }
@@ -29,8 +31,14 @@ const BLOCK_INFO: Record<Block, { label: string; icon: typeof Clock }> = {
   time: { label: 'Hora', icon: Clock },
   client: { label: 'Cliente', icon: User },
   place: { label: 'Lugar', icon: MapPin },
+  charge: { label: 'Cobro', icon: Banknote },
+  return: { label: 'Devolución', icon: Undo2 },
+  guarantee: { label: 'Garantía', icon: IdCard },
   notes: { label: 'Notas', icon: NotebookPen },
 }
+
+/** Cuántas garantías ya escritas se ofrecen para no volver a teclearlas. */
+const SUGGESTIONS = 3
 
 interface EventFormProps {
   target: FormTarget | null
@@ -75,14 +83,19 @@ function usedBlocks(event: AgendaEvent): Block[] {
     time: Boolean(event.time),
     client: Boolean(event.clientName || event.clientPhone),
     place: Boolean(event.place),
+    charge: Boolean(event.total),
+    return: event.needsReturn,
+    guarantee: Boolean(event.guarantee),
     notes: Boolean(event.notes),
   }
-  return (Object.keys(filled) as Block[]).filter((block) => filled[block])
+  return BLOCKS.filter((block) => filled[block])
 }
 
 function Fields({ initial, onClose, onSaved }: { initial?: AgendaEvent } & Omit<EventFormProps, 'target'>) {
   const { copy } = useAgendaConfig()
   const save = useSaveEvent(initial?.id)
+  const recordPayment = useRecordPayment()
+  const events = useEvents()
 
   const today = dayFromToday(0)
   const tomorrow = dayFromToday(1)
@@ -96,16 +109,47 @@ function Fields({ initial, onClose, onSaved }: { initial?: AgendaEvent } & Omit<
   const [clientName, setClientName] = useState(initial?.clientName ?? '')
   const [clientPhone, setClientPhone] = useState(initial?.clientPhone ?? '')
   const [place, setPlace] = useState(initial?.place ?? '')
+  const [totalText, setTotalText] = useState(initial?.total ? String(initial.total) : '')
+  const [advanceText, setAdvanceText] = useState('')
+  const [chosenMethod, setChosenMethod] = useState(readMethod)
+  const [guarantee, setGuarantee] = useState(initial?.guarantee ?? '')
   const [notes, setNotes] = useState(initial?.notes ?? '')
   const [open, setOpen] = useState<Block[]>(() => (initial ? usedBlocks(initial) : readBlocks()))
   /** El bloque recién agregado recibe el cursor. */
   const [justAdded, setJustAdded] = useState<Block | null>(null)
   const [submitted, setSubmitted] = useState(false)
 
+  const charging = open.includes('charge')
+  const total = charging ? toAmount(totalText) : 0
+  // El anticipo solo se pide al agendar; después los pagos se anotan en el detalle
+  const advance = charging && !initial ? toAmount(advanceText) : 0
+  const methods = usePaymentMethods(advance > 0)
+  const methodId = (methods.data?.find((m) => m.id === chosenMethod) ?? methods.data?.[0])?.id ?? ''
+
+  const badAmount = (value: number) => Number.isNaN(value) || value > LIMITS.maxAmount
   const errors = {
     title: title.trim() ? '' : 'Escribe qué vas a agendar',
     date: date ? '' : 'Elige el día',
+    total: badAmount(total) ? 'Revisa cuánto vas a cobrar' : '',
+    advance: badAmount(advance)
+      ? 'Revisa el anticipo'
+      : advance > 0 && !total
+        ? 'Escribe cuánto vas a cobrar en total'
+        : advance > total
+          ? 'El anticipo no puede ser mayor que el total'
+          : '',
+    method: advance > 0 && !methodId ? 'Elige cómo te dio el anticipo' : '',
   }
+
+  const guarantees = [
+    ...new Set(
+      [...(events.data ?? [])]
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .flatMap((e) => (e.guarantee ? [e.guarantee] : []))
+    ),
+  ]
+    .filter((text) => text !== guarantee)
+    .slice(0, SUGGESTIONS)
 
   const add = (block: Block) => {
     setOpen((blocks) => [...blocks, block])
@@ -116,17 +160,22 @@ function Fields({ initial, onClose, onSaved }: { initial?: AgendaEvent } & Omit<
     setOpen((blocks) => blocks.filter((b) => b !== block))
     if (block === 'time') setTime('')
     if (block === 'place') setPlace('')
+    if (block === 'guarantee') setGuarantee('')
     if (block === 'notes') setNotes('')
     if (block === 'client') {
       setClientName('')
       setClientPhone('')
+    }
+    if (block === 'charge') {
+      setTotalText('')
+      setAdvanceText('')
     }
   }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setSubmitted(true)
-    const problem = errors.title || errors.date
+    const problem = Object.values(errors).find(Boolean)
     if (problem) {
       toast.error(problem)
       return
@@ -142,19 +191,35 @@ function Fields({ initial, onClose, onSaved }: { initial?: AgendaEvent } & Omit<
         clientName: kept('client', clean(clientName)),
         clientPhone: kept('client', clean(clientPhone)),
         place: kept('place', clean(place)),
+        total: total > 0 ? total : undefined,
+        needsReturn: open.includes('return'),
+        guarantee: kept('guarantee', clean(guarantee)),
         notes: kept('notes', clean(notes)),
       },
       {
-        onSuccess: (event) => {
+        onSuccess: async (event) => {
           // Solo lo nuevo cambia lo que sale abierto: corregir algo antiguo no es un hábito
           if (!initial) rememberBlocks(open)
-          toast.success(initial ? 'Cambios guardados' : 'Agendado')
+          if (advance > 0) {
+            try {
+              await recordPayment.mutateAsync({ event, payment: { amount: advance, methodId, date: today } })
+              rememberMethod(methodId)
+              toast.success('Agendado y anticipo anotado en Caja')
+            } catch {
+              // Lo agendado ya quedó guardado: se cierra para no duplicarlo al reintentar
+              toast.error('Se agendó, pero el anticipo no se anotó. Anótalo desde el detalle.', { duration: 10_000 })
+            }
+          } else {
+            toast.success(initial ? 'Cambios guardados' : 'Agendado')
+          }
           onSaved(event)
         },
         onError: () => toast.error(copy.saveError),
       }
     )
   }
+
+  const saving = save.isPending || recordPayment.isPending
 
   const dayOption = (selected: boolean) =>
     cn(
@@ -182,7 +247,7 @@ function Fields({ initial, onClose, onSaved }: { initial?: AgendaEvent } & Omit<
       </div>
     )
 
-  const closed = (Object.keys(BLOCK_INFO) as Block[]).filter((block) => !open.includes(block))
+  const closed = BLOCKS.filter((block) => !open.includes(block))
 
   return (
     <AppBottomSheet
@@ -191,8 +256,8 @@ function Fields({ initial, onClose, onSaved }: { initial?: AgendaEvent } & Omit<
       title={initial ? 'Corregir' : 'Agendar'}
       mobileHeight="92dvh"
       footer={
-        <Button type="submit" form={FORM_ID} className={cn(TOUCH, 'w-full text-base')} disabled={save.isPending}>
-          {save.isPending && <Loader2 className="animate-spin" aria-hidden="true" />}
+        <Button type="submit" form={FORM_ID} className={cn(TOUCH, 'w-full text-base')} disabled={saving}>
+          {saving && <Loader2 className="animate-spin" aria-hidden="true" />}
           {initial ? 'Guardar cambios' : 'Agendar'}
         </Button>
       }
@@ -312,6 +377,82 @@ function Fields({ initial, onClose, onSaved }: { initial?: AgendaEvent } & Omit<
             autoFocus={justAdded === 'place'}
             className="h-12 text-base"
           />
+        )}
+
+        {section(
+          'charge',
+          <div className="space-y-4">
+            <AmountInput
+              id="agenda-total"
+              label="¿Cuánto vas a cobrar? ($)"
+              value={totalText}
+              onChange={setTotalText}
+              autoFocus={justAdded === 'charge'}
+              error={submitted ? errors.total : ''}
+            />
+            {initial ? (
+              initial.paid > 0 && (
+                <p className="text-sm text-muted-foreground">Ya cobrado: {formatCurrency(initial.paid)}</p>
+              )
+            ) : (
+              <AmountInput
+                id="agenda-advance"
+                label="¿Dejó anticipo? ($)"
+                placeholder="Opcional"
+                value={advanceText}
+                onChange={setAdvanceText}
+                error={submitted ? errors.advance : ''}
+              />
+            )}
+            {advance > 0 && (
+              <MethodChips
+                label="¿Cómo te dio el anticipo?"
+                methods={methods}
+                value={methodId}
+                onChange={setChosenMethod}
+                error={submitted ? errors.method : ''}
+              />
+            )}
+          </div>
+        )}
+
+        {section(
+          'return',
+          <p className="rounded-xl bg-muted/60 px-4 py-3 text-[15px] text-muted-foreground">
+            Primero lo marcas como entregado y, cuando regrese, como devuelto.
+          </p>
+        )}
+
+        {section(
+          'guarantee',
+          <div className="space-y-2">
+            <Input
+              aria-label="Garantía"
+              value={guarantee}
+              onChange={(e) => setGuarantee(e.target.value)}
+              placeholder="Ej. INE, depósito de $500"
+              maxLength={LIMITS.guarantee}
+              autoCapitalize="sentences"
+              autoComplete="off"
+              autoFocus={justAdded === 'guarantee'}
+              className="h-12 text-base"
+            />
+            {guarantees.length > 0 && (
+              <div role="group" aria-label="Garantías usadas antes" className="flex flex-wrap gap-2">
+                {guarantees.map((text) => (
+                  <Button
+                    key={text}
+                    type="button"
+                    variant="outline"
+                    className="h-11 max-w-full rounded-xl px-4 text-[15px]"
+                    onClick={() => setGuarantee(text)}
+                  >
+                    <span className="truncate">{text}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         {section(

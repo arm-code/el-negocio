@@ -2,7 +2,7 @@
 
 // Pantalla principal: pendientes, hechos y cancelados, agrupados por día.
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, CalendarPlus, ChevronRight, MapPin, User } from 'lucide-react'
 import { toast } from 'sonner'
@@ -14,56 +14,78 @@ import { MobileFab } from '@el-negocio/ui/mobile-fab'
 import { ConfirmDialog } from '@el-negocio/ui/confirm-dialog'
 import { EmptyState, InlineError, ListSkeleton } from '@el-negocio/ui/states'
 import { LABEL, TOUCH } from '@el-negocio/ui/detail'
-import { normalizeSearch } from '@el-negocio/ui/display'
+import { formatCurrency, normalizeSearch } from '@el-negocio/ui/display'
 import { cn } from '@el-negocio/ui/utils'
 import { useDeleteEvent, useEvents, useSetStatus } from '../hooks/use-agenda'
 import { useAgendaConfig } from '../provider'
 import { agendaMeta } from '../meta'
-import { dayName, groupEvents, timeName } from '../lib/when'
+import { amountDue } from '../lib/money'
+import { dayName, groupEvents, tabOf, timeName, type Tab } from '../lib/when'
 import type { AgendaEvent, EventStatus } from '../types'
 import { EventDetail } from './event-detail'
 import { EventForm, type FormTarget } from './event-form'
 
-const TABS: readonly { value: EventStatus; label: string; one: string; empty: string }[] = [
-  { value: 'pending', label: 'Pendientes', one: 'Pendiente', empty: 'No tienes nada pendiente' },
-  { value: 'done', label: 'Hechos', one: 'Hecho', empty: 'Aún no has marcado nada como hecho' },
-  { value: 'cancelled', label: 'Cancelados', one: 'Cancelado', empty: 'No hay nada cancelado' },
+const TABS: readonly { value: Tab; label: string; empty: string }[] = [
+  { value: 'pending', label: 'Pendientes', empty: 'No tienes nada pendiente' },
+  { value: 'done', label: 'Hechos', empty: 'Aún no has marcado nada como hecho' },
+  { value: 'cancelled', label: 'Cancelados', empty: 'No hay nada cancelado' },
 ]
 
-/** Con pocos registros, buscar es ruido. */
-const SEARCH_MIN = 6
+const STATUS_NAME: Record<EventStatus, string> = {
+  pending: 'Pendiente',
+  delivered: 'Entregado',
+  done: 'Hecho',
+  cancelled: 'Cancelado',
+}
 
 const STATUS_TOAST: Record<EventStatus, string> = {
   pending: 'Vuelve a estar pendiente',
+  delivered: 'Marcado como entregado',
   done: 'Marcado como hecho',
   cancelled: 'Cancelado',
 }
 
-export function AgendaHome({ headerAction }: { headerAction?: React.ReactNode }) {
+/** Con pocos registros, buscar es ruido. */
+const SEARCH_MIN = 6
+
+interface AgendaHomeProps {
+  headerAction?: ReactNode
+  /** Abre de una vez la captura, p. ej. al llegar desde un acceso "Agendar". */
+  startNew?: boolean
+  /** Secciones propias de la aplicación en el detalle de lo agendado. */
+  renderExtra?: (event: AgendaEvent) => ReactNode
+}
+
+export function AgendaHome({ headerAction, startNew, renderExtra }: AgendaHomeProps) {
   const { routes, copy } = useAgendaConfig()
-  const [tab, setTab] = useState<EventStatus>('pending')
+  const [tab, setTab] = useState<Tab>('pending')
   const [query, setQuery] = useState('')
-  const [selected, setSelected] = useState<AgendaEvent | null>(null)
-  const [form, setForm] = useState<FormTarget | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [form, setForm] = useState<FormTarget | null>(startNew ? { new: true } : null)
   const [toDelete, setToDelete] = useState<AgendaEvent | null>(null)
 
   const { data: events, isError, refetch } = useEvents()
   const setStatus = useSetStatus()
   const remove = useDeleteEvent()
 
+  // Siempre la versión recién leída, p. ej. después de anotar un pago
+  const selected = events?.find((e) => e.id === selectedId) ?? null
+
   const counts = useMemo(() => {
-    const result: Record<EventStatus, number> = { pending: 0, done: 0, cancelled: 0 }
-    for (const event of events ?? []) result[event.status]++
+    const result: Record<Tab, number> = { pending: 0, done: 0, cancelled: 0 }
+    for (const event of events ?? []) result[tabOf(event)]++
     return result
   }, [events])
 
   const search = normalizeSearch(query.trim())
   const groups = useMemo(() => {
     const all = events ?? []
-    if (!search) return groupEvents(all.filter((e) => e.status === tab), tab)
+    if (!search) return groupEvents(all.filter((e) => tabOf(e) === tab), tab)
     // Al buscar se revisa todo, no solo la pestaña
     const found = all.filter((e) =>
-      normalizeSearch([e.title, e.clientName, e.clientPhone, e.place].filter(Boolean).join(' ')).includes(search)
+      normalizeSearch([e.title, e.clientName, e.clientPhone, e.place, e.folio].filter(Boolean).join(' ')).includes(
+        search
+      )
     )
     return groupEvents(found, 'done')
   }, [events, tab, search])
@@ -76,7 +98,7 @@ export function AgendaHome({ headerAction }: { headerAction?: React.ReactNode })
       {
         onSuccess: () => {
           toast.success(STATUS_TOAST[status])
-          setSelected(null)
+          setSelectedId(null)
         },
         onError: () => toast.error(copy.saveError),
       }
@@ -179,8 +201,9 @@ export function AgendaHome({ headerAction }: { headerAction?: React.ReactNode })
                           <EventRow
                             event={event}
                             showDate={group.late}
-                            showStatus={Boolean(search)}
-                            onSelect={setSelected}
+                            // Cuando el encabezado o la pestaña no lo dicen ya
+                            showStatus={Boolean(search) || (event.status === 'delivered' && !group.late)}
+                            onSelect={(e) => setSelectedId(e.id)}
                           />
                         </li>
                       ))}
@@ -198,16 +221,17 @@ export function AgendaHome({ headerAction }: { headerAction?: React.ReactNode })
       <EventDetail
         event={selected}
         isChanging={setStatus.isPending}
-        onClose={() => setSelected(null)}
+        onClose={() => setSelectedId(null)}
         onEdit={(event) => {
-          setSelected(null)
+          setSelectedId(null)
           setForm({ editId: event.id })
         }}
         onStatus={changeStatus}
         onDelete={(event) => {
-          setSelected(null)
+          setSelectedId(null)
           setToDelete(event)
         }}
+        renderExtra={renderExtra}
       />
 
       <EventForm
@@ -216,7 +240,7 @@ export function AgendaHome({ headerAction }: { headerAction?: React.ReactNode })
         onSaved={(event) => {
           setForm(null)
           // Lleva a donde quedó, para que se vea que sí se guardó
-          setTab(event.status)
+          setTab(tabOf(event))
           setQuery('')
         }}
       />
@@ -243,19 +267,19 @@ function EventRow({
   event: AgendaEvent
   /** Cuando el encabezado del grupo no dice el día. */
   showDate?: boolean
-  /** Cuando la lista mezcla pendientes, hechos y cancelados. */
   showStatus?: boolean
   onSelect: (event: AgendaEvent) => void
 }) {
   const who = event.clientName
-  const status = TABS.find((t) => t.value === event.status)
   const detail = [
     showDate ? dayName(event.date) : '',
     event.time ? timeName(event.time) : '',
-    showStatus ? status?.one : '',
+    showStatus ? STATUS_NAME[event.status] : '',
   ]
     .filter(Boolean)
     .join(' · ')
+  const due = amountDue(event)
+  const charge = event.total !== undefined && event.status !== 'cancelled'
 
   return (
     <button
@@ -268,11 +292,32 @@ function EventRow({
         <span className="block truncate text-base font-medium first-letter:uppercase">{event.title}</span>
         {(who || event.place) && (
           <span className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
-            {who ? <User className="size-3.5 shrink-0" aria-hidden="true" /> : <MapPin className="size-3.5 shrink-0" aria-hidden="true" />}
+            {who ? (
+              <User className="size-3.5 shrink-0" aria-hidden="true" />
+            ) : (
+              <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+            )}
             <span className="truncate">{who || event.place}</span>
           </span>
         )}
       </span>
+      {charge && (
+        <span
+          className={cn(
+            'shrink-0 text-right text-sm font-semibold tabular-nums',
+            due > 0 ? 'text-destructive' : 'text-success'
+          )}
+        >
+          {due > 0 ? (
+            <>
+              <span className="block text-xs font-normal">Falta</span>
+              {formatCurrency(due)}
+            </>
+          ) : (
+            'Pagado'
+          )}
+        </span>
+      )}
       <ChevronRight className="size-5 shrink-0 text-muted-foreground/50" aria-hidden="true" />
     </button>
   )

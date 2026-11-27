@@ -4,6 +4,13 @@
 export { AgendaHome } from './components/agenda-home'
 export { AgendaProvider } from './provider'
 export type { AgendaConfig, AgendaRoutes, AgendaCopy } from './provider'
-export type { EventsStorage } from './ports'
+export type { EventsStorage, PaymentsStorage } from './ports'
 export { LIMITS } from './lib/limits'
-export type { AgendaEvent, EventInput, EventStatus } from './types'
+export type {
+  AgendaEvent,
+  EventInput,
+  EventStatus,
+  Payment,
+  PaymentInput,
+  PaymentMethodOption,
+} from './types'

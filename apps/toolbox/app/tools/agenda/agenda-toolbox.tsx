@@ -2,7 +2,7 @@
 
 // Cómo monta el toolbox la agenda: datos en el navegador, sin cuenta.
 import { AgendaProvider, type AgendaConfig } from "@el-negocio/tool-agenda"
-import { localEventsStorage } from "@/lib/agenda-storage"
+import { localEventsStorage, localPaymentsStorage } from "@/lib/agenda-storage"
 import { markToolUsed } from "@/lib/install"
 
 const config: AgendaConfig = {
@@ -15,7 +15,8 @@ const config: AgendaConfig = {
       return event
     },
   },
-  routes: { home: "/" },
+  payments: localPaymentsStorage,
+  routes: { home: "/", cash: "/tools/cash" },
   copy: {
     backLabel: "Volver a herramientas",
     description: "Tus citas, pedidos y entregas, guardados en este dispositivo.",

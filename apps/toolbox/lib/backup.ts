@@ -4,10 +4,10 @@
 // El archivo que se carga viene de fuera: se valida campo por campo y solo se
 // copian los campos conocidos.
 
-import { LIMITS as AGENDA_LIMITS, type AgendaEvent } from '@el-negocio/tool-agenda'
+import { LIMITS as AGENDA_LIMITS } from '@el-negocio/tool-agenda'
 import type { BusinessInfo, Note, NoteItem } from '@el-negocio/tool-sales-notes'
 import { LIMITS, type CatalogItem } from '@el-negocio/tool-cash'
-import { readAgendaData, writeAgendaData } from '@/lib/agenda-storage'
+import { readAgendaData, writeAgendaData, type StoredEvent } from '@/lib/agenda-storage'
 import { readCashData, sameName, writeCashData, type StoredMovement } from '@/lib/cash-storage'
 import { readLocalData, writeLocalData } from '@/lib/sales-notes-storage'
 
@@ -95,18 +95,21 @@ function parseMovement(v: unknown): StoredMovement | null {
     categoryId: text(v.categoryId, 100),
     methodId: text(v.methodId, 100),
     description: optionalText(v.description, LIMITS.description),
+    eventId: optionalText(v.eventId, 100),
     createdAt: v.createdAt,
     updatedAt: isDate(v.updatedAt) ? v.updatedAt : undefined,
   }
 }
 
-function parseEvent(v: unknown): AgendaEvent | null {
+function parseEvent(v: unknown): StoredEvent | null {
   if (!isObject(v) || !text(v.id, 100) || !isDate(v.createdAt)) return null
   const title = text(v.title, AGENDA_LIMITS.title).trim()
   const date = text(v.date, 10)
   if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !isDate(date)) return null
-  if (v.status !== 'pending' && v.status !== 'done' && v.status !== 'cancelled') return null
+  const { status } = v
+  if (status !== 'pending' && status !== 'delivered' && status !== 'done' && status !== 'cancelled') return null
   const time = text(v.time, 5)
+  const total = Math.round(number(v.total) * 100) / 100
 
   return {
     id: text(v.id, 100),
@@ -117,7 +120,10 @@ function parseEvent(v: unknown): AgendaEvent | null {
     clientPhone: optionalText(v.clientPhone, AGENDA_LIMITS.clientPhone),
     place: optionalText(v.place, AGENDA_LIMITS.place),
     notes: optionalText(v.notes, AGENDA_LIMITS.notes),
-    status: v.status,
+    total: total > 0 && total <= AGENDA_LIMITS.maxAmount ? total : undefined,
+    needsReturn: v.needsReturn === true,
+    guarantee: optionalText(v.guarantee, AGENDA_LIMITS.guarantee),
+    status,
     createdAt: v.createdAt,
     updatedAt: isDate(v.updatedAt) ? v.updatedAt : undefined,
   }

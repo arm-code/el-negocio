@@ -3,12 +3,14 @@
 import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAgendaConfig } from '../provider'
-import type { EventInput, EventStatus } from '../types'
+import type { AgendaEvent, EventInput, EventStatus, PaymentInput } from '../types'
 
 export const agendaKeys = {
   all: ['agenda'] as const,
   list: ['agenda', 'list'] as const,
   event: (id: string) => ['agenda', 'event', id] as const,
+  payments: (id: string) => ['agenda', 'payments', id] as const,
+  methods: ['agenda', 'methods'] as const,
 }
 
 /** Refresca cuando el almacenamiento avisa de un cambio hecho por fuera. */
@@ -70,6 +72,35 @@ export function useDeleteEvent() {
   const refresh = useRefresh()
   return useMutation({
     mutationFn: (id: string) => events.remove(id),
+    onSuccess: refresh,
+  })
+}
+
+export function usePaymentMethods(enabled = true) {
+  const { payments, events } = useAgendaConfig()
+  return useQuery({
+    queryKey: agendaKeys.methods,
+    queryFn: () => payments.methods(),
+    staleTime: events.staleTime ?? Infinity,
+    enabled,
+  })
+}
+
+export function usePayments(eventId: string) {
+  const { payments } = useAgendaConfig()
+  return useQuery({
+    queryKey: agendaKeys.payments(eventId),
+    queryFn: () => payments.list(eventId),
+    // Un cobro puede corregirse o borrarse desde Caja
+    refetchOnMount: 'always',
+  })
+}
+
+export function useRecordPayment() {
+  const { payments } = useAgendaConfig()
+  const refresh = useRefresh()
+  return useMutation({
+    mutationFn: ({ event, payment }: { event: AgendaEvent; payment: PaymentInput }) => payments.record(event, payment),
     onSuccess: refresh,
   })
 }

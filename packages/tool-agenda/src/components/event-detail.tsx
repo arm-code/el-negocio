@@ -2,7 +2,8 @@
 
 // Lo agendado, con lo que se puede hacer con ello. Solo muestra lo que se llenó.
 
-import { CalendarPlus, Check, MapPin, MessageCircle, Pencil, RotateCcw, Trash2 } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { CalendarPlus, Check, MapPin, MessageCircle, PackageCheck, Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppBottomSheet } from '@el-negocio/ui/app-bottom-sheet'
 import { Button } from '@el-negocio/ui/button'
@@ -10,8 +11,9 @@ import { ContactButtons, DetailSection, TOUCH } from '@el-negocio/ui/detail'
 import { formatMxPhone, toMxPhone, toSlug } from '@el-negocio/ui/display'
 import { cn } from '@el-negocio/ui/utils'
 import { toCalendarFile } from '../lib/calendar'
-import { dayFromToday, dayName, timeName } from '../lib/when'
+import { dayFromToday, dayName, tabOf, timeName } from '../lib/when'
 import type { AgendaEvent, EventStatus } from '../types'
+import { ChargeSection } from './charge-section'
 
 /** Abre el archivo de calendario: el celular ofrece guardarlo con su recordatorio. */
 function addToCalendar(event: AgendaEvent) {
@@ -46,6 +48,26 @@ function reminder(event: AgendaEvent) {
   ].join('')
 }
 
+/** El siguiente paso: lo que más se hace desde aquí, en el botón grande. */
+function nextStep({ status, needsReturn }: AgendaEvent) {
+  if (status === 'pending' && needsReturn) {
+    return { status: 'delivered' as const, label: 'Marcar como entregado', icon: PackageCheck }
+  }
+  if (status === 'delivered' && needsReturn) {
+    return { status: 'done' as const, label: 'Ya lo devolvieron', icon: Check }
+  }
+  if (status === 'pending' || status === 'delivered') {
+    return { status: 'done' as const, label: 'Marcar como hecho', icon: Check }
+  }
+  return { status: 'pending' as const, label: 'Volver a pendiente', icon: RotateCcw }
+}
+
+const STATUS_NOTE: Partial<Record<EventStatus, { text: string; className: string }>> = {
+  delivered: { text: 'Entregado', className: 'text-primary' },
+  done: { text: 'Hecho', className: 'text-success' },
+  cancelled: { text: 'Cancelado', className: 'text-destructive' },
+}
+
 interface EventDetailProps {
   event: AgendaEvent | null
   isChanging: boolean
@@ -53,16 +75,29 @@ interface EventDetailProps {
   onEdit: (event: AgendaEvent) => void
   onStatus: (event: AgendaEvent, status: EventStatus) => void
   onDelete: (event: AgendaEvent) => void
+  /** Secciones propias de la aplicación, p. ej. documentos de lo agendado. */
+  renderExtra?: (event: AgendaEvent) => ReactNode
 }
 
-export function EventDetail({ event, isChanging, onClose, onEdit, onStatus, onDelete }: EventDetailProps) {
+export function EventDetail({
+  event,
+  isChanging,
+  onClose,
+  onEdit,
+  onStatus,
+  onDelete,
+  renderExtra,
+}: EventDetailProps) {
   const phone = event ? toMxPhone(event.clientPhone) : null
-  const pending = event?.status === 'pending'
+  const open = event ? tabOf(event) === 'pending' : false
+  const next = event ? nextStep(event) : null
+  const note = event ? STATUS_NOTE[event.status] : undefined
+  const showCharge = event ? event.total !== undefined || event.paid > 0 : false
 
   return (
     <AppBottomSheet
       open={event !== null}
-      onOpenChange={(open) => !open && onClose()}
+      onOpenChange={(isOpen) => !isOpen && onClose()}
       title={event?.title ?? ''}
       headerAction={
         event && (
@@ -78,15 +113,16 @@ export function EventDetail({ event, isChanging, onClose, onEdit, onStatus, onDe
         )
       }
       footer={
-        event && (
+        event &&
+        next && (
           <Button
-            variant={pending ? 'default' : 'outline'}
+            variant={open ? 'default' : 'outline'}
             className={cn(TOUCH, 'w-full text-base')}
             disabled={isChanging}
-            onClick={() => onStatus(event, pending ? 'done' : 'pending')}
+            onClick={() => onStatus(event, next.status)}
           >
-            {pending ? <Check aria-hidden="true" /> : <RotateCcw aria-hidden="true" />}
-            {pending ? 'Marcar como hecho' : 'Volver a pendiente'}
+            <next.icon aria-hidden="true" />
+            {next.label}
           </Button>
         )
       }
@@ -96,11 +132,13 @@ export function EventDetail({ event, isChanging, onClose, onEdit, onStatus, onDe
           <div className="rounded-xl bg-muted/60 px-4 py-3">
             <p className="text-lg font-semibold">{dayName(event.date)}</p>
             {event.time && <p className="text-base text-muted-foreground">{timeName(event.time)}</p>}
-            {event.status !== 'pending' && (
-              <p className={cn('mt-1 text-sm font-medium', event.status === 'done' ? 'text-success' : 'text-destructive')}>
-                {event.status === 'done' ? 'Hecho' : 'Cancelado'}
+            {note && (
+              <p className={cn('mt-1 text-sm font-medium', note.className)}>
+                {note.text}
+                {event.status === 'delivered' && event.needsReturn && ' · falta que lo devuelvan'}
               </p>
             )}
+            {event.folio && <p className="mt-1 text-sm text-muted-foreground">{event.folio}</p>}
           </div>
 
           {(event.clientName || event.clientPhone) && (
@@ -114,7 +152,7 @@ export function EventDetail({ event, isChanging, onClose, onEdit, onStatus, onDe
                 )}
               </div>
               {phone && <ContactButtons phone={phone} />}
-              {phone && pending && event.date >= dayFromToday(0) && (
+              {phone && event.status === 'pending' && event.date >= dayFromToday(0) && (
                 <Button asChild variant="ghost" className={cn(TOUCH, 'w-full text-primary')}>
                   <a
                     href={`https://wa.me/52${phone}?text=${encodeURIComponent(reminder(event))}`}
@@ -145,17 +183,38 @@ export function EventDetail({ event, isChanging, onClose, onEdit, onStatus, onDe
             </DetailSection>
           )}
 
+          {showCharge && <ChargeSection key={event.id} event={event} />}
+
+          {event.guarantee && (
+            <DetailSection title="Garantía">
+              <p className="text-pretty text-base leading-relaxed">{event.guarantee}</p>
+            </DetailSection>
+          )}
+
           {event.notes && (
             <DetailSection title="Notas">
               <p className="whitespace-pre-line text-pretty text-base leading-relaxed">{event.notes}</p>
             </DetailSection>
           )}
 
+          {renderExtra?.(event)}
+
           <div className="space-y-1 border-t pt-4">
-            {pending && (
+            {event.status === 'pending' && (
               <Button variant="outline" className={cn(TOUCH, 'w-full')} onClick={() => addToCalendar(event)}>
                 <CalendarPlus aria-hidden="true" />
                 Agregar a mi calendario
+              </Button>
+            )}
+            {event.status === 'delivered' && (
+              <Button
+                variant="ghost"
+                className={cn(TOUCH, 'w-full text-muted-foreground')}
+                disabled={isChanging}
+                onClick={() => onStatus(event, 'pending')}
+              >
+                <RotateCcw aria-hidden="true" />
+                Volver a pendiente
               </Button>
             )}
             {event.status === 'cancelled' ? (
