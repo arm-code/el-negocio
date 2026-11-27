@@ -16,6 +16,7 @@ COPY apps/os/package.json apps/os/
 COPY packages/ui/package.json packages/ui/
 COPY packages/tool-sales-notes/package.json packages/tool-sales-notes/
 COPY packages/tool-cash/package.json packages/tool-cash/
+COPY packages/tool-agenda/package.json packages/tool-agenda/
 # Solo las dependencias de este front y de los paquetes que usa
 RUN pnpm install --frozen-lockfile --filter "el-negocio-os..."
 

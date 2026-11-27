@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
   output: 'standalone',
 
   // Los paquetes se publican como TypeScript: Next los compila junto con la app
-  transpilePackages: ['@el-negocio/ui', '@el-negocio/tool-sales-notes', '@el-negocio/tool-cash'],
+  transpilePackages: ['@el-negocio/ui', '@el-negocio/tool-sales-notes', '@el-negocio/tool-cash', '@el-negocio/tool-agenda'],
   outputFileTracingRoot: REPO_ROOT,
   turbopack: { root: REPO_ROOT },
 

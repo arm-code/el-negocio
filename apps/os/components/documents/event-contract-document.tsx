@@ -43,6 +43,9 @@ const STATUS_LABELS: Record<string, string> = {
   cancelled: 'Cancelado',
 }
 
+/** La cláusula solo menciona la garantía si se dejó alguna. */
+const CUSTODY = ' Se entrega en custodia el documento de garantía señalado.'
+
 // ─────────────────────────────────────────────────────────────────────────────
 // VISTA PREVIA RESPONSIVA (Móvil)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -53,7 +56,7 @@ export const EventContractDocument = forwardRef<HTMLDivElement, EventContractDoc
 
     const clientName = event.customer?.name || event.clientName || 'Cliente sin nombre'
     const clientPhone = event.customer?.phone || event.clientPhone
-    const guarantee = event.guaranteeDocument || event.contract?.guaranteeDocument || 'INE / Credencial de Elector'
+    const guarantee = event.guaranteeDocument || event.contract?.guaranteeDocument
     const serviceDesc = event.serviceDescription || event.name || event.notes || 'Renta de mobiliario y equipo para evento.'
     const folio = event.folio || `EVT-${event.id.slice(0, 6)}`
 
@@ -93,9 +96,11 @@ export const EventContractDocument = forwardRef<HTMLDivElement, EventContractDoc
           <section className="rounded-xl border bg-card p-4">
             <h2 className="text-sm font-semibold text-muted-foreground">Ubicación</h2>
             <p className="mt-1 font-medium">{event.eventAddress || 'Sin dirección registrada'}</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Garantía: {guarantee}
-            </p>
+            {guarantee && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Garantía: {guarantee}
+              </p>
+            )}
           </section>
         </div>
 
@@ -121,7 +126,7 @@ export const EventContractDocument = forwardRef<HTMLDivElement, EventContractDoc
           <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
             El cliente recibe el mobiliario en óptimas condiciones y se compromete a devolverlo
             en la fecha convenida. En caso de daño o pérdida, el cliente cubrirá el costo de reparación
-            o reposición. Se entrega en custodia el documento de garantía señalado.
+            o reposición.{guarantee && CUSTODY}
           </p>
         </section>
       </div>
@@ -138,7 +143,7 @@ export function PrintEventContractDocument({ event, business }: EventContractDoc
 
   const clientName = event.customer?.name || event.clientName || 'Cliente sin nombre'
   const clientPhone = event.customer?.phone || event.clientPhone
-  const guarantee = event.guaranteeDocument || event.contract?.guaranteeDocument || 'INE / Credencial de Elector'
+  const guarantee = event.guaranteeDocument || event.contract?.guaranteeDocument
   const serviceDesc = event.serviceDescription || event.name || event.notes || 'Renta de mobiliario y equipo para evento.'
   const folio = event.folio || `EVT-${event.id.slice(0, 6)}`
 
@@ -176,7 +181,7 @@ export function PrintEventContractDocument({ event, business }: EventContractDoc
         <section className="rounded-xl border p-5">
           <h2 className="text-sm font-semibold text-muted-foreground">Ubicación</h2>
           <p className="mt-2 font-medium">{event.eventAddress || 'Sin dirección registrada'}</p>
-          <p className="mt-3 text-sm text-muted-foreground">Garantía: {guarantee}</p>
+          {guarantee && <p className="mt-3 text-sm text-muted-foreground">Garantía: {guarantee}</p>}
         </section>
       </div>
 
@@ -199,7 +204,7 @@ export function PrintEventContractDocument({ event, business }: EventContractDoc
         <p className="mt-2 text-justify leading-relaxed">
           El cliente recibe el mobiliario en óptimas condiciones y se compromete a devolverlo
           en la fecha convenida. En caso de daño o pérdida, el cliente cubrirá el costo de reparación
-          o reposición. Se entrega en custodia el documento de garantía señalado.
+          o reposición.{guarantee && CUSTODY}
         </p>
       </section>
 
