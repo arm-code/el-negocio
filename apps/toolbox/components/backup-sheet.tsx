@@ -22,7 +22,7 @@ function download() {
         // Algunos navegadores leen el archivo después del clic
         setTimeout(() => URL.revokeObjectURL(url), 10_000)
         toast.success("Respaldo descargado", {
-            description: `${plural(backup.noteCount, "nota", "notas")} y ${plural(backup.movementCount, "movimiento", "movimientos")} en ${backup.fileName}`,
+            description: `${plural(backup.noteCount, "nota", "notas")}, ${plural(backup.movementCount, "movimiento", "movimientos")} y ${plural(backup.eventCount, "evento", "eventos")} de la agenda en ${backup.fileName}`,
         })
     } catch {
         toast.error("No se pudo crear el respaldo.")

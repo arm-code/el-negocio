@@ -4,8 +4,10 @@
 // El archivo que se carga viene de fuera: se valida campo por campo y solo se
 // copian los campos conocidos.
 
+import { LIMITS as AGENDA_LIMITS, type AgendaEvent } from '@el-negocio/tool-agenda'
 import type { BusinessInfo, Note, NoteItem } from '@el-negocio/tool-sales-notes'
 import { LIMITS, type CatalogItem } from '@el-negocio/tool-cash'
+import { readAgendaData, writeAgendaData } from '@/lib/agenda-storage'
 import { readCashData, sameName, writeCashData, type StoredMovement } from '@/lib/cash-storage'
 import { readLocalData, writeLocalData } from '@/lib/sales-notes-storage'
 
@@ -16,6 +18,7 @@ const MAX_NOTES = 5000
 const MAX_ITEMS = 500
 const MAX_MOVEMENTS = 20_000
 const MAX_OPTIONS = 500
+const MAX_EVENTS = 20_000
 const MAX_TEXT = 2000
 
 /** Error con un mensaje que se le puede mostrar a la persona. */
@@ -97,6 +100,29 @@ function parseMovement(v: unknown): StoredMovement | null {
   }
 }
 
+function parseEvent(v: unknown): AgendaEvent | null {
+  if (!isObject(v) || !text(v.id, 100) || !isDate(v.createdAt)) return null
+  const title = text(v.title, AGENDA_LIMITS.title).trim()
+  const date = text(v.date, 10)
+  if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !isDate(date)) return null
+  if (v.status !== 'pending' && v.status !== 'done' && v.status !== 'cancelled') return null
+  const time = text(v.time, 5)
+
+  return {
+    id: text(v.id, 100),
+    title,
+    date,
+    time: /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? time : undefined,
+    clientName: optionalText(v.clientName, AGENDA_LIMITS.clientName),
+    clientPhone: optionalText(v.clientPhone, AGENDA_LIMITS.clientPhone),
+    place: optionalText(v.place, AGENDA_LIMITS.place),
+    notes: optionalText(v.notes, AGENDA_LIMITS.notes),
+    status: v.status,
+    createdAt: v.createdAt,
+    updatedAt: isDate(v.updatedAt) ? v.updatedAt : undefined,
+  }
+}
+
 const lastChange = (item: { createdAt: string; updatedAt?: string }) => Date.parse(item.updatedAt ?? item.createdAt)
 const folioNumber = (note: Note) => Number(/(\d+)$/.exec(note.folio)?.[1] ?? 0)
 
@@ -148,16 +174,39 @@ function mergeCash(incoming: unknown, summary: ImportSummary) {
   return { movements: [...byId.values()], categories: categories.items, methods: methods.items }
 }
 
+/** Suma la agenda del archivo. `null` si no trae (respaldos anteriores). */
+function mergeAgenda(incoming: unknown, summary: ImportSummary) {
+  if (!Array.isArray(incoming)) return null
+  if (incoming.length > MAX_EVENTS) throw new BackupError('El respaldo tiene demasiados registros.')
+
+  const byId = new Map(readAgendaData().map((e) => [e.id, e]))
+  for (const entry of incoming) {
+    const event = parseEvent(entry)
+    if (!event) {
+      summary.invalid++
+      continue
+    }
+    const existing = byId.get(event.id)
+    if (!existing) summary.added++
+    else if (lastChange(event) > lastChange(existing)) summary.updated++
+    else continue
+    byId.set(event.id, event)
+  }
+  return [...byId.values()]
+}
+
 export function createBackup() {
   const data = readLocalData()
   const cash = readCashData()
+  const agenda = readAgendaData()
   const exportedAt = new Date()
   const day = exportedAt.toLocaleDateString('en-CA') // AAAA-MM-DD en hora local
   return {
     fileName: `el-negocio-respaldo-${day}.json`,
     noteCount: data.salesNotes.length,
     movementCount: cash.movements.length,
-    content: JSON.stringify({ app: APP_ID, version: VERSION, exportedAt: exportedAt.toISOString(), ...data, cash }),
+    eventCount: agenda.length,
+    content: JSON.stringify({ app: APP_ID, version: VERSION, exportedAt: exportedAt.toISOString(), ...data, cash, agenda }),
   }
 }
 
@@ -200,8 +249,10 @@ export async function importBackup(file: File): Promise<ImportSummary> {
   }
 
   let cash: ReturnType<typeof mergeCash>
+  let agenda: ReturnType<typeof mergeAgenda>
   try {
     cash = mergeCash(parsed.cash, summary)
+    agenda = mergeAgenda(parsed.agenda, summary)
   } catch (error) {
     if (error instanceof BackupError) throw error
     throw new BackupError('No se pudo leer lo que ya tienes guardado en este dispositivo.')
@@ -219,6 +270,7 @@ export async function importBackup(file: File): Promise<ImportSummary> {
       businessInfo: hasOwnInfo ? current.businessInfo : imported,
     })
     if (cash) writeCashData(cash)
+    if (agenda) writeAgendaData(agenda)
   } catch {
     throw new BackupError('No se pudo guardar. Revisa que tu navegador permita guardar datos y tenga espacio.')
   }

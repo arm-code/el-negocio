@@ -36,11 +36,15 @@ export default function HomePage() {
           </h2>
 
           <ul className={cn("grid gap-4", availableTools.length > 1 && "sm:grid-cols-2")}>
-            {availableTools.map((tool) => (
-              <li key={tool.id}>
-                <ToolShowcase tool={tool} wide={availableTools.length === 1} />
-              </li>
-            ))}
+            {availableTools.map((tool, index) => {
+              // Si son impares, la última ocupa todo el ancho para no dejar un hueco
+              const wide = availableTools.length % 2 === 1 && index === availableTools.length - 1
+              return (
+                <li key={tool.id} className={cn(wide && "sm:col-span-2")}>
+                  <ToolShowcase tool={tool} wide={wide} />
+                </li>
+              )
+            })}
           </ul>
         </section>
 
