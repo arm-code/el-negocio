@@ -7,8 +7,17 @@
 import { LIMITS as AGENDA_LIMITS } from '@el-negocio/tool-agenda'
 import type { BusinessInfo, Note, NoteItem } from '@el-negocio/tool-sales-notes'
 import { LIMITS, type CatalogItem } from '@el-negocio/tool-cash'
+import {
+  DOCUMENT_KINDS,
+  FIELD_KEYS,
+  LIMITS as DOCUMENT_LIMITS,
+  type BusinessDocument,
+  type DocumentItem,
+  type DocumentValues,
+} from '@el-negocio/tool-documents'
 import { readAgendaData, writeAgendaData, type StoredEvent } from '@/lib/agenda-storage'
 import { readCashData, sameName, writeCashData, type StoredMovement } from '@/lib/cash-storage'
+import { readDocumentsData, writeDocumentsData } from '@/lib/documents-storage'
 import { readLocalData, writeLocalData } from '@/lib/sales-notes-storage'
 
 const APP_ID = 'el-negocio'
@@ -19,6 +28,7 @@ const MAX_ITEMS = 500
 const MAX_MOVEMENTS = 20_000
 const MAX_OPTIONS = 500
 const MAX_EVENTS = 20_000
+const MAX_DOCUMENTS = 5000
 const MAX_TEXT = 2000
 
 /** Error con un mensaje que se le puede mostrar a la persona. */
@@ -129,6 +139,45 @@ function parseEvent(v: unknown): StoredEvent | null {
   }
 }
 
+function parseDocumentItem(v: unknown): DocumentItem | null {
+  if (!isObject(v)) return null
+  const description = text(v.description, DOCUMENT_LIMITS.itemDescription).trim()
+  const quantity = number(v.quantity)
+  const unitValue = number(v.unitValue)
+  if (!description || !(quantity > 0 && quantity <= DOCUMENT_LIMITS.maxQuantity)) return null
+  if (!(unitValue >= 0 && unitValue <= DOCUMENT_LIMITS.maxAmount)) return null
+  return { description, quantity, unitValue }
+}
+
+function parseDocument(v: unknown): BusinessDocument | null {
+  if (!isObject(v) || !text(v.id, 100) || !isDate(v.createdAt)) return null
+  const kind = DOCUMENT_KINDS.find((k) => k === v.kind)
+  const folio = number(v.folio)
+  if (!kind || !(Number.isInteger(folio) && folio > 0) || !isObject(v.values)) return null
+  if (!Array.isArray(v.items) || v.items.length > DOCUMENT_LIMITS.items) return null
+  const items = v.items.map(parseDocumentItem)
+  if (items.some((item) => item === null)) return null
+
+  // Solo los datos conocidos
+  const source = v.values
+  const values: DocumentValues = {}
+  for (const key of FIELD_KEYS) {
+    const value = text(source[key], DOCUMENT_LIMITS.longText)
+    if (value) values[key] = value
+  }
+
+  return {
+    id: text(v.id, 100),
+    folio,
+    kind,
+    values,
+    items: items as DocumentItem[],
+    eventId: optionalText(v.eventId, 100),
+    createdAt: v.createdAt,
+    updatedAt: isDate(v.updatedAt) ? v.updatedAt : undefined,
+  }
+}
+
 const lastChange = (item: { createdAt: string; updatedAt?: string }) => Date.parse(item.updatedAt ?? item.createdAt)
 const folioNumber = (note: Note) => Number(/(\d+)$/.exec(note.folio)?.[1] ?? 0)
 
@@ -201,10 +250,38 @@ function mergeAgenda(incoming: unknown, summary: ImportSummary) {
   return [...byId.values()]
 }
 
+/** Suma los documentos del archivo. `null` si no trae (respaldos anteriores). */
+function mergeDocuments(incoming: unknown, summary: ImportSummary) {
+  if (!isObject(incoming) || !Array.isArray(incoming.documents)) return null
+  if (incoming.documents.length > MAX_DOCUMENTS) throw new BackupError('El respaldo tiene demasiados registros.')
+
+  const current = readDocumentsData()
+  const byId = new Map(current.documents.map((d) => [d.id, d]))
+  for (const entry of incoming.documents) {
+    const document = parseDocument(entry)
+    if (!document) {
+      summary.invalid++
+      continue
+    }
+    const existing = byId.get(document.id)
+    if (!existing) summary.added++
+    else if (lastChange(document) > lastChange(existing)) summary.updated++
+    else continue
+    byId.set(document.id, document)
+  }
+  const documents = [...byId.values()]
+  // El siguiente folio no puede repetir uno que ya exista
+  return {
+    documents,
+    seq: Math.max(current.seq, number(incoming.seq), ...documents.map((d) => d.folio), 0),
+  }
+}
+
 export function createBackup() {
   const data = readLocalData()
   const cash = readCashData()
   const agenda = readAgendaData()
+  const documents = readDocumentsData()
   const exportedAt = new Date()
   const day = exportedAt.toLocaleDateString('en-CA') // AAAA-MM-DD en hora local
   return {
@@ -212,7 +289,8 @@ export function createBackup() {
     noteCount: data.salesNotes.length,
     movementCount: cash.movements.length,
     eventCount: agenda.length,
-    content: JSON.stringify({ app: APP_ID, version: VERSION, exportedAt: exportedAt.toISOString(), ...data, cash, agenda }),
+    documentCount: documents.documents.length,
+    content: JSON.stringify({ app: APP_ID, version: VERSION, exportedAt: exportedAt.toISOString(), ...data, cash, agenda, documents }),
   }
 }
 
@@ -256,9 +334,11 @@ export async function importBackup(file: File): Promise<ImportSummary> {
 
   let cash: ReturnType<typeof mergeCash>
   let agenda: ReturnType<typeof mergeAgenda>
+  let documents: ReturnType<typeof mergeDocuments>
   try {
     cash = mergeCash(parsed.cash, summary)
     agenda = mergeAgenda(parsed.agenda, summary)
+    documents = mergeDocuments(parsed.documents, summary)
   } catch (error) {
     if (error instanceof BackupError) throw error
     throw new BackupError('No se pudo leer lo que ya tienes guardado en este dispositivo.')
@@ -277,6 +357,7 @@ export async function importBackup(file: File): Promise<ImportSummary> {
     })
     if (cash) writeCashData(cash)
     if (agenda) writeAgendaData(agenda)
+    if (documents) writeDocumentsData(documents)
   } catch {
     throw new BackupError('No se pudo guardar. Revisa que tu navegador permita guardar datos y tenga espacio.')
   }

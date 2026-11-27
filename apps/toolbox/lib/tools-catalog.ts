@@ -6,9 +6,9 @@
 import type { ComponentType } from "react"
 import { agendaMeta } from "@el-negocio/tool-agenda/meta"
 import { cashMeta } from "@el-negocio/tool-cash/meta"
+import { documentsMeta } from "@el-negocio/tool-documents/meta"
 import { salesNotesMeta } from "@el-negocio/tool-sales-notes/meta"
 import {
-    FileSignature,
     Calculator,
     BookOpen,
     Package,
@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { AgendaPreview } from "@/components/home/agenda-preview"
 import { CashPreview } from "@/components/home/cash-preview"
+import { DocumentsPreview } from "@/components/home/documents-preview"
 import { ReceiptPreview } from "@/components/home/receipt-preview"
 
 interface ToolBase {
@@ -62,15 +63,16 @@ export const availableTools: readonly AvailableTool[] = [
         alsoKnownAs: "Citas, pedidos, entregas, eventos o recordatorios.",
         preview: AgendaPreview,
     },
+    {
+        ...documentsMeta,
+        href: "/tools/documents",
+        action: "Hacer un documento",
+        alsoKnownAs: "Pagaré, compraventa, contrato de renta o de servicio.",
+        preview: DocumentsPreview,
+    },
 ]
 
 export const upcomingTools: readonly UpcomingTool[] = [
-    {
-        id: "documents",
-        title: "Contratos y pagarés",
-        description: "Llena los datos y sal con el documento listo para firmar",
-        icon: FileSignature,
-    },
     {
         id: "daily-close",
         title: "Corte de caja",

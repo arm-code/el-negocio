@@ -15,7 +15,7 @@ const serwist = new Serwist({
     precacheOptions: {
         // La pantalla de edición es una sola página: `?id=` lo lee el navegador,
         // así que la copia precargada sirve para cualquier nota.
-        ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^id$/],
+        ignoreURLParametersMatching: [/^utm_/, /^fbclid$/, /^id$/, /^agenda$/, /^doc$/],
     },
     skipWaiting: true,
     clientsClaim: true,

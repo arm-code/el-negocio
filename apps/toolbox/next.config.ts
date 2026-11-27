@@ -16,6 +16,7 @@ const OFFLINE_ROUTES = [
   "/tools/sales-note/edit",
   "/tools/cash",
   "/tools/agenda",
+  "/tools/documents",
 ];
 // Cambia en cada build, así cada despliegue vuelve a descargar esas pantallas.
 const BUILD_REVISION = randomUUID();
@@ -43,7 +44,7 @@ const withSerwist = withSerwistInit({
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Los paquetes se publican como TypeScript: Next los compila junto con la app
-  transpilePackages: ["@el-negocio/ui", "@el-negocio/tool-sales-notes", "@el-negocio/tool-cash", "@el-negocio/tool-agenda"],
+  transpilePackages: ["@el-negocio/ui", "@el-negocio/tool-sales-notes", "@el-negocio/tool-cash", "@el-negocio/tool-agenda", "@el-negocio/tool-documents"],
   outputFileTracingRoot: REPO_ROOT,
   // `next dev` usa Turbopack; sin esta clave se queja de la configuración de webpack
   turbopack: { root: REPO_ROOT },
