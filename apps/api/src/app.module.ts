@@ -10,6 +10,7 @@ import { BusinessesModule } from './modules/businesses/businesses.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { EventsModule } from './modules/events/events.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.module';
 import { SalesNotesModule } from './modules/sales-notes/sales-notes.module';
@@ -50,6 +51,7 @@ import { DownloaderModule } from './modules/downloader/downloader.module';
     PaymentMethodsModule,
     CategoriesModule,
     EventsModule,
+    DocumentsModule,
     TransactionsModule,
     DashboardModule,
     SalesNotesModule,

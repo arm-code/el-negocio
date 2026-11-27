@@ -7,9 +7,7 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * Lo que ya estaba guardado se creó cuando todo era renta de mobiliario (se entrega y
  * se recoge), así que se marca con devolución y conserva su flujo.
  */
-export class AddAgendaFieldsToBusinessEvents1755300000000
-  implements MigrationInterface
-{
+export class AddAgendaFieldsToBusinessEvents1755300000000 implements MigrationInterface {
   name = 'AddAgendaFieldsToBusinessEvents1755300000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
