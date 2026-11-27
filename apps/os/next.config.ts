@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import path from "node:path";
+
+// Raíz del monorepo: de ahí salen los paquetes compartidos y las dependencias.
+const REPO_ROOT = path.join(__dirname, "..", "..");
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -9,6 +13,11 @@ const API_ORIGIN = process.env.INTERNAL_API_ORIGIN ?? (isProd ? 'http://api:3500
 const nextConfig: NextConfig = {
   // Imagen de Docker mínima: copia solo lo necesario para `node server.js`
   output: 'standalone',
+
+  // Los paquetes se publican como TypeScript: Next los compila junto con la app
+  transpilePackages: ['@el-negocio/ui', '@el-negocio/tool-sales-notes'],
+  outputFileTracingRoot: REPO_ROOT,
+  turbopack: { root: REPO_ROOT },
 
   // El navegador habla solo con este front (mismo origen): /api y /files se
   // reenvían al contenedor del API. Así no hay CORS ni cookies entre dominios,

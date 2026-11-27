@@ -110,3 +110,8 @@ export function capitalize(text: string): string {
   if (!text) return text
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
+
+/** Para nombres de personas: mayúscula inicial en cada palabra, sin tocar el resto. */
+export function capitalizeWords(text: string): string {
+  return text.replace(/(^|\s)(\S)/g, (_, space: string, first: string) => space + first.toUpperCase())
+}

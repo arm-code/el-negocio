@@ -191,6 +191,8 @@ Después recupera las imágenes con el paso 2 de la sección 3, usando
   Las migraciones corren solas antes de arrancar el API.
 - Volver atrás: redeploy del commit anterior. Si una migración ya se aplicó y hay que
   deshacerla, restaura el último respaldo (sección 5.5).
+- El front se compila desde la **raíz del repo** porque usa `packages/`; lo indica el
+  `docker-compose.yml`, así que en Coolify *Base Directory* sigue siendo `/`.
 
 ## 7. Un cliente nuevo
 

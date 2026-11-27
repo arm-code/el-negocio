@@ -6,10 +6,6 @@ import {
   CreateBusinessEventDto,
   UpdateBusinessEventDto,
   EventStatus,
-  SalesNote,
-  CreateSalesNoteDto,
-  UpdateSalesNoteDto,
-  SalesNoteStatus,
   TransactionCategory,
   PaymentMethod,
   CreateTransactionCategoryDto,
@@ -39,39 +35,6 @@ export const financeApi = {
 
   getSummary: async () => {
     const res = await axiosInstance.get<{ totalInputs: number; totalOutputs: number; balance: number }>(`${PREFIX}/transactions/summary`);
-    return res.data;
-  },
-
-  // Sales Notes / Quotes
-  getSalesNotes: async (params?: { page?: number; limit?: number; status?: string; eventId?: string; search?: string }) => {
-    const res = await axiosInstance.get<PaginatedResponse<SalesNote> | SalesNote[]>(`${PREFIX}/sales-notes`, {
-      params,
-    });
-    return (res.data as PaginatedResponse<SalesNote>).items || res.data;
-  },
-
-  getSalesNoteById: async (id: string) => {
-    const res = await axiosInstance.get<SalesNote>(`${PREFIX}/sales-notes/${id}`);
-    return res.data;
-  },
-
-  createSalesNote: async (data: CreateSalesNoteDto) => {
-    const res = await axiosInstance.post<SalesNote>(`${PREFIX}/sales-notes`, data);
-    return res.data;
-  },
-
-  updateSalesNote: async (id: string, data: UpdateSalesNoteDto) => {
-    const res = await axiosInstance.patch<SalesNote>(`${PREFIX}/sales-notes/${id}`, data);
-    return res.data;
-  },
-
-  updateSalesNoteStatus: async (id: string, status: SalesNoteStatus) => {
-    const res = await axiosInstance.patch<SalesNote>(`${PREFIX}/sales-notes/${id}/status`, { status });
-    return res.data;
-  },
-
-  deleteSalesNote: async (id: string) => {
-    const res = await axiosInstance.delete<{ success: boolean }>(`${PREFIX}/sales-notes/${id}`);
     return res.data;
   },
 

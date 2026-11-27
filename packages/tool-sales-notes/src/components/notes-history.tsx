@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, FilePlus2, Pencil, Store, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useDeleteSalesNote, useSalesNotes } from '../hooks/use-sales-notes'
-import { useBusinessInfo } from '../hooks/use-business-info'
+import { useBusinessInfo, useBusinessInfoReady } from '../hooks/use-business-info'
 import { useSalesNotesConfig } from '../provider'
 import type { Note } from '../types'
 import { NotesList } from './notes-list'
@@ -40,6 +40,7 @@ export function NotesHistory() {
 
   const { data: notes = [], isLoading, isError, refetch } = useSalesNotes()
   const business = useBusinessInfo()
+  const businessReady = useBusinessInfoReady()
   const deleteMutation = useDeleteSalesNote()
 
   const hasNotes = notes.length > 0
@@ -168,6 +169,7 @@ export function NotesHistory() {
           selected && (
             <DocumentActions
               placement="inline"
+              disabled={!businessReady}
               filename={`${toSlug(selectedKind, 'nota')}-${toSlug(selected.folio, 'folio')}`}
               exportNode={<PrintSaleNoteDocument note={selected} business={business} />}
             />

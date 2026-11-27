@@ -1,6 +1,14 @@
 import axios from 'axios';
 import { getApiBaseUrl } from './base-url';
 
+/** Respuesta de error del API: conserva el código para distinguir, p. ej., un 404. */
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 export const axiosInstance = axios.create({
   baseURL: getApiBaseUrl(),
   headers: {
@@ -37,7 +45,7 @@ axiosInstance.interceptors.response.use(
         errorMessage += ' Detalles: ' + apiError.error.join(', ');
       }
       
-      return Promise.reject(new Error(errorMessage));
+      return Promise.reject(new ApiError(errorMessage, error.response.status));
     }
     return Promise.reject(error);
   }
