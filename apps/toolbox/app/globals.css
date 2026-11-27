@@ -7,6 +7,7 @@
 @source '../../../packages/tool-sales-notes/src';
 @source '../../../packages/tool-cash/src';
 @source '../../../packages/tool-agenda/src';
+@source '../../../packages/tool-documents/src';
 
 @custom-variant dark (&:is(.dark *));
 
