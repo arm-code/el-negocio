@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsNotEmpty,
@@ -7,6 +8,8 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
+  Max,
   MaxLength,
   Min,
 } from 'class-validator';
@@ -33,14 +36,32 @@ export class CreateBusinessEventDto {
   )
   eventDate: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
+    description: 'Hora en formato de 24 horas (HH:mm).',
+    example: '16:30',
+  })
+  @IsOptional()
+  @Matches(/^([01]\d|2[0-3]):[0-5]\d$/, {
+    message: 'eventTime debe tener formato HH:mm.',
+  })
+  eventTime?: string;
+
+  @ApiPropertyOptional({
+    description: 'Si algo se entrega y hay que recibirlo de vuelta.',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  needsReturn?: boolean;
+
+  @ApiPropertyOptional({
     description: 'Nombre completo del cliente o empresa.',
     example: 'Juan Pérez',
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'clientName es requerido.' })
   @MaxLength(150)
-  clientName: string;
+  clientName?: string;
 
   @ApiPropertyOptional({
     description: 'Teléfono de contacto del cliente.',
@@ -51,22 +72,24 @@ export class CreateBusinessEventDto {
   @MaxLength(30)
   clientPhone?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'Dirección de entrega u ubicación del evento.',
     example: 'Av. Insurgentes Sur 123, CDMX',
   })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'eventAddress es requerido.' })
   @MaxLength(255)
-  eventAddress: string;
+  eventAddress?: string;
 
-  @ApiProperty({
-    description: 'Costo total del servicio (mayor o igual a 0).',
+  @ApiPropertyOptional({
+    description: 'Cuánto se va a cobrar (mayor o igual a 0; 0 si no se cobra).',
     example: 1500,
   })
+  @IsOptional()
   @IsNumber({}, { message: 'cost debe ser un número.' })
   @Min(0, { message: 'cost debe ser mayor o igual a 0.' })
-  cost: number;
+  @Max(9_999_999_999, { message: 'cost es demasiado grande.' })
+  cost?: number;
 
   @ApiPropertyOptional({
     description: 'Estado inicial del evento.',

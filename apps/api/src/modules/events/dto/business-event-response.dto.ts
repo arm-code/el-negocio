@@ -27,8 +27,20 @@ export class BusinessEventResponseDto {
   @ApiPropertyOptional({ example: '2026-07-17T15:00:00.000Z', nullable: true })
   eventDate: string | null;
 
+  @ApiPropertyOptional({ example: '16:30', nullable: true })
+  eventTime: string | null;
+
+  @ApiProperty({ example: false })
+  needsReturn: boolean;
+
   @ApiProperty({ example: 1500, description: 'Costo total del servicio.' })
   cost: number;
+
+  @ApiProperty({
+    example: 500,
+    description: 'Suma de las entradas de dinero ligadas al evento.',
+  })
+  paidAmount: number;
 
   @ApiProperty({
     enum: EventStatus,
@@ -64,7 +76,10 @@ export class BusinessEventResponseDto {
   @ApiProperty({ example: '2026-07-17T10:00:00.000Z' })
   updatedAt: Date;
 
-  static fromEntity(entity: BusinessEvent): BusinessEventResponseDto {
+  static fromEntity(
+    entity: BusinessEvent,
+    paidAmount = 0,
+  ): BusinessEventResponseDto {
     const dto = new BusinessEventResponseDto();
     dto.id = entity.id;
     dto.folio = entity.folio || `EV-${String(entity.folioNumber || 0).padStart(4, '0')}`;
@@ -73,7 +88,10 @@ export class BusinessEventResponseDto {
     dto.clientPhone = entity.clientPhone;
     dto.eventAddress = entity.eventAddress;
     dto.eventDate = entity.eventDate;
+    dto.eventTime = entity.eventTime ?? null;
+    dto.needsReturn = entity.needsReturn ?? false;
     dto.cost = Number(entity.cost ?? 0);
+    dto.paidAmount = paidAmount;
     dto.status = entity.status;
     dto.guaranteeDocument = entity.guaranteeDocument;
     dto.noteId = entity.noteId;
