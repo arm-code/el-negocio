@@ -33,6 +33,7 @@ packages/
   tool-sales-notes/   @el-negocio/tool-sales-notes   notas de venta: pantallas, reglas, tipos, puertos
   tool-cash/          @el-negocio/tool-cash          entradas y salidas: lo mismo
   tool-agenda/        @el-negocio/tool-agenda        agenda: lo mismo
+  tool-documents/     @el-negocio/tool-documents     contratos y pagarés: lo mismo
 apps/
   toolbox/            monta cada herramienta con localStorage
   os/                 monta cada herramienta con el API del negocio
@@ -57,8 +58,8 @@ la tecnología.
 | Notas de venta | Notas de venta | Notas | | En las dos apps |
 | Entradas y salidas | Entradas y salidas | Caja | Finanzas, movimientos, control de gastos, dinero | En las dos apps |
 | Inventario | Inventario | Inventario | Gestión de inventario | En `os` |
-| Agenda | Agenda | Agenda | Eventos, agenda operativa | Sitio gratuito; en `os` aún es "Eventos" |
-| Documentos | Contratos y pagarés | Contratos | | Próximamente |
+| Agenda | Agenda | Agenda | Eventos, agenda operativa | En las dos apps |
+| Documentos | Contratos y pagarés | Contratos | | En las dos apps |
 | Corte de caja | Corte de caja | Corte | Corte diario | Próximamente |
 | Fiado | Libreta de fiado | Fiado | Cuentas por cobrar | Próximamente |
 | Precios | Calculadora de precios | Precios | | Próximamente |
@@ -387,28 +388,65 @@ citas, pedidos y entregas de cualquier giro. Acordado el 2026-11-27:
 | Tema | Decisión |
 | --- | --- |
 | Obligatorio | Solo qué es y cuándo |
-| Datos opcionales | Hora, cliente, lugar y notas se agregan con un toque; salen abiertos los que se usaron la última vez |
+| Datos opcionales | Hora, cliente, lugar, cobro, devolución, garantía y notas se agregan con un toque; salen abiertos los que se usaron la última vez |
 | Giro del negocio | No se pregunta ni cambia las pantallas |
-| Estados | Pendiente, Hecho y Cancelado; solo lo cancelado se puede borrar |
-| Contratos | No van en los ajustes: son la micro app "Contratos y pagarés" |
+| Estados | Pendiente, Entregado (solo con devolución), Hecho y Cancelado; solo lo cancelado se puede borrar |
+| Cobro | Total, anticipo y lo que falta. Cada pago es una entrada en Caja, que es la única fuente de lo cobrado |
+| Contratos | No van en los ajustes: son la micro app de la Fase 8 |
 | Fuera de alcance | Eventos que se repiten, avisos propios, sincronizar con Google y asignar personal |
 
-El orden:
+Hecho en `packages/tool-agenda`. En el sitio gratuito está en `/tools/agenda` (datos en
+`el-negocio:agenda:events:v1`, adaptador `apps/toolbox/lib/agenda-storage.ts`); en `os`,
+en `/tools/eventos` (la dirección no cambió).
 
-1. **Agenda básica en el sitio gratuito (hecho):** `packages/tool-agenda`, montado en
-   `/tools/agenda`. Una sola pantalla con hojas. "Agregar a mi calendario" descarga un
-   `.ics` para que el celular avise. Datos en `el-negocio:agenda:events:v1`
-   (`apps/toolbox/lib/agenda-storage.ts`) e incluidos en el respaldo.
-2. **Cobro** (total, anticipo y lo que falta), anotado en Entradas y salidas.
-3. **Contratos y pagarés:** llenar un formulario y obtener el PDF para imprimir.
-4. **Unir ambas**, con devolución (paso "Entregado") y garantía.
+- Es una sola pantalla con hojas. "Agregar a mi calendario" descarga un `.ics` para que
+  el celular avise.
+- Los cobros entran por el puerto `PaymentsStorage`. Un movimiento guarda de qué se cobró
+  (`eventId` en el navegador, `businessEventId` en el API) y corregirlo en Caja no lo
+  desliga.
+- El puerto `list()` entrega todo: las pestañas y la búsqueda trabajan sobre la lista
+  completa. Un adaptador contra un API que pagine debe juntar todas las páginas.
+- Las secciones propias de cada app entran por `renderExtra` (documentos; en `os`
+  además la nota de venta y el contrato de servicio).
 
-El puerto `list()` entrega todo: las pestañas y la búsqueda trabajan sobre la lista
-completa. Un adaptador contra un API que pagine debe juntar todas las páginas.
+Adaptador de `os` (`apps/os/lib/agenda-storage.ts`):
 
-`os` sigue con sus pantallas de eventos: cambiarlas ahora le quitaría el cobro, la
-garantía y el contrato. Al migrarlas no se puede perder ningún dato de los eventos
-guardados.
+| Paquete | API |
+| --- | --- |
+| `title`, `place`, `guarantee` | `name`, `eventAddress`, `guaranteeDocument` |
+| `total` | `cost` (0 es "sin cobro") |
+| `paid` | `paidAmount`: suma de las entradas ligadas |
+| `done` | `collected` |
+| Borrar | `isActive: false`; los movimientos se conservan |
+| Nota de venta ligada | no se envía al corregir: se conserva |
+| Categoría del cobro | con devolución, "Renta"; si no, "Ventas" u "Otros" |
+
+La migración `1755300000000` agrega `event_time` y `needs_return`; lo que ya estaba
+guardado queda con devolución, porque antes todo era renta.
+
+### Fase 8 — Contratos y pagarés
+
+Llenar un formulario y obtener el PDF para imprimir y firmar. `packages/tool-documents`,
+en `/tools/documents` (sitio gratuito, `el-negocio:documents:v1`) y `/tools/documentos`
+(`os`, tabla `business_documents`, migración `1755400000000`).
+
+| Tema | Decisión |
+| --- | --- |
+| Formatos | Pagaré, pagaré con relación de mobiliario, compraventa, contrato de servicio y contrato de renta |
+| Folio | Consecutivo por negocio; borrar no lo libera |
+| Tus datos | Se toman del último documento; la primera vez, de los datos del negocio |
+| PDF | Texto, tamaño carta, con las hojas que hagan falta; una firma no se separa de sus datos |
+| Desde la agenda | La app arma el borrador con lo anotado (`lib/documents-from-agenda.ts`): las micro apps no se conocen |
+
+- Los textos viven en `src/lib/templates.ts`. El pagaré con relación de mobiliario sigue
+  el machote del negocio; los demás son formatos de apoyo.
+- Los datos y formatos válidos están repetidos en el API (`document.constants.ts`):
+  al agregar uno, cambiar los dos.
+
+Pendiente de revisar con un abogado: la cláusula del pagaré que lo liga a la devolución
+del mobiliario puede restarle la "promesa incondicional" que exige el artículo 170 de la
+Ley General de Títulos y Operaciones de Crédito. Una opción es firmar el pagaré limpio y
+dejar las condiciones en el contrato de renta.
 
 ## 7. Cuidados
 
@@ -424,4 +462,5 @@ guardados.
 | Decisión | Propuesta |
 | --- | --- |
 | ¿Quién elige la variante? | Fija por app al inicio; selector por negocio después |
+| ¿Se retira de `os` el contrato de servicio anterior? | Sí, cuando se compare lado a lado con el de la Fase 8 y convenza |
 | Componentes base de `os` fuera de las micro apps | Pasarlos a `packages/ui` conforme cada pantalla se vuelva micro app |

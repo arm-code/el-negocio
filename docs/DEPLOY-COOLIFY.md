@@ -188,7 +188,8 @@ Después recupera las imágenes con el paso 2 de la sección 3, usando
 ## 6. Actualizar y volver atrás
 
 - Actualizar: push a `main` → Redeploy (o activa el despliegue automático en Coolify).
-  Las migraciones corren solas antes de arrancar el API.
+  Las migraciones corren solas antes de arrancar el API. Si la versión trae migraciones,
+  haz un respaldo antes.
 - Volver atrás: redeploy del commit anterior. Si una migración ya se aplicó y hay que
   deshacerla, restaura el último respaldo (sección 5.5).
 - El front se compila desde la **raíz del repo** porque usa `packages/`; lo indica el
