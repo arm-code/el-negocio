@@ -149,7 +149,7 @@ export default function TransactionsTab() {
       {/* Movimientos */}
       <section aria-labelledby="transactions-title" className="space-y-4">
         <h2 id="transactions-title" className="text-base font-semibold">
-          Últimos movimientos
+          Lo más reciente
         </h2>
 
         {listQuery.isLoading ? (
@@ -158,7 +158,7 @@ export default function TransactionsTab() {
           <InlineError message="No se pudieron cargar tus movimientos." onRetry={() => listQuery.refetch()} />
         ) : transactions.length === 0 ? (
           <EmptyState
-            title="Aún no hay movimientos"
+            title="Aún no has anotado nada"
             description="Usa los botones de arriba para anotar lo que entra y sale de tu negocio."
           />
         ) : (

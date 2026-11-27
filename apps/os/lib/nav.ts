@@ -8,6 +8,7 @@ import {
     Package,
     type LucideIcon,
 } from 'lucide-react'
+import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 
 export interface NavItem {
     label: string
@@ -20,17 +21,17 @@ export interface NavItem {
 
 // Elementos principales (usados en barra inferior móvil, máx. 5)
 export const primaryNav: NavItem[] = [
-    { label: 'Principal', shortLabel: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
+    { label: 'Inicio', shortLabel: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
     {
-        label: 'Notas de venta',
-        shortLabel: 'Notas',
+        label: salesNotesMeta.title,
+        shortLabel: salesNotesMeta.shortTitle,
         href: '/tools/notas-venta',
         icon: FileText,
         matchPrefix: '/tools/notas-venta',
     },
     {
-        label: 'Finanzas',
-        shortLabel: 'Finanzas',
+        label: 'Entradas y salidas',
+        shortLabel: 'Dinero',
         href: '/tools/finanzas',
         icon: Wallet,
         matchPrefix: '/tools/finanzas',

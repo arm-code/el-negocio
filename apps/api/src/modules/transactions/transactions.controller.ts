@@ -25,6 +25,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../auth/guards/tenant.guard';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { QuerySummaryDto } from './dto/query-summary.dto';
 import { QueryTransactionDto } from './dto/query-transaction.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
@@ -154,7 +155,8 @@ export class TransactionsController {
   @Get('summary')
   @ResponseMessage('Resumen de transacciones obtenido exitosamente.')
   @ApiOperation({
-    summary: 'Obtener el resumen de transacciones (totalInputs, totalOutputs, balance).',
+    summary:
+      'Obtener el resumen de transacciones (totalInputs, totalOutputs, balance), de todo el historial o de un rango de fechas.',
   })
   @SwaggerApiResponse({
     status: 200,
@@ -171,8 +173,11 @@ export class TransactionsController {
       },
     },
   })
-  getSummary(@CurrentBusiness() businessId: string) {
-    return this.transactionsService.getSummary(businessId);
+  getSummary(
+    @CurrentBusiness() businessId: string,
+    @Query() query: QuerySummaryDto,
+  ) {
+    return this.transactionsService.getSummary(businessId, query);
   }
 
   @Get(':id')

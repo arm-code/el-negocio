@@ -225,7 +225,7 @@ export function TransactionFormSheet({ open, onOpenChange, defaultType = 'INPUT'
     <AppBottomSheet
       open={open}
       onOpenChange={onOpenChange}
-      title="Registrar movimiento"
+      title="Anotar entrada o salida"
       footer={
         <Button type="submit" form="tx-form" className={cn(TOUCH, 'w-full')} disabled={createMutation.isPending}>
           {createMutation.isPending ? (

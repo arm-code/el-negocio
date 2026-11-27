@@ -46,7 +46,7 @@ interface QuickAction {
 const QUICK_ACTIONS: readonly QuickAction[] = [
   { label: 'Nueva nota', href: '/tools/notas-venta/crear-nota-venta', icon: FilePlus2 },
   { label: 'Nuevo evento', href: '/tools/eventos/crear-evento', icon: CalendarPlus },
-  { label: 'Registrar movimiento', href: '/tools/finanzas', icon: ArrowLeftRight },
+  { label: 'Anotar entrada o salida', href: '/tools/finanzas', icon: ArrowLeftRight },
   { label: 'Ver notas', href: '/tools/notas-venta', icon: FileText },
 ]
 

@@ -9,7 +9,7 @@ import { CatalogManager } from '@/components/finanzas/CatalogoManager'
 export default function CategoriasPage() {
     return (
         <div className="space-y-2 pb-28 sm:pb-8">
-            <BackLink href="/tools/finanzas" label="Movimientos" />
+            <BackLink href="/tools/finanzas" label="Entradas y salidas" />
             <PageHeader title="Categorías" description="Sirven para saber en qué entra y en qué se va tu dinero." />
             <CatalogManager
                 queryKey="transactionCategories"

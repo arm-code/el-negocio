@@ -1,10 +1,11 @@
 // lib/tools-catalog.ts
 // Fuente única de verdad de las micro apps. La landing y el footer leen de aquí,
 // así que cuando una herramienta salga basta con quitarla de `upcomingTools` y
-// agregar a `availableTools` la ficha de su paquete junto con su `href`.
+// agregar a `availableTools` la ficha de su paquete junto con su `href` y su muestra.
+// Los nombres siguen el apartado "Nombres" de docs/PACKAGES-TOOLS.md.
+import type { ComponentType } from "react"
 import { salesNotesMeta } from "@el-negocio/tool-sales-notes/meta"
 import {
-    FileText,
     FileSignature,
     Wallet,
     Calculator,
@@ -15,6 +16,7 @@ import {
     Users,
     type LucideIcon,
 } from "lucide-react"
+import { ReceiptPreview } from "@/components/home/receipt-preview"
 
 interface ToolBase {
     id: string
@@ -25,67 +27,73 @@ interface ToolBase {
 
 export interface AvailableTool extends ToolBase {
     href: string
+    /** Texto del botón: lo que la persona va a hacer. */
+    action: string
+    /** Otros nombres con los que la gente busca lo mismo. */
+    alsoKnownAs: string
+    /** Muestra visual de lo que se obtiene (decorativa). */
+    preview: ComponentType
 }
 
 export type UpcomingTool = ToolBase
 
 export const availableTools: readonly AvailableTool[] = [
-    { ...salesNotesMeta, href: "/tools/sales-note" },
+    {
+        ...salesNotesMeta,
+        href: "/tools/sales-note",
+        action: "Hacer una nota",
+        alsoKnownAs: "Nota de venta, ticket, comprobante o cotización.",
+        preview: ReceiptPreview,
+    },
 ]
 
 export const upcomingTools: readonly UpcomingTool[] = [
     {
-        id: "expenses",
-        title: "Control de gastos",
-        description: "Lleva el control de lo que entra y sale",
+        id: "money",
+        title: "Entradas y salidas",
+        description: "Anota lo que entra y lo que sale de tu negocio",
         icon: Wallet,
     },
     {
-        id: "quotes",
-        title: "Cotizaciones",
-        description: "Manda cotizaciones con tu marca por WhatsApp",
-        icon: FileText,
-    },
-    {
         id: "event-contracts",
-        title: "Contratos de evento",
-        description: "Contratos de renta listos para firmar",
+        title: "Contratos de renta",
+        description: "Contratos para tus eventos, listos para firmar",
         icon: FileSignature,
     },
     {
         id: "daily-close",
-        title: "Corte diario",
-        description: "Cierra el día y conoce tus ganancias",
+        title: "Corte de caja",
+        description: "Cierra el día y ve cuánto quedó",
         icon: Calculator,
     },
     {
         id: "credit-book",
         title: "Libreta de fiado",
-        description: "Para saber quién te debe, sin el cuaderno",
+        description: "Quién te debe y cuánto, sin el cuaderno",
         icon: BookOpen,
     },
     {
         id: "inventory",
         title: "Inventario",
-        description: "Cuenta lo que tienes y lo que se te está acabando",
+        description: "Lo que tienes y lo que se te está acabando",
         icon: Package,
     },
     {
         id: "price-calculator",
-        title: "Calculadora de precio",
-        description: "Súmale tu ganancia al costo y ya sabes cuánto cobrar",
+        title: "Calculadora de precios",
+        description: "Súmale tu ganancia al costo y sabe en cuánto venderlo",
         icon: Tag,
     },
     {
         id: "sales-reports",
-        title: "Reportes de ventas",
-        description: "Visualiza las tendencias de tus ventas y productos más vendidos",
+        title: "Mis ventas",
+        description: "Ve cuánto vendes y qué se vende más",
         icon: BarChart3,
     },
     {
         id: "customers",
-        title: "Directorio de clientes",
-        description: "Registro de tus clientes y sus compras",
+        title: "Mis clientes",
+        description: "Sus datos y lo que te han comprado",
         icon: Users,
     },
 ]

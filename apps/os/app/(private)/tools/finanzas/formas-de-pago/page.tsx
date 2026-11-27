@@ -9,7 +9,7 @@ import { CatalogManager } from '@/components/finanzas/CatalogoManager'
 export default function FormasDePagoPage() {
     return (
         <div className="space-y-2 pb-28 sm:pb-8">
-            <BackLink href="/tools/finanzas" label="Movimientos" />
+            <BackLink href="/tools/finanzas" label="Entradas y salidas" />
             <PageHeader title="Formas de pago" description="Cómo te pagan o cómo pagas tú." />
             <CatalogManager
                 queryKey="paymentMethods"
