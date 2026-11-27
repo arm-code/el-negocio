@@ -6,6 +6,7 @@ import { FilePlus2, FileText, Wallet, Package, ArrowRight } from 'lucide-react'
 import { agendaMeta } from '@el-negocio/tool-agenda/meta'
 import Link from 'next/link'
 import { cashMeta } from '@el-negocio/tool-cash/meta'
+import { documentsMeta } from '@el-negocio/tool-documents/meta'
 import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 import { PageHeader } from '@/components/admin/page-header'
 
@@ -41,6 +42,14 @@ const toolsList = [
     href: '/tools/finanzas',
     icon: Wallet,
     btnLabel: 'Ver mi caja',
+    primary: false,
+  },
+  {
+    title: documentsMeta.title,
+    description: 'Pagarés, compraventas y contratos listos para firmar.',
+    href: '/tools/documentos',
+    icon: documentsMeta.icon,
+    btnLabel: 'Hacer un documento',
     primary: false,
   },
   {

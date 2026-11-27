@@ -4,6 +4,7 @@
 import { useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { AgendaProvider, type AgendaConfig } from '@el-negocio/tool-agenda'
+import { OsDocumentsProvider } from '@/components/documents/os-documents-provider'
 import { apiEventsStorage, apiPaymentsStorage } from '@/lib/agenda-storage'
 
 export default function AgendaLayout({ children }: { children: React.ReactNode }) {
@@ -32,5 +33,10 @@ export default function AgendaLayout({ children }: { children: React.ReactNode }
     [queryClient]
   )
 
-  return <AgendaProvider config={config}>{children}</AgendaProvider>
+  // La agenda enseña los documentos de cada cosa agendada
+  return (
+    <OsDocumentsProvider>
+      <AgendaProvider config={config}>{children}</AgendaProvider>
+    </OsDocumentsProvider>
+  )
 }

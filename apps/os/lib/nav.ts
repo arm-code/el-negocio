@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { agendaMeta } from '@el-negocio/tool-agenda/meta'
 import { cashMeta } from '@el-negocio/tool-cash/meta'
+import { documentsMeta } from '@el-negocio/tool-documents/meta'
 import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 
 export interface NavItem {
@@ -18,9 +19,11 @@ export interface NavItem {
     icon: LucideIcon
     // Para resaltar la ruta activa cuando hay subrutas
     matchPrefix?: string
+    /** Solo en el menú lateral: la barra inferior del celular ya va llena. */
+    sideOnly?: boolean
 }
 
-// Elementos principales (usados en barra inferior móvil, máx. 5)
+// Menú del panel. La barra inferior del celular omite los marcados `sideOnly`.
 export const primaryNav: NavItem[] = [
     { label: 'Inicio', shortLabel: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
     {
@@ -43,6 +46,14 @@ export const primaryNav: NavItem[] = [
         href: '/tools/eventos',
         icon: agendaMeta.icon,
         matchPrefix: '/tools/eventos',
+    },
+    {
+        label: documentsMeta.title,
+        shortLabel: documentsMeta.shortTitle,
+        href: '/tools/documentos',
+        icon: documentsMeta.icon,
+        matchPrefix: '/tools/documentos',
+        sideOnly: true,
     },
     {
         label: 'Inventario',

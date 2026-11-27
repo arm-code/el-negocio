@@ -1,11 +1,12 @@
 'use client'
 
-// Lo que El Negocio OS agrega al detalle de algo agendado: su nota de venta y el
-// contrato del negocio.
+// Lo que El Negocio OS agrega al detalle de algo agendado: sus documentos, su nota de
+// venta y el contrato de servicio que el negocio ya usaba.
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import type { AgendaEvent } from '@el-negocio/tool-agenda'
+import { LinkedDocuments } from '@el-negocio/tool-documents'
 import { DetailSection } from '@/components/ui/detail'
 import { Skeleton } from '@/components/ui/skeleton'
 import { InlineError } from '@/components/ui/states'
@@ -51,6 +52,14 @@ export function AgendaExtras({ event }: { event: AgendaEvent }) {
 
   return (
     <>
+      <LinkedDocuments
+        eventId={event.id}
+        openHref={(id) => `/tools/documentos?doc=${encodeURIComponent(id)}`}
+        newHref={
+          event.status === 'cancelled' ? undefined : `/tools/documentos?agenda=${encodeURIComponent(event.id)}`
+        }
+      />
+
       <DetailSection title="Nota de venta">
         {link.isError || notes.isError ? (
           <InlineError
