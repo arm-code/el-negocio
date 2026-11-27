@@ -1,4 +1,5 @@
 import { axiosInstance } from './axios';
+import { getAllPages } from './pagination';
 import {
   Transaction,
   CreateTransactionDto,
@@ -39,12 +40,8 @@ export const financeApi = {
   },
 
   // Business Events
-  getBusinessEvents: async (params?: { page?: number; limit?: number; status?: string; tab?: string; search?: string }) => {
-    const res = await axiosInstance.get<PaginatedResponse<BusinessEvent> | BusinessEvent[]>(`${PREFIX}/events`, {
-      params,
-    });
-    return (res.data as PaginatedResponse<BusinessEvent>).items || res.data;
-  },
+  /** Todos los eventos: las pestañas, la búsqueda y el inicio filtran sobre la lista completa. */
+  getBusinessEvents: () => getAllPages<BusinessEvent>(`${PREFIX}/events`),
 
   getBusinessEventById: async (id: string) => {
     const res = await axiosInstance.get<BusinessEvent>(`${PREFIX}/events/${id}`);
@@ -72,10 +69,7 @@ export const financeApi = {
   },
 
   // Categories
-  getCategories: async () => {
-    const res = await axiosInstance.get<PaginatedResponse<TransactionCategory> | TransactionCategory[]>(`${PREFIX}/categories`);
-    return (res.data as PaginatedResponse<TransactionCategory>).items || res.data;
-  },
+  getCategories: () => getAllPages<TransactionCategory>(`${PREFIX}/categories`),
 
   createCategory: async (data: CreateTransactionCategoryDto) => {
     const res = await axiosInstance.post<TransactionCategory>(`${PREFIX}/categories`, data);
@@ -83,10 +77,7 @@ export const financeApi = {
   },
 
   // Payment Methods
-  getPaymentMethods: async () => {
-    const res = await axiosInstance.get<PaginatedResponse<PaymentMethod> | PaymentMethod[]>(`${PREFIX}/payment-methods`);
-    return (res.data as PaginatedResponse<PaymentMethod>).items || res.data;
-  },
+  getPaymentMethods: () => getAllPages<PaymentMethod>(`${PREFIX}/payment-methods`),
 
   createPaymentMethod: async (data: CreatePaymentMethodDto) => {
     const res = await axiosInstance.post<PaymentMethod>(`${PREFIX}/payment-methods`, data);
