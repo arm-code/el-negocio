@@ -55,7 +55,8 @@ const LATE = {
 export function groupEvents(events: AgendaEvent[], tab: Tab): Group[] {
   const today = dayFromToday(0)
   const lateKind = (event: AgendaEvent) => {
-    if (tab !== 'pending' || event.date >= today) return null
+    // Sin fecha no está atrasado
+    if (tab !== 'pending' || !event.date || event.date >= today) return null
     return event.status === 'delivered' ? 'unreturned' : 'late'
   }
   const rank = (event: AgendaEvent) => {
