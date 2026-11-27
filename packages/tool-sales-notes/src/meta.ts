@@ -4,6 +4,8 @@ import { Receipt } from 'lucide-react'
 export const salesNotesMeta = {
   id: 'sales-note',
   title: 'Notas de venta',
-  description: 'Haz recibos para tus clientes en segundos',
+  /** Para menús angostos, como la barra inferior del celular. */
+  shortTitle: 'Notas',
+  description: 'Hazle su nota al cliente y mándala por WhatsApp',
   icon: Receipt,
 } as const

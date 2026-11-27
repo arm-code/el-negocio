@@ -47,27 +47,19 @@ export interface BusinessEvent {
   updatedAt?: string;
 }
 
+/** Movimiento de dinero tal como lo responde el API. */
 export interface Transaction {
   id: string;
-  type: 'INPUT' | 'OUTPUT';
-  amount: number | string;
-  description?: string;
-  category?: TransactionCategory;
-  categoryId?: string;
+  folio: string;
   transactionDate: string;
-  paymentMethod?: PaymentMethod;
-  paymentMethodId?: string;
-  eventId?: string;
-}
-
-export interface CreateTransactionDto {
   type: 'INPUT' | 'OUTPUT';
   amount: number;
-  description?: string;
-  categoryId?: string;
-  transactionDate: string;
-  paymentMethodId?: string;
-  eventId?: string;
+  description: string | null;
+  category: { id: string; code: string; name: string };
+  paymentMethod: { id: string; code: string; name: string };
+  businessEvent: { id: string; name: string } | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateBusinessEventDto {

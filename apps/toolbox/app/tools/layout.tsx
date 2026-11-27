@@ -1,5 +1,5 @@
 // app/tools/layout.tsx
-import { FreeNotice } from '@/components/free-notice'
+import { InstallInvite } from '@/components/install/install-invite'
 import { ToolBar } from '@/components/tool-bar'
 
 export default function ToolsLayout({ children }: { children: React.ReactNode }) {
@@ -13,7 +13,7 @@ export default function ToolsLayout({ children }: { children: React.ReactNode })
           {children}
         </div>
       </main>
-      <FreeNotice />
+      <InstallInvite />
     </div>
   )
 }

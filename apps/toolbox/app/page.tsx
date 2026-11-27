@@ -1,11 +1,8 @@
 // app/page.tsx
-import Link from "next/link"
-import { ChevronDown, ChevronRight } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Button } from "@el-negocio/ui/button"
-import { InstallBanner } from "@/components/home/install-banner"
-import { ReceiptPreview } from "@/components/home/receipt-preview"
+import { ToolShowcase } from "@/components/home/tool-showcase"
 import { availableTools, upcomingTools } from "@/lib/tools-catalog"
 import { cn } from "@el-negocio/ui/utils"
 
@@ -18,81 +15,33 @@ export default function HomePage() {
       <Header />
 
       <main className="flex-1">
-        {/* 1. Hero: qué es y qué puedo hacer ya */}
-        <section className="relative isolate overflow-hidden">
-          <div aria-hidden="true" className="hero-grid absolute inset-0 -z-10" />
-
-          <div className="mx-auto grid max-w-4xl gap-10 px-4 pb-14 pt-10 sm:pt-16 md:grid-cols-[1.15fr_0.85fr] md:items-center md:gap-12 md:pb-20">
-            <div className="space-y-6">
-              <p className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                Gratis y sin cuenta
-              </p>
-              <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
-                Tu negocio, organizado desde el celular
-              </h1>
-              <p className="max-w-prose text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
-                Haz notas de venta y resuelve lo del día a día con herramientas
-                sencillas. Se abren y se usan, sin complicarte.
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Button asChild size="lg" className="h-12 w-full rounded-xl px-6 text-base sm:w-auto">
-                  <Link href="/tools/sales-note">Hacer una nota de venta</Link>
-                </Button>
-                <Button asChild variant="ghost" size="lg" className="h-12 w-full rounded-xl px-6 text-base sm:w-auto">
-                  <Link href="#herramientas">Ver todas las herramientas</Link>
-                </Button>
-              </div>
-            </div>
-
-            <div className="mx-auto w-full max-w-[17rem] md:ml-auto md:mr-0">
-              <ReceiptPreview />
-            </div>
-          </div>
+        {/* 1. Qué es, en una frase: lo importante son las herramientas de abajo */}
+        <section className="mx-auto max-w-4xl space-y-3 px-4 pb-6 pt-8 sm:pt-12">
+          <p className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+            Gratis y sin cuenta
+          </p>
+          <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+            Tu negocio, organizado desde el celular
+          </h1>
         </section>
 
         {/* 2. Herramientas que ya funcionan */}
         <section
           id="herramientas"
           aria-labelledby="tools-title"
-          className="mx-auto max-w-4xl scroll-mt-20 px-4 py-12 sm:py-16"
+          className="mx-auto max-w-4xl scroll-mt-20 px-4 pb-12 sm:pb-16"
         >
-          <h2 id="tools-title" className="text-xl font-semibold tracking-tight">
+          <h2 id="tools-title" className="sr-only">
             Herramientas listas para usar
           </h2>
 
-          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+          <ul className={cn("grid gap-4", availableTools.length > 1 && "sm:grid-cols-2")}>
             {availableTools.map((tool) => (
               <li key={tool.id}>
-                <Link
-                  href={tool.href}
-                  className={cn(
-                    "group flex min-h-24 items-center gap-4 rounded-2xl border bg-card p-4 sm:p-5",
-                    "transition-colors hover:border-primary/40 hover:bg-accent active:bg-accent",
-                    focusRing
-                  )}
-                >
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <tool.icon className="size-6" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-base font-semibold">{tool.title}</span>
-                    <span className="mt-0.5 block text-pretty text-sm leading-snug text-muted-foreground">
-                      {tool.description}
-                    </span>
-                  </span>
-                  <ChevronRight
-                    className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                </Link>
+                <ToolShowcase tool={tool} wide={availableTools.length === 1} />
               </li>
             ))}
           </ul>
-
-          {/* Si el banner no renderiza nada (app ya instalada), el contenedor se oculta */}
-          <div className="mt-8 empty:hidden">
-            <InstallBanner />
-          </div>
         </section>
 
         {/* 3. Próximamente: banda con otro fondo y colapsada para no saturar */}

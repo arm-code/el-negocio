@@ -1,8 +1,6 @@
 import { axiosInstance } from './axios';
 import { getAllPages } from './pagination';
 import {
-  Transaction,
-  CreateTransactionDto,
   BusinessEvent,
   CreateBusinessEventDto,
   UpdateBusinessEventDto,
@@ -21,24 +19,6 @@ import {
 const PREFIX = '/v1';
 
 export const financeApi = {
-  // Transactions
-  getTransactions: async (page: number = 1, limit: number = 10) => {
-    const res = await axiosInstance.get<PaginatedResponse<Transaction>>(`${PREFIX}/transactions`, {
-      params: { page, limit }
-    });
-    return res.data;
-  },
-
-  createTransaction: async (data: CreateTransactionDto) => {
-    const res = await axiosInstance.post<Transaction>(`${PREFIX}/transactions`, data);
-    return res.data;
-  },
-
-  getSummary: async () => {
-    const res = await axiosInstance.get<{ totalInputs: number; totalOutputs: number; balance: number }>(`${PREFIX}/transactions/summary`);
-    return res.data;
-  },
-
   // Business Events
   /** Todos los eventos: las pestañas, la búsqueda y el inicio filtran sobre la lista completa. */
   getBusinessEvents: () => getAllPages<BusinessEvent>(`${PREFIX}/events`),

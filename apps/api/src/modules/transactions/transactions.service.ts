@@ -10,6 +10,7 @@ import { BusinessEvent } from '../events/entities/business-event.entity';
 import { PaymentMethod } from '../payment-methods/entities/payment-method.entity';
 import { TransactionCategory } from '../categories/entities/transaction-category.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { QuerySummaryDto } from './dto/query-summary.dto';
 import { QueryTransactionDto } from './dto/query-transaction.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
@@ -110,7 +111,15 @@ export class TransactionsService {
     };
     const sortColumn =
       sortableColumns[query.sortBy ?? ''] ?? 'transaction.transactionDate';
-    qb.orderBy(sortColumn, query.sortOrder).skip(query.skip).take(query.limit);
+    qb.orderBy(sortColumn, query.sortOrder);
+    // Desempate fijo: hay varios movimientos por día y, sin él, al pasar de una
+    // página a otra pueden repetirse o quedarse fuera
+    if (sortColumn !== 'transaction.folioNumber') {
+      qb.addOrderBy('transaction.folioNumber', query.sortOrder);
+    }
+    qb.addOrderBy('transaction.id', query.sortOrder)
+      .skip(query.skip)
+      .take(query.limit);
 
     const [items, totalItems] = await qb.getManyAndCount();
 
@@ -124,6 +133,7 @@ export class TransactionsService {
 
   async getSummary(
     businessId: string,
+    query: QuerySummaryDto = {},
   ): Promise<{ totalInputs: number; totalOutputs: number; balance: number }> {
     const qb = this.transactionRepository
       .createQueryBuilder('transaction')
@@ -136,6 +146,17 @@ export class TransactionsService {
         'totalOutputs',
       )
       .where('transaction.businessId = :businessId', { businessId });
+
+    if (query.dateFrom) {
+      qb.andWhere('transaction.transactionDate >= :dateFrom', {
+        dateFrom: query.dateFrom,
+      });
+    }
+    if (query.dateTo) {
+      qb.andWhere('transaction.transactionDate <= :dateTo', {
+        dateTo: query.dateTo,
+      });
+    }
 
     const result = await qb.getRawOne();
 

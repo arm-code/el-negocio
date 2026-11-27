@@ -2,12 +2,21 @@
 
 // Cómo monta el toolbox las notas de venta: datos en el navegador, sin cuenta.
 import { SalesNotesProvider, type SalesNotesConfig } from "@el-negocio/tool-sales-notes"
+import { markToolUsed } from "@/lib/install"
 import { localBusinessInfoStorage, localNotesStorage } from "@/lib/sales-notes-storage"
 
 const BASE = "/tools/sales-note"
 
 const config: SalesNotesConfig = {
-  notes: localNotesStorage,
+  notes: {
+    ...localNotesStorage,
+    // Guardar una nota es la señal de que la app le sirvió: buen momento para sugerir instalarla
+    async create(input) {
+      const note = await localNotesStorage.create(input)
+      markToolUsed()
+      return note
+    },
+  },
   business: localBusinessInfoStorage,
   routes: {
     home: "/",

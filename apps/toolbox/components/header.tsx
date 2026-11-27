@@ -6,6 +6,7 @@ import Image from "next/image"
 import { useTheme } from "next-themes"
 import { Sun, Moon } from "lucide-react"
 import { Button } from "@el-negocio/ui/button"
+import { InstallButton } from "@/components/install/install-button"
 import { useHasMounted } from "@/hooks/useHasMounted"
 import { BRAND } from "@/lib/brand"
 
@@ -51,6 +52,7 @@ export function Header() {
                 </Link>
 
                 <div className="flex items-center gap-1 sm:gap-2">
+                    <InstallButton />
                     <ThemeToggle />
                 </div>
             </div>
