@@ -200,7 +200,7 @@ export function EventDetail({
           {renderExtra?.(event)}
 
           <div className="space-y-1 border-t pt-4">
-            {event.status === 'pending' && (
+            {event.status === 'pending' && event.date && (
               <Button variant="outline" className={cn(TOUCH, 'w-full')} onClick={() => addToCalendar(event)}>
                 <CalendarPlus aria-hidden="true" />
                 Agregar a mi calendario

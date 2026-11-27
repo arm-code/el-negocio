@@ -32,7 +32,8 @@ function Documentos() {
     if (params.size > 0) router.replace(PATH, { scroll: false })
   }, [params, router])
 
-  if (start.eventId && seed.isLoading) return <ListSkeleton label="Preparando el documento" />
+  // `isPending` vale igual al dibujar en el servidor y en el navegador
+  if (start.eventId && seed.isPending) return <ListSkeleton label="Preparando el documento" />
 
   return <DocumentsHome startWith={seed.data ?? undefined} openId={start.openId} />
 }
