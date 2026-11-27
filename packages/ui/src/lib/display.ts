@@ -64,6 +64,16 @@ export function parseAmount(raw: string): number {
   return Number(cleaned)
 }
 
+const currencyFormat = new Intl.NumberFormat("es-MX", {
+  style: "currency",
+  currency: "MXN",
+  minimumFractionDigits: 2,
+})
+
+export function formatCurrency(value: number): string {
+  return currencyFormat.format(Number.isFinite(value) ? value : 0)
+}
+
 export function toNumber(value: unknown): number {
   const n = typeof value === "number" ? value : Number(value)
   return Number.isFinite(n) ? n : 0

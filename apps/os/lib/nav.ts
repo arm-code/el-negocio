@@ -31,7 +31,7 @@ export const primaryNav: NavItem[] = [
     },
     {
         label: 'Entradas y salidas',
-        shortLabel: 'Dinero',
+        shortLabel: 'Caja',
         href: '/tools/finanzas',
         icon: Wallet,
         matchPrefix: '/tools/finanzas',

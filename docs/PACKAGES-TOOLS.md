@@ -30,7 +30,8 @@ Cada micro app existe **una sola vez** y la usan dos aplicaciones:
 ```
 packages/
   ui/                 @el-negocio/ui                 tema y componentes base
-  tool-sales-notes/   @el-negocio/tool-sales-notes   pantallas, cálculos, tipos, puertos
+  tool-sales-notes/   @el-negocio/tool-sales-notes   notas de venta: pantallas, reglas, tipos, puertos
+  tool-cash/          @el-negocio/tool-cash          entradas y salidas: lo mismo
 apps/
   toolbox/            monta cada herramienta con localStorage
   os/                 monta cada herramienta con el API del negocio
@@ -53,7 +54,7 @@ la tecnología.
 | Herramienta | Nombre | Corto | No decir | Estado |
 | --- | --- | --- | --- | --- |
 | Notas de venta | Notas de venta | Notas | | En las dos apps |
-| Entradas y salidas | Entradas y salidas | Dinero | Finanzas, movimientos, control de gastos | En `os`; paquete en curso |
+| Entradas y salidas | Entradas y salidas | Caja | Finanzas, movimientos, control de gastos, dinero | En `os` y en el sitio gratuito |
 | Inventario | Inventario | Inventario | Gestión de inventario | En `os` |
 | Eventos | Eventos | Eventos | Agenda operativa | Solo `os` |
 | Contratos | Contratos de renta | Contratos | | Próximamente |
@@ -100,6 +101,10 @@ Cada pantalla se diseña y se revisa primero a 360–375 px.
 - Zonas táctiles de al menos 44 px (`TOUCH` = `h-12`).
 - Campos con texto de 16 px para que iOS no haga zoom.
 - Acción principal al alcance del pulgar (barra inferior o botón flotante).
+- Para capturar rápido: lo habitual viene preelegido (la última categoría usada), a la
+  vista hay tres opciones y lo poco frecuente (otra fecha, detalle) queda plegado.
+- El color de la app no debe contradecir el significado: donde importa si el dinero
+  entra o sale, se usa verde o rojo, no el acento.
 - Avisos emergentes arriba, para no tapar esas acciones.
 - Lo que captura el usuario se muestra como lo escribió. Excepciones: primera letra en
   mayúscula en descripciones, direcciones y notas, y en cada palabra del nombre de una
@@ -352,8 +357,15 @@ Acordado el 2026-11-27:
 
 1. **API (hecho):** la lista desempata por folio, así no se repiten ni se pierden
    movimientos entre páginas; `GET /transactions/summary` acepta `dateFrom` y `dateTo`.
-2. **Paquete y sitio gratuito:** pendiente.
-3. **`os`:** pendiente.
+2. **Paquete y sitio gratuito (hecho):** `packages/tool-cash`, montado en `/tools/cash`.
+   Es una sola pantalla: anotar, corregir y borrar van en hojas, así abre sin red.
+   Adaptador en `apps/toolbox/lib/cash-storage.ts`; si lo guardado está dañado, avisa y
+   no lo sobrescribe. El respaldo suma los movimientos (misma versión: los anteriores
+   siguen cargando).
+3. **`os`:** pendiente. Su adaptador traduce `in`/`out` a `INPUT`/`OUTPUT`, pagina con
+   `GET /transactions`, pide el resumen por fechas, conserva el evento vinculado y no
+   reenvía una categoría o forma de pago que no cambió (el API rechaza las inactivas).
+   Agregar `packages/tool-cash/package.json` en su `Dockerfile`.
 
 ## 7. Cuidados
 

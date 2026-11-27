@@ -93,7 +93,8 @@ Para que nadie confunda este sitio con el panel de un negocio:
   quites.
 - El nombre de la marca sale de `lib/brand.ts`.
 - El color ladrillo es de este sitio; las instancias de El Negocio OS usan violeta.
-- Una micro app nueva que guarde datos debe incluirlos en `lib/backup.ts`.
+- Una micro app nueva que guarde datos debe incluirlos en `lib/backup.ts` (hoy: notas
+  de venta y entradas y salidas).
 - No cambies las claves de `localStorage` ya publicadas: la gente dejaría de ver sus datos.
 
 ## Estilo

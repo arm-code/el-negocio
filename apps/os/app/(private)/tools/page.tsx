@@ -38,7 +38,7 @@ const toolsList = [
     description: 'Anota lo que entra y lo que sale de tu negocio.',
     href: '/tools/finanzas',
     icon: Wallet,
-    btnLabel: 'Ver mi dinero',
+    btnLabel: 'Ver mi caja',
     primary: false,
   },
   {

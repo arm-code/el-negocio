@@ -4,10 +4,10 @@
 // agregar a `availableTools` la ficha de su paquete junto con su `href` y su muestra.
 // Los nombres siguen el apartado "Nombres" de docs/PACKAGES-TOOLS.md.
 import type { ComponentType } from "react"
+import { cashMeta } from "@el-negocio/tool-cash/meta"
 import { salesNotesMeta } from "@el-negocio/tool-sales-notes/meta"
 import {
     FileSignature,
-    Wallet,
     Calculator,
     BookOpen,
     Package,
@@ -16,6 +16,7 @@ import {
     Users,
     type LucideIcon,
 } from "lucide-react"
+import { CashPreview } from "@/components/home/cash-preview"
 import { ReceiptPreview } from "@/components/home/receipt-preview"
 
 interface ToolBase {
@@ -45,15 +46,16 @@ export const availableTools: readonly AvailableTool[] = [
         alsoKnownAs: "Nota de venta, ticket, comprobante o cotización.",
         preview: ReceiptPreview,
     },
+    {
+        ...cashMeta,
+        href: "/tools/cash",
+        action: "Abrir mi caja",
+        alsoKnownAs: "Ingresos y gastos, cuentas del día, lo que hay en caja.",
+        preview: CashPreview,
+    },
 ]
 
 export const upcomingTools: readonly UpcomingTool[] = [
-    {
-        id: "money",
-        title: "Entradas y salidas",
-        description: "Anota lo que entra y lo que sale de tu negocio",
-        icon: Wallet,
-    },
     {
         id: "event-contracts",
         title: "Contratos de renta",
