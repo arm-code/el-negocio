@@ -10,6 +10,7 @@ import type { Note } from '../types'
 import { Card } from '@el-negocio/ui/card'
 import { Button } from '@el-negocio/ui/button'
 import { Skeleton } from '@el-negocio/ui/skeleton'
+import { capitalizeWords } from '@el-negocio/ui/display'
 import { cn } from '@el-negocio/ui/utils'
 
 interface NotesListProps {
@@ -57,7 +58,7 @@ export function NotesList({ notes, isLoading, isError, isFiltered, onRetry, onSe
 
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] font-medium text-foreground">
-                    {note.customer.name}
+                    {capitalizeWords(note.customer.name)}
                   </span>
                   <span className="mt-0.5 flex items-center gap-1.5 text-[13px] text-muted-foreground">
                     <span className="font-mono uppercase">{note.folio}</span>

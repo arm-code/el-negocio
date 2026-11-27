@@ -15,6 +15,8 @@ interface DocumentActionsProps {
   children?: React.ReactNode
   exportNode: React.ReactNode
   title?: string
+  /** Desactiva los botones mientras falten datos del documento. */
+  disabled?: boolean
   /**
    * fixed (por defecto): barra fija abajo en móvil; debe ser lo último de la pantalla.
    * inline: solo los botones, para ponerlo en el `footer` de AppBottomSheet.
@@ -23,7 +25,14 @@ interface DocumentActionsProps {
 }
 
 /** Botones para descargar o compartir un documento como imagen o PDF. */
-export function DocumentActions({ filename, children, exportNode, title, placement = 'fixed' }: DocumentActionsProps) {
+export function DocumentActions({
+  filename,
+  children,
+  exportNode,
+  title,
+  disabled,
+  placement = 'fixed',
+}: DocumentActionsProps) {
   const exportRef = useRef<HTMLDivElement>(null)
   const [exporting, setExporting] = useState<{ format: ExportFormat; action: ExportAction } | null>(null)
   const [pendingAction, setPendingAction] = useState<ExportAction | null>(null)
@@ -72,11 +81,11 @@ export function DocumentActions({ filename, children, exportNode, title, placeme
     <div className="mx-auto w-full max-w-lg">
       {title && <p className="mb-2 text-center text-sm font-medium text-muted-foreground">{title}</p>}
       <div className="grid grid-cols-2 gap-2">
-        <Button variant="outline" className={TOUCH} onClick={() => setPendingAction('download')} disabled={busy}>
+        <Button variant="outline" className={TOUCH} onClick={() => setPendingAction('download')} disabled={busy || disabled}>
           {exporting?.action === 'download' ? <Loader2 className="animate-spin" aria-hidden /> : <Download aria-hidden />}
           Descargar
         </Button>
-        <Button className={TOUCH} onClick={() => setPendingAction('share')} disabled={busy}>
+        <Button className={TOUCH} onClick={() => setPendingAction('share')} disabled={busy || disabled}>
           {exporting?.action === 'share' ? <Loader2 className="animate-spin" aria-hidden /> : <Share2 aria-hidden />}
           Compartir
         </Button>

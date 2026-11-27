@@ -1,7 +1,7 @@
 # Micro apps compartidas (plan y estándar de trabajo)
 
-> Estado al 2026-11-26: fases 0 a 2 desplegadas. Fase 3 hecha en local sobre la marca
-> "El Negocio"; **antes de llevarla a `main`, lee su apartado**: cambia el despliegue.
+> Estado al 2026-11-27: fases 0 a 3 en `main`; el sitio gratuito ya está desplegado con
+> ellas. Fase 4 en `dev`: falta llevarla a `main` y desplegar.
 
 ## 1. La idea
 
@@ -32,9 +32,9 @@ packages/
   tool-sales-notes/   @el-negocio/tool-sales-notes   pantallas, cálculos, tipos, puertos
 apps/
   toolbox/            monta cada herramienta con localStorage
-  os/                 (fase 4) la montará con API, sesión e integraciones
-pnpm-workspace.yaml   toolbox + packages; versiones compartidas en `catalog`
-pnpm-lock.yaml        un solo lockfile para toolbox y paquetes
+  os/                 monta cada herramienta con el API del negocio
+pnpm-workspace.yaml   os + toolbox + packages; versiones compartidas en `catalog`
+pnpm-lock.yaml        un solo lockfile para las dos apps y los paquetes
 ```
 
 ## 3. Estándar visual
@@ -58,9 +58,8 @@ Solo cambia estos valores:
 
 Reglas:
 
-- Fondos, tarjetas, textos y bordes: los neutros actuales de `os/app/globals.css`,
-  iguales en ambas variantes. Definir además `--destructive-foreground` y
-  `--success-foreground`, que hoy `os` no tiene.
+- Fondos, tarjetas, textos y bordes: los neutros de `theme.css`, iguales en ambas
+  variantes. `os` importa ese tema; su `globals.css` solo agrega lo que es suyo.
 - En las micro apps solo tokens (`bg-primary`, `text-muted-foreground`...), sin
   colores fijos. Excepción: el documento que se exporta (PDF/imagen), que debe
   salir igual en cualquier tema.
@@ -76,9 +75,10 @@ Cada pantalla se diseña y se revisa primero a 360–375 px.
 - Campos con texto de 16 px para que iOS no haga zoom.
 - Acción principal al alcance del pulgar (barra inferior o botón flotante).
 - Avisos emergentes arriba, para no tapar esas acciones.
-- Lo que captura el usuario se muestra como lo escribió (a lo sumo, primera letra en
-  mayúscula en descripciones, direcciones y notas). Ayudar al teclado con
-  `autoCapitalize`, no transformar con CSS.
+- Lo que captura el usuario se muestra como lo escribió. Excepciones: primera letra en
+  mayúscula en descripciones, direcciones y notas, y en cada palabra del nombre de una
+  persona (`capitalizeWords`). Ayudar al teclado con `autoCapitalize`, no transformar
+  con CSS.
 - Detalles y formularios cortos en hoja inferior; diálogo en escritorio.
 - Respetar `env(safe-area-inset-*)`.
 - Sin desplazamiento horizontal.
@@ -106,8 +106,9 @@ packages/tool-<nombre>/src/
 5. `next`, `react`, `@tanstack/react-query` y `sonner` son `peerDependencies`.
 6. Funciona sin red en el toolbox: sus pantallas son estáticas (el id va como
    `?id=`) y están en `OFFLINE_ROUTES`.
+7. Lo que se edita se lee fresco: no se abre un formulario con una copia vieja.
 
-Para agregar una herramienta al toolbox:
+Para agregar una herramienta a las apps:
 
 1. Crear `packages/tool-<nombre>` copiando `package.json` y `tsconfig.json` de notas
    de venta. Las versiones compartidas se declaran como `catalog:`.
@@ -115,12 +116,16 @@ Para agregar una herramienta al toolbox:
    (`next.config.ts`) y una línea `@source` en `app/globals.css`.
 3. Pantallas en `app/tools/<nombre>/` con su provider, adaptador en `lib/`, entrada en
    `lib/tools-catalog.ts` y rutas en `OFFLINE_ROUTES`.
-4. `pnpm install` en la raíz y `pnpm --dir packages/tool-<nombre> typecheck`.
+4. En `apps/os`: lo mismo del paso 2; adaptador del API en `lib/`, y el provider en el
+   `layout.tsx` de las pantallas. Su `Dockerfile` necesita copiar el `package.json` del
+   paquete nuevo antes de instalar.
+5. `pnpm install` en la raíz y `pnpm --dir packages/tool-<nombre> typecheck`.
 
 Contrato de notas de venta:
 
 ```ts
 export interface NotesStorage {
+  staleTime?: number            // 0 si los datos cambian desde otro dispositivo
   list(): Promise<Note[]>
   get(id: string): Promise<Note | null>
   create(input: NoteInput): Promise<Note>              // pone id, folio y fecha
@@ -130,6 +135,7 @@ export interface NotesStorage {
 }
 
 export interface BusinessInfoStorage {
+  staleTime?: number
   get(): Promise<BusinessInfo>
   save?(info: BusinessInfo): Promise<BusinessInfo>     // sin save = solo lectura
 }
@@ -225,24 +231,41 @@ Pendiente:
 
 ### Fase 4 — `os` consume notas de venta
 
-- Migrar `os` a los paquetes y ajustar su Dockerfile.
-- El adaptador del API traduce:
+Hecha y probada en local el 2026-11-27.
+
+- `os` entró al workspace de la raíz y comparte versiones con `catalog`. Su Dockerfile y
+  el `docker-compose.yml` compilan desde la raíz del repo; en Coolify no cambia ningún
+  ajuste.
+- Pantallas, documento y cálculos de notas son los del paquete. Adaptador del API en
+  `apps/os/lib/sales-notes-storage.ts`; rutas y textos en
+  `app/(private)/tools/notas-venta/layout.tsx`. Los datos del negocio son de solo lectura
+  ahí: se editan en Configuración.
 
   | Paquete | API |
   | --- | --- |
   | `status: 'issued'` | `'note'` |
   | `item.description` | `concept` |
   | `customer.{name, phone, address}` | `customerName`, `customerPhone`, `customerAddress` |
-  | Campo vaciado | mandar `''`; si se omite, el `PATCH` conserva el anterior |
-  | Folio `NV-` | `COT-` o `NV-` según el tipo |
-  | `list()` completo | el listado está paginado |
+  | Campo vaciado | `null`; si se omite, el `PATCH` conserva el anterior |
+  | Correo del cliente y evento vinculado | no se envían: el API los conserva |
+  | `list()` completo | recorre todas las páginas (100 por página) |
 
-- El API exige cantidad ≥ 1; el asistente permite menos. Unificar la regla.
-- Error actual de `os`: pide las notas sin límite y el API devuelve 10, así que las
-  más antiguas no salen en la lista ni al vincularlas a un evento. El adaptador debe
-  traer todas las páginas.
-- El vínculo nota–evento entra por un hueco. Hoy `noteId` y `eventId` pueden
-  desincronizarse al editar la nota por su propio endpoint.
+- Corregido: `os` solo mostraba las 10 notas más recientes, en la lista y al vincularlas
+  a un evento.
+- El documento usa colores fijos y pone mayúscula en cada palabra del nombre del cliente.
+- La cantidad mínima por concepto es 1 en las dos apps.
+- El vínculo nota–evento sigue en las pantallas de eventos de `os`; no hizo falta un hueco
+  en el paquete.
+
+Pendiente:
+
+- `noteId` (evento) y `eventId` (nota) pueden desincronizarse: cada pantalla escribe el suyo.
+- `os` conserva sus propios componentes base para el resto de sus pantallas, y su
+  `document-actions` para el contrato de eventos.
+- El API no garantiza el orden de los conceptos de una nota.
+- Los PDF exportados pesan varios megabytes (la imagen va sin comprimir).
+- Las pantallas de eventos solo cargan 10 (fallo anterior visto en el ensayo, fuera de
+  esta fase).
 
 ### Fase 5 — Cierre
 
@@ -251,7 +274,7 @@ Corregir este estándar con lo aprendido y elegir la siguiente micro app
 
 ## 7. Cuidados
 
-- `api` y `os` no cambian su código en las fases 0–3.
+- `api` y `os` no cambiaron su código en las fases 0–3; la fase 4 no toca el API.
 - Servidor de pruebas con CPU viejo: mantener `IMAGE_OPTIMIZATION=false`.
 - Cambios en una rama basada en `dev`; `main` es producción.
 - Un paquete compartido afecta a las dos apps: desde la fase 4, compilar ambas antes
@@ -261,6 +284,6 @@ Corregir este estándar con lo aprendido y elegir la siguiente micro app
 
 | Decisión | Propuesta |
 | --- | --- |
-| Variante por defecto | `brick` en toolbox (aplicado en la fase 1), `violet` en `os` |
+| Variante por defecto | Aplicado: `brick` en toolbox, `violet` en `os` |
 | ¿Quién elige la variante? | Fija por app al inicio; selector por negocio después |
 | Base de los componentes compartidos | Los del toolbox (más recientes), con el aspecto del admin de `os` |

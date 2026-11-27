@@ -2,12 +2,14 @@
 'use client'
 
 import { useState, ChangeEvent, useEffect, use } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Save, ArrowLeft, ArrowRight } from 'lucide-react'
 
 import { financeApi } from '@/lib/api/finance'
+import { apiNotesStorage } from '@/lib/sales-notes-storage'
 import type { UpdateBusinessEventDto, EventStatus } from '@/types/finance'
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card"
 import { PageHeader } from '@/components/admin/page-header'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { EmptyState, InlineError, ListSkeleton } from '@/components/ui/states'
 import { cn } from '@/lib/utils'
 
 export default function EditarEventoPage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,36 +46,36 @@ export default function EditarEventoPage({ params }: { params: Promise<{ id: str
     const [formNotes, setFormNotes] = useState('')
 
     // Fetch existing event
-    const { data: rawEvents } = useQuery({
-        queryKey: ['businessEvents', 'all', ''],
-        queryFn: () => financeApi.getBusinessEvents({ tab: 'all', search: '' }),
+    // Sale de la lista completa: GET /events/:id responde con error en el API
+    const { data: events, isError, isFetching, refetch } = useQuery({
+        queryKey: ['businessEvents'],
+        queryFn: () => financeApi.getBusinessEvents(),
     })
+    const event = events?.find((e) => e.id === eventId)
 
     useEffect(() => {
-        if (!rawEvents || !Array.isArray(rawEvents)) return
-        const event = rawEvents.find(e => String(e.id) === eventId)
-        if (event) {
-            setFormName(event.name || event.serviceDescription || '')
-            setFormClientName(event.clientName || '')
-            setFormClientPhone(event.clientPhone || '')
-            setFormAddress(event.eventAddress || '')
-            setFormDate(
-                event.date || event.eventDate
-                    ? (event.date || event.eventDate)!.split('T')[0]
-                    : new Date().toISOString().split('T')[0]
-            )
-            setFormCost(String(event.cost || ''))
-            setFormStatus(event.status || 'pending')
-            setFormNoteId(event.noteId || 'none')
-            setFormGuarantee(event.guaranteeDocument || 'INE / Credencial de Elector')
-            setFormNotes(event.notes || '')
-        }
-    }, [rawEvents, eventId])
+        if (!event) return
+        setFormName(event.name || event.serviceDescription || '')
+        setFormClientName(event.clientName || '')
+        setFormClientPhone(event.clientPhone || '')
+        setFormAddress(event.eventAddress || '')
+        setFormDate(
+            event.date || event.eventDate
+                ? (event.date || event.eventDate)!.split('T')[0]
+                : new Date().toISOString().split('T')[0]
+        )
+        setFormCost(String(event.cost || ''))
+        setFormStatus(event.status || 'pending')
+        setFormNoteId(event.noteId || 'none')
+        setFormGuarantee(event.guaranteeDocument || 'INE / Credencial de Elector')
+        setFormNotes(event.notes || '')
+    }, [event])
 
     // Load available notes from API
     const { data: availableNotesData } = useQuery({
-        queryKey: ['salesNotes'],
-        queryFn: () => financeApi.getSalesNotes(),
+        // Bajo 'salesNotes' para que se refresque al guardar o borrar una nota
+        queryKey: ['salesNotes', 'event-link'],
+        queryFn: () => apiNotesStorage.list(),
     })
     const availableNotes = availableNotesData || []
 
@@ -156,6 +159,29 @@ export default function EditarEventoPage({ params }: { params: Promise<{ id: str
             </div>
         </div>
     )
+
+    // Sin el evento no hay formulario: guardar uno vacío borraría sus datos
+    if (!event) {
+        return (
+            <div className="space-y-6 pb-28 sm:pb-8">
+                <PageHeader title="Editar evento" />
+                {isFetching ? (
+                    <ListSkeleton label="Cargando evento" />
+                ) : isError ? (
+                    <InlineError message="No se pudo cargar el evento." onRetry={() => refetch()} />
+                ) : (
+                    <EmptyState
+                        title="No se encontró el evento"
+                        action={
+                            <Button asChild>
+                                <Link href="/tools/eventos">Ver eventos</Link>
+                            </Button>
+                        }
+                    />
+                )}
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-6 pb-28 sm:pb-8">
@@ -297,7 +323,7 @@ export default function EditarEventoPage({ params }: { params: Promise<{ id: str
                                             <SelectItem value="none">Sin nota</SelectItem>
                                             {availableNotes.map((note: any) => (
                                                 <SelectItem key={note.id} value={note.id}>
-                                                    {note.folio} — {note.customerName || note.customer?.name}
+                                                    {note.folio} — {note.customer.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>

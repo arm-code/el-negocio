@@ -7,14 +7,22 @@ import type { BusinessInfo } from '../types'
 const businessKey = ['businessInfo'] as const
 const EMPTY: BusinessInfo = { name: '', phone: '' }
 
-export function useBusinessInfo() {
+function useBusinessInfoQuery() {
   const { business } = useSalesNotesConfig()
-  const { data } = useQuery({
+  return useQuery({
     queryKey: businessKey,
     queryFn: () => business.get(),
-    staleTime: Infinity,
+    staleTime: business.staleTime ?? Infinity,
   })
-  return data ?? EMPTY
+}
+
+export function useBusinessInfo() {
+  return useBusinessInfoQuery().data ?? EMPTY
+}
+
+/** Falso mientras no se conocen los datos del negocio: el documento saldría sin ellos. */
+export function useBusinessInfoReady() {
+  return useBusinessInfoQuery().data !== undefined
 }
 
 export function useSaveBusinessInfo() {

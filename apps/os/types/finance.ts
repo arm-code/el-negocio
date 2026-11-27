@@ -98,58 +98,34 @@ export interface CreatePaymentMethodDto {
   isActive?: boolean;
 }
 
-export type SalesNoteStatus = 'quote' | 'note' | 'issued';
-
-export interface SalesNoteItem {
-  id?: string;
-  concept: string;
-  description?: string;
-  quantity: number;
-  unitPrice: number;
-  amount?: number;
-}
-
+/** Nota de venta o cotización tal como la responde el API. */
 export interface SalesNote {
   id: string;
   folio: string;
-  status: SalesNoteStatus;
+  status: 'quote' | 'note';
   customerName: string;
-  customerPhone?: string;
-  customerAddress?: string;
-  customerEmail?: string;
-  customer?: { name: string; phone?: string; address?: string; email?: string };
+  customerPhone: string | null;
+  customerAddress: string | null;
+  customerEmail: string | null;
   applyIva: boolean;
   ivaRate: number;
   subtotal: number;
-  ivaAmount?: number;
+  ivaAmount: number;
   total: number;
-  eventId?: string | null;
-  notes?: string;
+  eventId: string | null;
+  notes: string | null;
   items: SalesNoteItem[];
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
 }
 
-export interface CreateSalesNoteItemDto {
+export interface SalesNoteItem {
+  id: string;
   concept: string;
   quantity: number;
   unitPrice: number;
+  amount: number;
 }
-
-export interface CreateSalesNoteDto {
-  status?: SalesNoteStatus;
-  customerName: string;
-  customerPhone?: string;
-  customerAddress?: string;
-  customerEmail?: string;
-  applyIva?: boolean;
-  ivaRate?: number;
-  eventId?: string;
-  notes?: string;
-  items: CreateSalesNoteItemDto[];
-}
-
-export interface UpdateSalesNoteDto extends Partial<CreateSalesNoteDto> {}
 
 export interface PaymentCard {
   id: string;

@@ -1,15 +1,16 @@
-# Solo el toolbox y los paquetes compartidos. apps/os y apps/api se instalan por
-# separado: cada una tiene su propio pnpm-workspace.yaml y su lockfile.
+# Las dos apps web y los paquetes compartidos. apps/api se instala por separado:
+# tiene su propio pnpm-workspace.yaml y su lockfile.
 packages:
+  - apps/os
   - apps/toolbox
   - packages/*
 
-# Versiones que la app y los paquetes deben compartir: dos copias de React, Next o
+# Versiones que las apps y los paquetes deben compartir: dos copias de React, Next o
 # react-query rompen el contexto entre la app y los paquetes.
 catalog:
-  next: 16.1.6
-  react: 19.2.3
-  react-dom: 19.2.3
+  next: 16.2.4
+  react: 19.2.5
+  react-dom: 19.2.5
   '@types/react': ^19
   '@types/react-dom': ^19
   '@tanstack/react-query': ^5.104.1

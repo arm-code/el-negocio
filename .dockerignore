@@ -1,13 +1,14 @@
-# Contexto de build en la raíz: lo usa apps/toolbox/Dockerfile.
-# (apps/api y apps/os se construyen desde su carpeta, con su propio .dockerignore.)
+# Contexto de build en la raíz: lo usan apps/os/Dockerfile y apps/toolbox/Dockerfile.
+# (apps/api se construye desde su carpeta, con su propio .dockerignore.)
 
-# Se excluye todo y se permite solo lo que el toolbox necesita
+# Se excluye todo y se permite solo lo que las apps web necesitan
 *
 !package.json
 !pnpm-lock.yaml
 !pnpm-workspace.yaml
 !tsconfig.base.json
 !packages
+!apps/os
 !apps/toolbox
 
 **/node_modules

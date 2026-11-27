@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Loader2, Save, ArrowLeft, ArrowRight } from 'lucide-react'
 
 import { financeApi } from '@/lib/api/finance'
+import { apiNotesStorage } from '@/lib/sales-notes-storage'
 import type { CreateBusinessEventDto, EventStatus } from '@/types/finance'
 
 import { Button } from "@/components/ui/button"
@@ -43,8 +44,9 @@ export default function CrearEventoPage() {
 
     // Load available notes from API
     const { data: availableNotesData } = useQuery({
-        queryKey: ['salesNotes'],
-        queryFn: () => financeApi.getSalesNotes(),
+        // Bajo 'salesNotes' para que se refresque al guardar o borrar una nota
+        queryKey: ['salesNotes', 'event-link'],
+        queryFn: () => apiNotesStorage.list(),
     })
     const availableNotes = availableNotesData || []
 
@@ -269,7 +271,7 @@ export default function CrearEventoPage() {
                                             <SelectItem value="none">Sin nota</SelectItem>
                                             {availableNotes.map((note: any) => (
                                                 <SelectItem key={note.id} value={note.id}>
-                                                    {note.folio} — {note.customerName || note.customer?.name}
+                                                    {note.folio} — {note.customer.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>

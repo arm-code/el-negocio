@@ -26,7 +26,7 @@ export function useSalesNotes() {
   return useQuery({
     queryKey: notesKeys.all,
     queryFn: () => notes.list(),
-    staleTime: Infinity,
+    staleTime: notes.staleTime ?? Infinity,
   })
 }
 
@@ -36,7 +36,9 @@ export function useSalesNote(id: string | undefined) {
     queryKey: notesKeys.detail(id ?? ''),
     queryFn: () => notes.get(id!),
     enabled: Boolean(id),
-    staleTime: Infinity,
+    staleTime: notes.staleTime ?? Infinity,
+    // Se edita a partir de esta lectura: una copia vieja pisaría cambios más nuevos
+    refetchOnMount: 'always',
   })
 }
 
