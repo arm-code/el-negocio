@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { computeNoteTotals, itemAmount, IVA_RATE } from '../lib/calculations'
 import { formatCurrency, genId } from '../lib/format'
 import { useSaveSalesNote } from '../hooks/use-sales-notes'
-import { useBusinessInfo } from '../hooks/use-business-info'
+import { useBusinessInfo, useBusinessInfoReady } from '../hooks/use-business-info'
 import { useSalesNotesConfig } from '../provider'
 import type { Note, NoteItem, NoteStatus } from '../types'
 import { PrintSaleNoteDocument } from './sale-note-document'
@@ -35,6 +35,7 @@ const LIMITS = {
   address: 120,
   description: 120,
   notes: 500,
+  minQuantity: 1,
   maxQuantity: 100_000,
   maxPrice: 10_000_000,
 } as const
@@ -70,6 +71,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
   const { routes, copy } = useSalesNotesConfig()
   const isEditing = Boolean(initialNote)
   const business = useBusinessInfo()
+  const businessReady = useBusinessInfoReady()
   const saveMutation = useSaveSalesNote(initialNote?.id)
 
   const [step, setStep] = useState<Step>(1)
@@ -120,8 +122,15 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
   }
 
   function handleNextStep2() {
-    if (!items.some((it) => it.description.trim() !== '')) {
+    const described = items.filter((it) => it.description.trim() !== '')
+    if (described.length === 0) {
       toast.error('Agrega al menos un concepto con descripción')
+      return
+    }
+    const missingQuantity = described.find((it) => it.quantity < LIMITS.minQuantity)
+    if (missingQuantity) {
+      setExpandedItemId(missingQuantity.id)
+      toast.error(`La cantidad debe ser al menos ${LIMITS.minQuantity}`)
       return
     }
     setStep(3)
@@ -356,7 +365,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
                             id={`qty-${item.id}`}
                             type="number"
                             inputMode="numeric"
-                            min={1}
+                            min={LIMITS.minQuantity}
                             max={LIMITS.maxQuantity}
                             value={item.quantity === 0 ? '' : item.quantity}
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
@@ -514,6 +523,7 @@ export function NoteWizard({ initialNote }: NoteWizardProps) {
           savedNote && (
             <DocumentActions
               placement="inline"
+              disabled={!businessReady}
               filename={`${toSlug(kindLabel(savedNote.status), 'nota')}-${toSlug(savedNote.folio, 'folio')}`}
               exportNode={<PrintSaleNoteDocument note={savedNote} business={business} />}
             />

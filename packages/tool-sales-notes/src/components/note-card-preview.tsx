@@ -1,7 +1,7 @@
 import { computeNoteTotals, itemAmount } from '../lib/calculations'
 import { formatCurrency } from '../lib/format'
 import type { Note } from '../types'
-import { capitalize, formatMxPhone, toMxPhone } from '@el-negocio/ui/display'
+import { capitalize, capitalizeWords, formatMxPhone, toMxPhone } from '@el-negocio/ui/display'
 import { ContactButtons, DetailAmountRow, DetailDateRow, DetailSection, DetailSummary } from '@el-negocio/ui/detail'
 
 /** Acepta 0.16 o 16 y devuelve "16". */
@@ -28,7 +28,7 @@ export function NoteCardPreview({ note }: { note: Note }) {
 
       <DetailSection title="Cliente">
         <div>
-          <p className="text-base font-medium">{note.customer.name}</p>
+          <p className="text-base font-medium">{capitalizeWords(note.customer.name)}</p>
           {note.customer.phone && (
             <p className="text-[15px] tabular-nums text-muted-foreground">
               {phone ? formatMxPhone(phone) : note.customer.phone}

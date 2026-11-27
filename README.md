@@ -21,9 +21,9 @@ packages/
 └── tool-sales-notes/  Micro app de notas de venta.
 ```
 
-Cada app se despliega por separado. `api` y `os` son independientes (su propio
-lockfile y Dockerfile, construidos desde su carpeta). `toolbox` forma un workspace de
-pnpm con `packages/` (lockfile en la raíz) y se construye desde la raíz.
+Cada app se despliega por separado. `os` y `toolbox` forman un workspace de pnpm con
+`packages/` (un lockfile en la raíz) y sus imágenes se construyen desde la raíz. `api`
+es independiente: su propio lockfile y Dockerfile, construido desde su carpeta.
 El plan para compartir micro apps entre `os` y `toolbox` está en
 [`docs/PACKAGES-TOOLS.md`](docs/PACKAGES-TOOLS.md).
 
@@ -58,7 +58,7 @@ pnpm install
 pnpm --dir apps/toolbox dev -p 3001
 ```
 
-`pnpm install` en la raíz instala el toolbox y los paquetes. Los cambios en
+`pnpm install` en la raíz instala `os`, el toolbox y los paquetes. Los cambios en
 `packages/` también se ven al guardar.
 
 El `-p 3001` evita chocar con `os`, que usa el puerto 3000.
@@ -122,6 +122,8 @@ pnpm install
 pnpm dev
 ```
 
+`pnpm install` desde `apps/os` instala todo el workspace.
+
 Entra en http://localhost:3000/auth/login con el usuario del paso 3.
 
 ### Día a día
@@ -151,7 +153,6 @@ Dependencias, desde la raíz:
 
 ```bash
 pnpm install
-pnpm --dir apps/os install
 ```
 
 El API corre dentro de un contenedor y **no recarga solo**. Si cambió algo en

@@ -4,6 +4,11 @@
 import type { BusinessInfo, Note, NoteInput } from './types'
 
 export interface NotesStorage {
+  /**
+   * Milisegundos que los datos leídos se consideran vigentes. Si falta, siempre: solo
+   * cambian desde esta app. Usa 0 si otro dispositivo o pantalla puede cambiarlos.
+   */
+  staleTime?: number
   /** Todas las notas, de la más reciente a la más antigua. */
   list(): Promise<Note[]>
   /** `null` si no existe. */
@@ -21,6 +26,8 @@ export interface NotesStorage {
 }
 
 export interface BusinessInfoStorage {
+  /** Igual que en `NotesStorage`. */
+  staleTime?: number
   /** Datos del negocio; cadenas vacías si aún no se han capturado. */
   get(): Promise<BusinessInfo>
   /** Si falta, los datos son de solo lectura y la micro-app no ofrece editarlos. */

@@ -1,17 +1,25 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# Front (Next.js, salida standalone). Contexto de build: apps/os
+# Front (Next.js, salida standalone). Contexto de build: la RAÍZ del repo, porque
+# usa los paquetes de packages/.
+#   docker build -f apps/os/Dockerfile .
 #
 # Las variables NEXT_PUBLIC_* se incorporan al COMPILAR, así que llegan como
 # ARG. Cambiarlas exige reconstruir la imagen.
 # ─────────────────────────────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
 RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
-WORKDIR /app
+WORKDIR /repo
 
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+# Los manifiestos primero: la instalación solo se repite cuando cambian
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY apps/os/package.json apps/os/
+COPY packages/ui/package.json packages/ui/
+COPY packages/tool-sales-notes/package.json packages/tool-sales-notes/
+# Solo las dependencias de este front y de los paquetes que usa
+RUN pnpm install --frozen-lockfile --filter "el-negocio-os..."
 
-COPY . .
+COPY packages packages
+COPY apps/os apps/os
 
 # Público (en el navegador): el API se alcanza por el mismo origen, en /api
 ARG NEXT_PUBLIC_API_BASE_URL=/api
@@ -23,7 +31,7 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
     NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL \
     IMAGE_OPTIMIZATION=$IMAGE_OPTIMIZATION \
     NEXT_TELEMETRY_DISABLED=1
-RUN pnpm run build
+RUN pnpm --dir apps/os run build
 
 
 FROM node:22-alpine AS runner
@@ -35,9 +43,10 @@ ENV NODE_ENV=production \
 
 RUN addgroup -S app && adduser -S app -G app
 
-COPY --from=builder --chown=app:app /app/.next/standalone ./
-COPY --from=builder --chown=app:app /app/.next/static ./.next/static
-COPY --from=builder --chown=app:app /app/public ./public
+# La salida standalone replica la estructura del repo: el servidor queda en apps/os
+COPY --from=builder --chown=app:app /repo/apps/os/.next/standalone ./
+COPY --from=builder --chown=app:app /repo/apps/os/.next/static ./apps/os/.next/static
+COPY --from=builder --chown=app:app /repo/apps/os/public ./apps/os/public
 
 USER app
 EXPOSE 3000
@@ -48,4 +57,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD wget -q -O /dev/null http://127.0.0.1:3000/auth/login || exit 1
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/os/server.js"]

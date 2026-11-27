@@ -2,7 +2,7 @@
 import { computeNoteTotals, itemAmount } from '../lib/calculations'
 import { formatCurrency, formatDate } from '../lib/format'
 import type { BusinessInfo, Note } from '../types'
-import { capitalize } from '@el-negocio/ui/display'
+import { capitalize, capitalizeWords } from '@el-negocio/ui/display'
 import { cn } from '@el-negocio/ui/utils'
 
 interface SaleNoteDocumentProps {
@@ -46,7 +46,7 @@ export function PrintSaleNoteDocument({ note, business }: SaleNoteDocumentProps)
 
       <section className="mb-8 rounded-xl border border-neutral-200 p-5">
         <h2 className="text-sm font-semibold text-neutral-500">Cliente</h2>
-        <p className="mt-2 font-medium">{note.customer.name}</p>
+        <p className="mt-2 font-medium">{capitalizeWords(note.customer.name)}</p>
         {note.customer.phone && <p className="mt-1">{note.customer.phone}</p>}
         {note.customer.address && <p className="mt-1">{capitalize(note.customer.address)}</p>}
       </section>
