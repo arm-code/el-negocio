@@ -9,7 +9,8 @@ import * as yup from 'yup'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { normalizeSearch, toSlug } from '@/lib/display'
+import { normalizeSearch } from '@/lib/display'
+import { codeFromName } from '@/lib/catalog-code'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -59,11 +60,6 @@ function toItems(data: unknown): CatalogItem[] {
     })
 }
 
-/** El código lo genera el sistema a partir del nombre: "Renta de sillas" → "RENTA_DE_SILLAS". */
-function codeFromName(name: string): string {
-    return toSlug(name, 'item').toUpperCase().replace(/-/g, '_').slice(0, 20)
-}
-
 const schema = yup.object({
     name: yup.string().trim().required('Escribe un nombre').max(100, 'Máximo 100 caracteres'),
     description: yup.string().trim().max(255, 'Máximo 255 caracteres').optional(),
@@ -77,7 +73,8 @@ export function CatalogManager({ queryKey, fetchItems, createItem, withDescripti
     const queryClient = useQueryClient()
     const [isOpen, setIsOpen] = useState(false)
 
-    const { data, isLoading, isError, refetch } = useQuery({ queryKey: [queryKey], queryFn: fetchItems })
+    // staleTime 0: también se agregan opciones al anotar un movimiento
+    const { data, isLoading, isError, refetch } = useQuery({ queryKey: [queryKey], queryFn: fetchItems, staleTime: 0 })
     const items = useMemo(() => toItems(data), [data])
 
     const {
