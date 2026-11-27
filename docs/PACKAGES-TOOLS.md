@@ -1,7 +1,7 @@
 # Micro apps compartidas (plan y estándar de trabajo)
 
 > Estado al 2026-11-27: fases 0 a 3 en `main`; el sitio gratuito ya está desplegado con
-> ellas. Fase 4 hecha en local: falta llevarla a `main` y desplegar la instancia.
+> ellas. Fase 4 en `dev`: falta llevarla a `main` y desplegar.
 
 ## 1. La idea
 
@@ -264,10 +264,8 @@ Pendiente:
   `document-actions` para el contrato de eventos.
 - El API no garantiza el orden de los conceptos de una nota.
 - Los PDF exportados pesan varios megabytes (la imagen va sin comprimir).
-- Fallos del API y de eventos vistos en el ensayo, fuera de esta fase: `sales_notes`,
-  `business_events` y `transactions` exigen que su dueño exista en `auth.users`, así que
-  un usuario creado con `user-admin` no puede registrar nada; y las pantallas de eventos
-  solo cargan 10.
+- Las pantallas de eventos solo cargan 10 (fallo anterior visto en el ensayo, fuera de
+  esta fase).
 
 ### Fase 5 — Cierre
 
