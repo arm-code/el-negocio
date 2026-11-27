@@ -4,6 +4,7 @@
 // agregar a `availableTools` la ficha de su paquete junto con su `href` y su muestra.
 // Los nombres siguen el apartado "Nombres" de docs/PACKAGES-TOOLS.md.
 import type { ComponentType } from "react"
+import { agendaMeta } from "@el-negocio/tool-agenda/meta"
 import { cashMeta } from "@el-negocio/tool-cash/meta"
 import { salesNotesMeta } from "@el-negocio/tool-sales-notes/meta"
 import {
@@ -16,6 +17,7 @@ import {
     Users,
     type LucideIcon,
 } from "lucide-react"
+import { AgendaPreview } from "@/components/home/agenda-preview"
 import { CashPreview } from "@/components/home/cash-preview"
 import { ReceiptPreview } from "@/components/home/receipt-preview"
 
@@ -53,13 +55,20 @@ export const availableTools: readonly AvailableTool[] = [
         alsoKnownAs: "Ingresos y gastos, cuentas del día, lo que hay en caja.",
         preview: CashPreview,
     },
+    {
+        ...agendaMeta,
+        href: "/tools/agenda",
+        action: "Abrir mi agenda",
+        alsoKnownAs: "Citas, pedidos, entregas, eventos o recordatorios.",
+        preview: AgendaPreview,
+    },
 ]
 
 export const upcomingTools: readonly UpcomingTool[] = [
     {
-        id: "event-contracts",
-        title: "Contratos de renta",
-        description: "Contratos para tus eventos, listos para firmar",
+        id: "documents",
+        title: "Contratos y pagarés",
+        description: "Llena los datos y sal con el documento listo para firmar",
         icon: FileSignature,
     },
     {

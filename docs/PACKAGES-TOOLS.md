@@ -32,6 +32,7 @@ packages/
   ui/                 @el-negocio/ui                 tema y componentes base
   tool-sales-notes/   @el-negocio/tool-sales-notes   notas de venta: pantallas, reglas, tipos, puertos
   tool-cash/          @el-negocio/tool-cash          entradas y salidas: lo mismo
+  tool-agenda/        @el-negocio/tool-agenda        agenda: lo mismo
 apps/
   toolbox/            monta cada herramienta con localStorage
   os/                 monta cada herramienta con el API del negocio
@@ -56,8 +57,8 @@ la tecnología.
 | Notas de venta | Notas de venta | Notas | | En las dos apps |
 | Entradas y salidas | Entradas y salidas | Caja | Finanzas, movimientos, control de gastos, dinero | En las dos apps |
 | Inventario | Inventario | Inventario | Gestión de inventario | En `os` |
-| Eventos | Eventos | Eventos | Agenda operativa | Solo `os` |
-| Contratos | Contratos de renta | Contratos | | Próximamente |
+| Agenda | Agenda | Agenda | Eventos, agenda operativa | Sitio gratuito; en `os` aún es "Eventos" |
+| Documentos | Contratos y pagarés | Contratos | | Próximamente |
 | Corte de caja | Corte de caja | Corte | Corte diario | Próximamente |
 | Fiado | Libreta de fiado | Fiado | Cuentas por cobrar | Próximamente |
 | Precios | Calculadora de precios | Precios | | Próximamente |
@@ -377,6 +378,37 @@ Acordado el 2026-11-27:
    - Preelegidas la primera vez: "Otros" y "Efectivo"; después, las últimas usadas.
    - El inicio de `os` sigue mostrando el total histórico.
    - Un negocio sin nada anotado este mes ve el mes vacío; el historial está en "Ver todo".
+
+### Fase 7 — Agenda
+
+Reemplaza a "Eventos", que estaba pensada solo para rentar mobiliario. Sirve para anotar
+citas, pedidos y entregas de cualquier giro. Acordado el 2026-11-27:
+
+| Tema | Decisión |
+| --- | --- |
+| Obligatorio | Solo qué es y cuándo |
+| Datos opcionales | Hora, cliente, lugar y notas se agregan con un toque; salen abiertos los que se usaron la última vez |
+| Giro del negocio | No se pregunta ni cambia las pantallas |
+| Estados | Pendiente, Hecho y Cancelado; solo lo cancelado se puede borrar |
+| Contratos | No van en los ajustes: son la micro app "Contratos y pagarés" |
+| Fuera de alcance | Eventos que se repiten, avisos propios, sincronizar con Google y asignar personal |
+
+El orden:
+
+1. **Agenda básica en el sitio gratuito (hecho):** `packages/tool-agenda`, montado en
+   `/tools/agenda`. Una sola pantalla con hojas. "Agregar a mi calendario" descarga un
+   `.ics` para que el celular avise. Datos en `el-negocio:agenda:events:v1`
+   (`apps/toolbox/lib/agenda-storage.ts`) e incluidos en el respaldo.
+2. **Cobro** (total, anticipo y lo que falta), anotado en Entradas y salidas.
+3. **Contratos y pagarés:** llenar un formulario y obtener el PDF para imprimir.
+4. **Unir ambas**, con devolución (paso "Entregado") y garantía.
+
+El puerto `list()` entrega todo: las pestañas y la búsqueda trabajan sobre la lista
+completa. Un adaptador contra un API que pagine debe juntar todas las páginas.
+
+`os` sigue con sus pantallas de eventos: cambiarlas ahora le quitaría el cobro, la
+garantía y el contrato. Al migrarlas no se puede perder ningún dato de los eventos
+guardados.
 
 ## 7. Cuidados
 
