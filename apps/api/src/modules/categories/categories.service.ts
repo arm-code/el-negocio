@@ -11,6 +11,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { QueryCategoryDto } from './dto/query-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { TransactionCategory } from './entities/transaction-category.entity';
+import { sortColumn } from '../../common/utils/sort-column';
 
 @Injectable()
 export class CategoriesService {
@@ -69,7 +70,13 @@ export class CategoriesService {
       );
     }
 
-    const sortBy = query.sortBy ?? 'createdAt';
+    const sortBy = sortColumn(query.sortBy, [
+      'createdAt',
+      'updatedAt',
+      'id',
+      'name',
+      'code',
+    ]);
     qb.orderBy(`category.${sortBy}`, query.sortOrder)
       .skip(query.skip)
       .take(query.limit);
