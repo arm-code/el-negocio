@@ -262,7 +262,7 @@ export default function EditarEventoPage({ params }: { params: Promise<{ id: str
             {step === 2 && (
                 <section aria-labelledby="step-2-title" className="animate-in fade-in slide-in-from-right-4 duration-300">
                     <div className="mb-4">
-                        <h2 id="step-2-title" className="text-lg font-semibold">Finanzas y Contrato</h2>
+                        <h2 id="step-2-title" className="text-lg font-semibold">Fecha, costo y contrato</h2>
                         <p className="text-sm text-muted-foreground">Paso 2 de 3: Define la fecha, costos y garantías</p>
                     </div>
 

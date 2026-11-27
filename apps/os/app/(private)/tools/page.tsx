@@ -4,47 +4,49 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FilePlus2, FileText, Calendar, Wallet, Package, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 import { PageHeader } from '@/components/admin/page-header'
 
+// Nombres: ver el apartado "Nombres" de docs/PACKAGES-TOOLS.md
 const toolsList = [
   {
-    title: 'Crear Nota de Venta',
-    description: 'Genera cotizaciones y notas de venta digitales con exportación a PDF o Imagen.',
+    title: 'Nueva nota',
+    description: 'Hazle su nota o cotización al cliente y mándala por WhatsApp.',
     href: '/tools/notas-venta/crear-nota-venta',
     icon: FilePlus2,
-    btnLabel: 'Crear Nota',
+    btnLabel: 'Hacer una nota',
     primary: true,
   },
   {
-    title: 'Historial de Notas',
-    description: 'Consulta, busca y descarga nuevamente cualquier nota o cotización generada.',
+    title: salesNotesMeta.title,
+    description: 'Busca, vuelve a enviar o corrige las notas que ya hiciste.',
     href: '/tools/notas-venta',
     icon: FileText,
-    btnLabel: 'Ver Historial',
+    btnLabel: 'Ver mis notas',
     primary: false,
   },
   {
-    title: 'Eventos y Agenda',
-    description: 'Agenda eventos, controla estatus (entregado/recogido) y emite contratos de garantía.',
+    title: 'Eventos',
+    description: 'Anota tus fechas, qué ya entregaste y genera el contrato.',
     href: '/tools/eventos',
     icon: Calendar,
-    btnLabel: 'Gestionar Eventos',
+    btnLabel: 'Ver eventos',
     primary: true,
   },
   {
-    title: 'Finanzas y Movimientos',
-    description: 'Controla transacciones de ingresos/egresos, categorías y cuentas/métodos de pago.',
+    title: 'Entradas y salidas',
+    description: 'Anota lo que entra y lo que sale de tu negocio.',
     href: '/tools/finanzas',
     icon: Wallet,
-    btnLabel: 'Ver Finanzas',
+    btnLabel: 'Ver mi dinero',
     primary: false,
   },
   {
-    title: 'Gestión de Inventario',
-    description: 'Administra tus productos, stock, ubicaciones y movimientos en tiempo real.',
+    title: 'Inventario',
+    description: 'Lo que tienes, cuánto queda y dónde está.',
     href: '/tools/inventario',
     icon: Package,
-    btnLabel: 'Gestionar Inventario',
+    btnLabel: 'Ver inventario',
     primary: true,
   },
 ]
@@ -54,7 +56,7 @@ export default function ToolsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Herramientas"
-        description="Módulos y herramientas digitales para la gestión operativa en campo y oficina."
+        description="¿Qué quieres hacer?"
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">

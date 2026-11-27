@@ -2,11 +2,12 @@
 
 import { useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { Download, Loader2, Upload } from "lucide-react"
+import { Download, Loader2, Smartphone, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { AppBottomSheet } from "@el-negocio/ui/app-bottom-sheet"
 import { Button } from "@el-negocio/ui/button"
 import { BackupError, createBackup, importBackup } from "@/lib/backup"
+import { useInstallState } from "@/lib/install"
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
@@ -28,7 +29,15 @@ function download() {
     }
 }
 
-export function BackupSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+interface BackupSheetProps {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    /** Abre la explicación de cómo instalar la app. */
+    onInstall: () => void
+}
+
+export function BackupSheet({ open, onOpenChange, onInstall }: BackupSheetProps) {
+    const installState = useInstallState()
     const inputRef = useRef<HTMLInputElement>(null)
     const [importing, setImporting] = useState(false)
     const queryClient = useQueryClient()
@@ -91,6 +100,20 @@ export function BackupSheet({ open, onOpenChange }: { open: boolean; onOpenChang
                 <p className="text-sm text-muted-foreground">
                     Cargar un respaldo no borra nada: agrega las notas que falten.
                 </p>
+                {installState !== "installed" && (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-12 w-full justify-start rounded-xl border-t px-1 text-base"
+                        onClick={() => {
+                            onOpenChange(false)
+                            onInstall()
+                        }}
+                    >
+                        <Smartphone className="size-5" aria-hidden="true" />
+                        Instalar en mi teléfono
+                    </Button>
+                )}
             </div>
         </AppBottomSheet>
     )

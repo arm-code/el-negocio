@@ -8,11 +8,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { DatabaseBackup } from "lucide-react"
 import { BackupSheet } from "@/components/backup-sheet"
+import { InstallSheet } from "@/components/install/install-sheet"
 import { Button } from "@el-negocio/ui/button"
 import { BRAND } from "@/lib/brand"
 
 export function ToolBar() {
     const [backupOpen, setBackupOpen] = useState(false)
+    const [installOpen, setInstallOpen] = useState(false)
 
     return (
         <header className="sticky top-0 z-40 border-b bg-background/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
@@ -51,7 +53,8 @@ export function ToolBar() {
                     Respaldo
                 </Button>
             </div>
-            <BackupSheet open={backupOpen} onOpenChange={setBackupOpen} />
+            <BackupSheet open={backupOpen} onOpenChange={setBackupOpen} onInstall={() => setInstallOpen(true)} />
+            <InstallSheet open={installOpen} onOpenChange={setInstallOpen} />
         </header>
     )
 }

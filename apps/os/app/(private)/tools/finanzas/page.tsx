@@ -16,7 +16,7 @@ export default function FinanzasPage() {
   return (
     <div className="space-y-8 pb-8">
       <PageHeader
-        title="Movimientos"
+        title="Entradas y salidas"
         description="Lo que entra y sale de tu negocio."
         // En móvil el engrane queda arriba a la derecha, no debajo del título
         className="flex-row items-start justify-between"
@@ -35,7 +35,7 @@ function SettingsMenu() {
           variant="ghost"
           size="icon"
           className="size-11 rounded-full text-muted-foreground hover:text-foreground"
-          aria-label="Ajustes de movimientos"
+          aria-label="Ajustes de entradas y salidas"
         >
           <Settings2 className="size-5" aria-hidden />
         </Button>

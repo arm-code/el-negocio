@@ -1,7 +1,7 @@
 # Micro apps compartidas (plan y estándar de trabajo)
 
-> Estado al 2026-11-27: fases 0 a 3 en `main`; el sitio gratuito ya está desplegado con
-> ellas. Fase 4 en `dev`: falta llevarla a `main` y desplegar.
+> Estado al 2026-11-27: fases 0 a 4 en producción (sitio gratuito y la instancia desplegada).
+> Estándar corregido en la fase 5. Siguiente micro app: **entradas y salidas** (en curso).
 
 ## 1. La idea
 
@@ -21,7 +21,8 @@ Cada micro app existe **una sola vez** y la usan dos aplicaciones:
 - Lo exclusivo de la versión pro (por ejemplo, vincular notas con eventos) vive en
   `apps/os`. Nunca un `if (isPro)` dentro de un paquete: todo lo compartido llega
   al navegador del público.
-- Por ahora se trabaja **solo con notas de venta**; lo aprendido define el estándar.
+- **Notas de venta** fue la primera y definió este estándar. Se agrega **una
+  herramienta a la vez**.
 - Se avanza por fases y cada fase deja las apps desplegables.
 
 ## 2. Estructura
@@ -36,6 +37,31 @@ apps/
 pnpm-workspace.yaml   os + toolbox + packages; versiones compartidas en `catalog`
 pnpm-lock.yaml        un solo lockfile para las dos apps y los paquetes
 ```
+
+## Nombres
+
+Los usa gente de mostrador (abarrotes, ferretería, panadería), no necesariamente cercana a
+la tecnología.
+
+- Se nombra por **lo que la persona hace o tiene**, con palabras de todos los días. Nada de
+  "módulo", "gestión", "finanzas" o "transacciones".
+- Una herramienta se llama **igual en las dos apps**. `os` puede tener más funciones, no
+  otro nombre.
+- El nombre vive en `meta.ts` del paquete (`title`, `shortTitle` para menús angostos) y
+  las apps lo toman de ahí.
+
+| Herramienta | Nombre | Corto | No decir | Estado |
+| --- | --- | --- | --- | --- |
+| Notas de venta | Notas de venta | Notas | | En las dos apps |
+| Entradas y salidas | Entradas y salidas | Dinero | Finanzas, movimientos, control de gastos | En `os`; paquete en curso |
+| Inventario | Inventario | Inventario | Gestión de inventario | En `os` |
+| Eventos | Eventos | Eventos | Agenda operativa | Solo `os` |
+| Contratos | Contratos de renta | Contratos | | Próximamente |
+| Corte de caja | Corte de caja | Corte | Corte diario | Próximamente |
+| Fiado | Libreta de fiado | Fiado | Cuentas por cobrar | Próximamente |
+| Precios | Calculadora de precios | Precios | | Próximamente |
+| Ventas | Mis ventas | Ventas | Reportes | Próximamente |
+| Clientes | Mis clientes | Clientes | Directorio | Próximamente |
 
 ## 3. Estándar visual
 
@@ -106,7 +132,19 @@ packages/tool-<nombre>/src/
 5. `next`, `react`, `@tanstack/react-query` y `sonner` son `peerDependencies`.
 6. Funciona sin red en el toolbox: sus pantallas son estáticas (el id va como
    `?id=`) y están en `OFFLINE_ROUTES`.
-7. Lo que se edita se lee fresco: no se abre un formulario con una copia vieja.
+7. Lo que se edita se lee fresco: no se abre un formulario con una copia vieja. Un
+   puerto remoto declara `staleTime: 0`.
+8. Una lista se entrega completa. El API responde 10 elementos si no se pide `limit`:
+   el adaptador recorre todas las páginas (`apps/os/lib/api/pagination.ts`). Si la lista
+   puede crecer sin límite, el puerto debe paginar, y eso se decide al diseñarlo.
+9. La herramienta valida al menos lo mismo que el API (p. ej. cantidad ≥ 1).
+10. Al editar, el adaptador manda `null` en lo que se vació y no envía lo que la
+    herramienta no captura, para que el API lo conserve.
+11. Las claves de react-query del paquete son suyas. Otra pantalla de la app que lea los
+    mismos datos usa una subclave propia (`['salesNotes', 'event-link']`): se refresca al
+    guardar sin mezclar formas distintas en la caché.
+12. Lo que recibe un cliente (documento exportado) se compara lado a lado con el actual y
+    se aprueba antes de reemplazarlo.
 
 Para agregar una herramienta a las apps:
 
@@ -156,15 +194,32 @@ Si el adaptador guarda en el navegador, la app debe configurar react-query con
 `networkMode: 'always'` (consultas y mutaciones). Con el valor por defecto, sin red
 las lecturas y los guardados quedan en pausa.
 
-**Terminada** significa: compila, funciona a 375 px en claro y oscuro, exporta y
-comparte (si aplica), conserva los datos ya guardados y está probada en el sitio
-desplegado.
+### Antes de empezar una herramienta que ya existe en `os`
+
+1. Buscar todas las pantallas de `os` que leen o escriben esos datos (otras
+   herramientas, inicio, menús).
+2. Comparar lo que hace `os` hoy con lo que hará el paquete, para no perder funciones.
+3. Revisar en el API las validaciones, la paginación y qué conserva al editar.
+
+### Terminada significa
+
+- [ ] Tipos correctos en paquetes y apps; compilan las dos apps y sus imágenes Docker.
+- [ ] `pnpm dev` arranca en las dos apps.
+- [ ] Funciona a 375 px, en claro y en oscuro donde la app lo tenga.
+- [ ] Exporta y comparte, si aplica.
+- [ ] Probada con más de 100 elementos.
+- [ ] Ensayo en un proyecto de Docker Compose aparte (`-p <nombre>`) sobre una copia de
+      datos reales: abrir y guardar sin cambios no modifica nada. Los volúmenes
+      existentes no se tocan.
+- [ ] Conserva los datos ya guardados en el navegador y en la base.
+- [ ] Respaldo hecho antes de desplegar.
+- [ ] Probada en lo desplegado; en el sitio gratuito, también sin conexión.
 
 ## 6. Fases
 
 ### Fase 0 — Base sana del toolbox
 
-Hecha y probada en local el 2026-11-25; **falta comprobarla en el sitio**.
+En producción; el uso sin conexión está comprobado en el sitio.
 
 - **PWA:** el build usaba Turbopack, con el que `@serwist/next` no genera el service
   worker, y se publicaba un `public/sw.js` viejo guardado en git. Ahora compila con
@@ -178,8 +233,7 @@ Hecha y probada en local el 2026-11-25; **falta comprobarla en el sitio**.
 
 ### Fase 1 — Estándar visual (dentro del toolbox, sin mover archivos)
 
-Hecha y probada en local el 2026-11-25 a 360 px, en claro y oscuro; **falta
-comprobarla en el sitio**.
+En producción. Probada en local a 360 px, en claro y oscuro.
 
 - Tema neutro con variantes de acento (el toolbox usa `brick`); paleta colorida
   solo en la landing; skeletons con el color de acento.
@@ -191,7 +245,7 @@ Visto y sin tocar: el teléfono se muestra agrupado como `656 1234 567`.
 
 ### Fase 2 — Puerto de almacenamiento (dentro del toolbox)
 
-Hecha y probada en local el 2026-11-25; en `main`.
+En producción.
 
 - Puertos (`ports.ts`) y provider en la micro app; ya no conoce rutas ni
   `localStorage`.
@@ -201,23 +255,20 @@ Hecha y probada en local el 2026-11-25; en `main`.
   `bt:sales-notes:v1`, `bt:sales-notes:seq`, `bt:business-info:v1`.
 - Corregido un fallo anterior: sin conexión, guardar o borrar se quedaba esperando a
   que volviera la red.
-- Los huecos para integraciones pro se definen en la fase 4, cuando `os` los
-  necesite.
+- Los huecos para integraciones pro se definen cuando una herramienta los necesite.
 - Riesgo conocido, sin cambios: si el JSON guardado se corrompe, la lista sale vacía
   y el siguiente guardado lo sobrescribe.
 
 ### Fase 3 — Paquetes
 
-Hecha y probada en local el 2026-11-26.
+En producción.
 
 - Código compartido en `packages/ui` y `packages/tool-sales-notes`; el toolbox solo
   conserva páginas, adaptador, rutas, textos y la landing.
-- Workspace en la raíz con las mismas versiones que antes. `apps/os` recibió su propio
-  `pnpm-workspace.yaml` para seguir instalándose aparte.
+- Workspace en la raíz con las mismas versiones que antes; `os` entró en la fase 4.
 - **Cambia el despliegue del toolbox.** El build usa la raíz del repo: en Coolify,
-  `Base Directory` pasa a `/` y `Dockerfile Location` a `/apps/toolbox/Dockerfile`.
-  Hay que cambiarlo junto con la llegada de esta fase a `main` (sección 10 de
-  `DEPLOY-COOLIFY.md`).
+  `Base Directory` es `/` y `Dockerfile Location` es `/apps/toolbox/Dockerfile`
+  (sección 10 de `DEPLOY-COOLIFY.md`).
 
 Pendiente:
 
@@ -231,7 +282,7 @@ Pendiente:
 
 ### Fase 4 — `os` consume notas de venta
 
-Hecha y probada en local el 2026-11-27.
+En producción desde el 2026-11-27.
 
 - `os` entró al workspace de la raíz y comparte versiones con `catalog`. Su Dockerfile y
   el `docker-compose.yml` compilan desde la raíz del repo; en Coolify no cambia ningún
@@ -264,26 +315,56 @@ Pendiente:
   `document-actions` para el contrato de eventos.
 - El API no garantiza el orden de los conceptos de una nota.
 - Los PDF exportados pesan varios megabytes (la imagen va sin comprimir).
-- Las pantallas de eventos solo cargan 10 (fallo anterior visto en el ensayo, fuera de
-  esta fase).
 
 ### Fase 5 — Cierre
 
-Corregir este estándar con lo aprendido y elegir la siguiente micro app
-(candidatas: control de gastos, inventario, contratos; punto de venta al final).
+Estándar corregido con lo aprendido (sección 5). Lecciones que lo motivaron:
+
+- La fase 3 dejó `pnpm dev` de `os` sin arrancar porque solo se probó el toolbox.
+- Las listas que no pedían `limit` mostraban 10 elementos sin avisar (notas, eventos,
+  categorías y formas de pago).
+- Un usuario nuevo no podía registrar nada: se probaba siempre con datos ya existentes.
+  Probar también sobre una base vacía.
+
+Elegida: **entradas y salidas** (control de gastos). Comparación usada:
+
+| Candidata | En `os` hoy (líneas aprox.) | Acoplamiento | Lo que implica |
+| --- | --- | --- | --- |
+| **Control de gastos** (propuesta) | 1 100 de pantallas; el API ya existe | Ninguno visto en sus pantallas | Primera lista que crece sin límite: el puerto debe paginar y dar el resumen. `os` hoy no permite editar ni borrar movimientos |
+| Contratos de evento | 200 del documento, dentro de 1 800 de eventos | Sale de un evento; no tiene datos propios | La versión gratuita necesita su propia captura |
+| Inventario | 2 500, con artículos, ubicaciones y movimientos | Propio, pero amplio | La más grande de las tres |
+| Punto de venta | — | — | Al final |
+
+El catálogo del sitio gratuito anuncia "Cotizaciones" como próxima, y las notas de venta
+ya las hacen.
+
+### Fase 6 — Entradas y salidas
+
+Acordado el 2026-11-27:
+
+| Tema | Decisión |
+| --- | --- |
+| Resumen | Del mes actual, con opción de cambiar de mes o ver todo |
+| Editar y borrar | En las dos apps |
+| Categorías en el sitio gratuito | Genéricas ya cargadas (Ventas, Compras, Sueldos, Transporte, Servicios, Otros) y se pueden agregar |
+| Eventos | La micro app no los muestra; los vínculos existentes se conservan |
+| Respaldo del sitio gratuito | Incluye los movimientos; los respaldos anteriores siguen cargando |
+
+1. **API (hecho):** la lista desempata por folio, así no se repiten ni se pierden
+   movimientos entre páginas; `GET /transactions/summary` acepta `dateFrom` y `dateTo`.
+2. **Paquete y sitio gratuito:** pendiente.
+3. **`os`:** pendiente.
 
 ## 7. Cuidados
 
-- `api` y `os` no cambiaron su código en las fases 0–3; la fase 4 no toca el API.
 - Servidor de pruebas con CPU viejo: mantener `IMAGE_OPTIMIZATION=false`.
 - Cambios en una rama basada en `dev`; `main` es producción.
-- Un paquete compartido afecta a las dos apps: desde la fase 4, compilar ambas antes
-  de cada merge.
+- Un paquete compartido afecta a las dos apps: compilar ambas antes de cada merge.
+- No cambiar las claves de `localStorage` ya publicadas.
 
 ## 8. Decisiones pendientes
 
 | Decisión | Propuesta |
 | --- | --- |
-| Variante por defecto | Aplicado: `brick` en toolbox, `violet` en `os` |
 | ¿Quién elige la variante? | Fija por app al inicio; selector por negocio después |
-| Base de los componentes compartidos | Los del toolbox (más recientes), con el aspecto del admin de `os` |
+| Componentes base de `os` fuera de las micro apps | Pasarlos a `packages/ui` conforme cada pantalla se vuelva micro app |

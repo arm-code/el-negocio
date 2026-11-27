@@ -9,6 +9,7 @@ para celular e instalable (PWA). Es independiente del sistema de paga
 - [Desarrollo local](#desarrollo-local)
 - [Probar la PWA](#probar-la-pwa)
 - [Estructura](#estructura)
+- [Portada e instalación](#portada-e-instalación)
 - [Reglas de identidad](#reglas-de-identidad)
 - [Estilo](#estilo)
 - [Problemas comunes](#problemas-comunes)
@@ -72,13 +73,24 @@ packages/
 └── tool-<nombre>/         Pantallas, lógica, tipos y puertos de una herramienta
 ```
 
+## Portada e instalación
+
+- Se entra directo, sin avisos. La portada muestra cada micro app con una **muestra de lo
+  que se obtiene** (`components/home/tool-showcase.tsx`): al agregar una herramienta,
+  ponla en `lib/tools-catalog.ts` con su muestra, su botón y sus otros nombres.
+- La instalación como app se ofrece en el botón **Instalar app** de la portada y dentro de
+  **Respaldo**. Además se sugiere sola después de guardar algo, ya de vuelta en la pantalla
+  de la herramienta: como máximo dos veces, con 14 días entre una y otra
+  (`lib/install.ts`). Una herramienta nueva avisa con `markToolUsed()`.
+
 ## Reglas de identidad
 
 Para que nadie confunda este sitio con el panel de un negocio:
 
 - Toda micro app se monta bajo `app/tools/`: así hereda la barra fija **"El Negocio ·
-  Gratis"**, el aviso de la primera vez y el botón de **Respaldo**
-  (`app/tools/layout.tsx`).
+  Gratis · Solo en este dispositivo"** y el botón de **Respaldo**
+  (`app/tools/layout.tsx`). Es lo que distingue este sitio del panel de un negocio: no la
+  quites.
 - El nombre de la marca sale de `lib/brand.ts`.
 - El color ladrillo es de este sitio; las instancias de El Negocio OS usan violeta.
 - Una micro app nueva que guarde datos debe incluirlos en `lib/backup.ts`.
