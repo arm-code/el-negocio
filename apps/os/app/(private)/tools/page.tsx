@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FilePlus2, FileText, Calendar, Wallet, Package, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { cashMeta } from '@el-negocio/tool-cash/meta'
 import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 import { PageHeader } from '@/components/admin/page-header'
 
@@ -34,7 +35,7 @@ const toolsList = [
     primary: true,
   },
   {
-    title: 'Entradas y salidas',
+    title: cashMeta.title,
     description: 'Anota lo que entra y lo que sale de tu negocio.',
     href: '/tools/finanzas',
     icon: Wallet,

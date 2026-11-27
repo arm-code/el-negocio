@@ -8,6 +8,7 @@ import {
     Package,
     type LucideIcon,
 } from 'lucide-react'
+import { cashMeta } from '@el-negocio/tool-cash/meta'
 import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 
 export interface NavItem {
@@ -30,8 +31,8 @@ export const primaryNav: NavItem[] = [
         matchPrefix: '/tools/notas-venta',
     },
     {
-        label: 'Entradas y salidas',
-        shortLabel: 'Caja',
+        label: cashMeta.title,
+        shortLabel: cashMeta.shortTitle,
         href: '/tools/finanzas',
         icon: Wallet,
         matchPrefix: '/tools/finanzas',

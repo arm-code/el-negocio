@@ -17,7 +17,7 @@ import { useCatalog, useMovement, useSaveMovement } from '../hooks/use-cash'
 import { useCashConfig } from '../provider'
 import { LIMITS } from '../lib/limits'
 import { readPrefs, rememberUse, type Prefs } from '../lib/prefs'
-import type { Movement, MovementKind } from '../types'
+import type { CatalogItem, Movement, MovementKind } from '../types'
 import { OptionChips } from './option-chips'
 import { DateAndDetail } from './date-and-detail'
 
@@ -42,6 +42,12 @@ const KINDS: readonly { value: MovementKind; label: string; selected: string; am
 ]
 
 const FORM_ID = 'cash-movement-form'
+
+/** Si lo que se corrige usa una opción que ya no se ofrece, se muestra de todos modos. */
+function withSaved(items: CatalogItem[] | undefined, saved?: CatalogItem) {
+  if (!items) return []
+  return saved && !items.some((i) => i.id === saved.id) ? [saved, ...items] : items
+}
 
 interface MovementFormProps {
   target: FormTarget | null
@@ -103,14 +109,14 @@ function Fields({ initial, startKind, onClose, onSaved }: FieldsProps) {
 
   // Primero las usadas recientemente según si entra o sale, y la que propone la app
   const preferred = [...new Set([...(prefs.recent?.[kind] ?? []), defaultCategory?.[kind]])]
-  const categoryItems = categories.data ?? []
+  const categoryItems = withSaved(categories.data, initial?.category)
   const orderedCategories = [
     ...preferred.flatMap((id) => categoryItems.filter((c) => c.id === id)),
     ...categoryItems.filter((c) => !preferred.includes(c.id)),
   ]
   // Siempre hay una preelegida: al capturar varias seguidas casi nunca cambia
   const categoryId = chosenCategory || orderedCategories[0]?.id || ''
-  const methodItems = methods.data ?? []
+  const methodItems = withSaved(methods.data, initial?.method)
   // Forma de pago preelegida: la última usada o la primera
   const methodId =
     chosenMethod || (methodItems.find((m) => m.id === prefs.methodId) ?? methodItems[0])?.id || ''
@@ -146,7 +152,8 @@ function Fields({ initial, startKind, onClose, onSaved }: FieldsProps) {
       { kind, amount, date, categoryId, methodId, description: description.trim() || undefined },
       {
         onSuccess: (movement) => {
-          rememberUse(kind, categoryId, methodId)
+          // Solo lo nuevo cambia lo preelegido: corregir algo antiguo no es un hábito
+          if (!initial) rememberUse(kind, categoryId, methodId)
           toast.success(initial ? 'Cambios guardados' : kind === 'in' ? 'Entrada guardada' : 'Salida guardada')
           onSaved(movement)
         },

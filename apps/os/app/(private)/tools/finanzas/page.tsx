@@ -1,7 +1,8 @@
-// app/tools/finanzas/page.tsx
+'use client'
+
 import Link from 'next/link'
 import { Settings2 } from 'lucide-react'
-import { PageHeader } from '@/components/admin/page-header'
+import { CashHome } from '@el-negocio/tool-cash'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -10,21 +11,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import TransactionsTab from '@/components/finanzas/TransactionsTab'
 
-export default function FinanzasPage() {
-  return (
-    <div className="space-y-8 pb-8">
-      <PageHeader
-        title="Entradas y salidas"
-        description="Lo que entra y sale de tu negocio."
-        // En móvil el engrane queda arriba a la derecha, no debajo del título
-        className="flex-row items-start justify-between"
-        action={<SettingsMenu />}
-      />
-      <TransactionsTab />
-    </div>
-  )
+export default function EntradasSalidasPage() {
+  return <CashHome headerAction={<SettingsMenu />} />
 }
 
 function SettingsMenu() {

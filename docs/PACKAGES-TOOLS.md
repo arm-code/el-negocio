@@ -1,7 +1,8 @@
 # Micro apps compartidas (plan y estándar de trabajo)
 
 > Estado al 2026-11-27: fases 0 a 4 en producción (sitio gratuito y la instancia desplegada).
-> Estándar corregido en la fase 5. Siguiente micro app: **entradas y salidas** (en curso).
+> Estándar corregido en la fase 5. Fase 6, **entradas y salidas** en las dos apps: falta
+> llevarla a `main` y desplegar.
 
 ## 1. La idea
 
@@ -54,7 +55,7 @@ la tecnología.
 | Herramienta | Nombre | Corto | No decir | Estado |
 | --- | --- | --- | --- | --- |
 | Notas de venta | Notas de venta | Notas | | En las dos apps |
-| Entradas y salidas | Entradas y salidas | Caja | Finanzas, movimientos, control de gastos, dinero | En `os` y en el sitio gratuito |
+| Entradas y salidas | Entradas y salidas | Caja | Finanzas, movimientos, control de gastos, dinero | En las dos apps |
 | Inventario | Inventario | Inventario | Gestión de inventario | En `os` |
 | Eventos | Eventos | Eventos | Agenda operativa | Solo `os` |
 | Contratos | Contratos de renta | Contratos | | Próximamente |
@@ -362,10 +363,22 @@ Acordado el 2026-11-27:
    Adaptador en `apps/toolbox/lib/cash-storage.ts`; si lo guardado está dañado, avisa y
    no lo sobrescribe. El respaldo suma los movimientos (misma versión: los anteriores
    siguen cargando).
-3. **`os`:** pendiente. Su adaptador traduce `in`/`out` a `INPUT`/`OUTPUT`, pagina con
-   `GET /transactions`, pide el resumen por fechas, conserva el evento vinculado y no
-   reenvía una categoría o forma de pago que no cambió (el API rechaza las inactivas).
-   Agregar `packages/tool-cash/package.json` en su `Dockerfile`.
+3. **`os` (hecho en local):** misma pantalla en `/tools/finanzas` (la dirección no cambió),
+   con adaptador en `apps/os/lib/cash-storage.ts`:
+
+   | Paquete | API |
+   | --- | --- |
+   | `kind: 'in' / 'out'` | `type: 'INPUT' / 'OUTPUT'` |
+   | `date`, `method` | `transactionDate`, `paymentMethod` |
+   | Lista | `GET /transactions` por páginas de 30, filtrado por fechas |
+   | Detalle vaciado | `null` |
+   | Categoría y forma de pago | al corregir solo se envían si cambian (el API rechaza las desactivadas) |
+   | Evento vinculado | no se envía: se conserva |
+
+   - Los ajustes de categorías y formas de pago entran por el hueco `headerAction`.
+   - Preelegidas la primera vez: "Otros" y "Efectivo"; después, las últimas usadas.
+   - El inicio de `os` sigue mostrando el total histórico.
+   - Un negocio sin nada anotado este mes ve el mes vacío; el historial está en "Ver todo".
 
 ## 7. Cuidados
 

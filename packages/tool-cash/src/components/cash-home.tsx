@@ -33,7 +33,12 @@ import { MovementList } from './movement-list'
 import { MovementDetail } from './movement-detail'
 import { MovementForm, type FormTarget } from './movement-form'
 
-export function CashHome() {
+interface CashHomeProps {
+  /** Hueco para lo que solo tiene una app, p. ej. sus ajustes. Va junto al título. */
+  headerAction?: React.ReactNode
+}
+
+export function CashHome({ headerAction }: CashHomeProps) {
   const { routes, copy } = useCashConfig()
   const [month, setMonth] = useState<Month>(currentMonth)
   const [showAll, setShowAll] = useState(false)
@@ -81,7 +86,13 @@ export function CashHome() {
             {copy.backLabel}
           </Link>
         </Button>
-        <PageHeader title={cashMeta.title} description={copy.description} />
+        <PageHeader
+          title={cashMeta.title}
+          description={copy.description}
+          action={headerAction}
+          // En celular la acción queda arriba a la derecha, no debajo del título
+          className={headerAction ? 'flex-row items-start justify-between' : undefined}
+        />
       </div>
 
       <section aria-label="Resumen" className="space-y-3">

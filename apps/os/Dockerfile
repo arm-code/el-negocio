@@ -15,6 +15,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/os/package.json apps/os/
 COPY packages/ui/package.json packages/ui/
 COPY packages/tool-sales-notes/package.json packages/tool-sales-notes/
+COPY packages/tool-cash/package.json packages/tool-cash/
 # Solo las dependencias de este front y de los paquetes que usa
 RUN pnpm install --frozen-lockfile --filter "el-negocio-os..."
 

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
 import { financeApi } from '@/lib/api/finance'
+import { apiMovementsStorage } from '@/lib/cash-storage'
 import { formatCurrency } from '@/lib/format'
 import { PageHeader } from '@/components/admin/page-header'
 import { Card } from '@/components/ui/card'
@@ -98,8 +99,9 @@ export default function PrincipalPage() {
   const firstName = user?.name?.trim().split(/\s+/)[0]
 
   const summaryQuery = useQuery({
-    queryKey: ['transactionsSummary'],
-    queryFn: () => financeApi.getSummary(),
+    // Bajo 'cash' para que se refresque al anotar, corregir o borrar
+    queryKey: ['cash', 'dashboard'],
+    queryFn: () => apiMovementsStorage.summary(null),
   })
 
   const eventsQuery = useQuery({
@@ -127,9 +129,10 @@ export default function PrincipalPage() {
           />
         ) : (
           <SummaryCard
-            balance={toNumber(summaryQuery.data?.balance)}
-            inputs={toNumber(summaryQuery.data?.totalInputs)}
-            outputs={toNumber(summaryQuery.data?.totalOutputs)}
+            // En centavos: restar decimales directamente deja colas
+            balance={(Math.round(toNumber(summaryQuery.data?.in) * 100) - Math.round(toNumber(summaryQuery.data?.out) * 100)) / 100}
+            inputs={toNumber(summaryQuery.data?.in)}
+            outputs={toNumber(summaryQuery.data?.out)}
           />
         )}
       </section>
