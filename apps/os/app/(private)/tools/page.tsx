@@ -2,7 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FilePlus2, FileText, Calendar, Wallet, Package, ArrowRight } from 'lucide-react'
+import { FilePlus2, FileText, Wallet, Package, ArrowRight } from 'lucide-react'
+import { agendaMeta } from '@el-negocio/tool-agenda/meta'
 import Link from 'next/link'
 import { cashMeta } from '@el-negocio/tool-cash/meta'
 import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
@@ -27,11 +28,11 @@ const toolsList = [
     primary: false,
   },
   {
-    title: 'Eventos',
-    description: 'Anota tus fechas, qué ya entregaste y genera el contrato.',
+    title: agendaMeta.title,
+    description: 'Anota citas, pedidos y entregas, y cobra lo que te deben.',
     href: '/tools/eventos',
-    icon: Calendar,
-    btnLabel: 'Ver eventos',
+    icon: agendaMeta.icon,
+    btnLabel: 'Abrir mi agenda',
     primary: true,
   },
   {

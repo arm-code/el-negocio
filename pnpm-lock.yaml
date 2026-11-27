@@ -40,6 +40,9 @@ importers:
 
   apps/os:
     dependencies:
+      '@el-negocio/tool-agenda':
+        specifier: workspace:*
+        version: link:../../packages/tool-agenda
       '@el-negocio/tool-cash':
         specifier: workspace:*
         version: link:../../packages/tool-cash

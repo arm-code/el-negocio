@@ -14,7 +14,8 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth'
-import { financeApi } from '@/lib/api/finance'
+import { apiEventsStorage } from '@/lib/agenda-storage'
+import type { AgendaEvent } from '@el-negocio/tool-agenda'
 import { apiMovementsStorage } from '@/lib/cash-storage'
 import { formatCurrency } from '@/lib/format'
 import { PageHeader } from '@/components/admin/page-header'
@@ -26,16 +27,6 @@ import { cn } from '@/lib/utils'
 
 /* ─── Tipos ─────────────────────────────────────────────────────────────── */
 
-interface BusinessEvent {
-  id: string | number
-  name?: string | null
-  clientName?: string | null
-  eventAddress?: string | null
-  eventDate?: string | null
-  cost?: number | string | null
-  status?: string | null
-}
-
 interface QuickAction {
   label: string
   href: string
@@ -46,7 +37,7 @@ interface QuickAction {
 
 const QUICK_ACTIONS: readonly QuickAction[] = [
   { label: 'Nueva nota', href: '/tools/notas-venta/crear-nota-venta', icon: FilePlus2 },
-  { label: 'Nuevo evento', href: '/tools/eventos/crear-evento', icon: CalendarPlus },
+  { label: 'Agendar', href: '/tools/eventos/crear-evento', icon: CalendarPlus },
   { label: 'Anotar entrada o salida', href: '/tools/finanzas', icon: ArrowLeftRight },
   { label: 'Ver notas', href: '/tools/notas-venta', icon: FileText },
 ]
@@ -80,14 +71,13 @@ function parseEventDate(value?: string | null): Date | null {
   return Number.isNaN(date.getTime()) ? null : date
 }
 
-function getUpcoming(events: unknown): BusinessEvent[] {
-  if (!Array.isArray(events)) return []
-  return (events as BusinessEvent[])
-    .filter((e) => e && typeof e.status === 'string' && e.status in STATUS_LABEL)
+function getUpcoming(events: AgendaEvent[] = []): AgendaEvent[] {
+  return events
+    .filter((e) => e.status in STATUS_LABEL)
     .sort((a, b) => {
-      const da = parseEventDate(a.eventDate)?.getTime() ?? Infinity
-      const db = parseEventDate(b.eventDate)?.getTime() ?? Infinity
-      return da - db
+      const da = parseEventDate(a.date)?.getTime() ?? Infinity
+      const db = parseEventDate(b.date)?.getTime() ?? Infinity
+      return da - db || (a.time ?? '').localeCompare(b.time ?? '')
     })
     .slice(0, MAX_UPCOMING)
 }
@@ -105,8 +95,10 @@ export default function PrincipalPage() {
   })
 
   const eventsQuery = useQuery({
-    queryKey: ['businessEvents'],
-    queryFn: () => financeApi.getBusinessEvents(),
+    // Bajo 'agenda' para que se refresque al agendar, corregir o cobrar
+    queryKey: ['agenda', 'dashboard'],
+    queryFn: () => apiEventsStorage.list(),
+    staleTime: 0,
   })
 
   const upcoming = getUpcoming(eventsQuery.data)
@@ -163,10 +155,10 @@ export default function PrincipalPage() {
       <section aria-labelledby="events-title" className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 id="events-title" className="text-base font-semibold">
-            Próximos eventos
+            Lo que sigue en tu agenda
           </h2>
           <Button asChild variant="ghost" size="sm" className="-mr-2 text-primary">
-            <Link href="/tools/eventos">Ver todos</Link>
+            <Link href="/tools/eventos">Ver todo</Link>
           </Button>
         </div>
 
@@ -174,7 +166,7 @@ export default function PrincipalPage() {
           <EventsSkeleton />
         ) : eventsQuery.isError ? (
           <InlineError
-            message="No se pudieron cargar tus eventos."
+            message="No se pudo cargar tu agenda."
             onRetry={() => eventsQuery.refetch()}
           />
         ) : upcoming.length === 0 ? (
@@ -248,8 +240,8 @@ function Stat({
   )
 }
 
-function EventRow({ event }: { event: BusinessEvent }) {
-  const date = parseEventDate(event.eventDate)
+function EventRow({ event }: { event: AgendaEvent }) {
+  const date = parseEventDate(event.date)
   const isPending = event.status === 'pending'
 
   return (
@@ -276,14 +268,18 @@ function EventRow({ event }: { event: BusinessEvent }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{event.name || 'Evento sin nombre'}</p>
-        <p className="truncate text-sm text-muted-foreground capitalize">{event.clientName || 'Sin cliente'}</p>
+        <p className="truncate font-medium">{event.title}</p>
+        {(event.clientName || event.place) && (
+          <p className="truncate text-sm text-muted-foreground">{event.clientName || event.place}</p>
+        )}
       </div>
 
       <div className="flex shrink-0 flex-col items-end gap-0.5">
-        <span className="font-medium tabular-nums">{formatCurrency(toNumber(event.cost))}</span>
+        {event.total !== undefined && (
+          <span className="font-medium tabular-nums">{formatCurrency(event.total)}</span>
+        )}
         <span className={cn('text-xs capitalize', isPending ? 'text-primary' : 'text-muted-foreground')}>
-          {STATUS_LABEL[event.status ?? '']}
+          {STATUS_LABEL[event.status]}
         </span>
       </div>
 
@@ -296,9 +292,9 @@ function EmptyEvents() {
   return (
     <Card className="items-center gap-3 px-6 py-10 text-center">
       <CalendarX2 className="size-8 text-muted-foreground/60" aria-hidden />
-      <p className="font-medium">No tienes eventos próximos</p>
+      <p className="font-medium">No tienes nada pendiente</p>
       <Button asChild size="lg" className="mt-1">
-        <Link href="/tools/eventos/crear-evento">Agendar evento</Link>
+        <Link href="/tools/eventos/crear-evento">Agendar</Link>
       </Button>
     </Card>
   )
@@ -339,7 +335,7 @@ function SummarySkeleton() {
 
 function EventsSkeleton() {
   return (
-    <Card className="gap-0 py-0" aria-busy="true" aria-label="Cargando eventos">
+    <Card className="gap-0 py-0" aria-busy="true" aria-label="Cargando tu agenda">
       <div className="divide-y">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-3">

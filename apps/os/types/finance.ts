@@ -31,18 +31,19 @@ export interface BusinessEvent {
   id: string;
   folio?: string;
   name: string;
-  serviceDescription?: string;
-  date?: string;
-  eventDate?: string;
-  clientName?: string;
-  clientPhone?: string;
-  eventAddress?: string;
+  eventDate?: string | null;
+  eventTime?: string | null;
+  clientName?: string | null;
+  clientPhone?: string | null;
+  eventAddress?: string | null;
   cost?: number;
+  paidAmount?: number;
+  needsReturn?: boolean;
   status?: EventStatus;
-  guaranteeDocument?: string;
+  guaranteeDocument?: string | null;
   noteId?: string | null;
-  noteFolio?: string | null;
-  notes?: string;
+  notes?: string | null;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -61,21 +62,6 @@ export interface Transaction {
   createdAt: string;
   updatedAt: string;
 }
-
-export interface CreateBusinessEventDto {
-  name: string;
-  clientName?: string;
-  clientPhone?: string;
-  eventAddress?: string;
-  eventDate?: string;
-  cost?: number;
-  status?: EventStatus;
-  guaranteeDocument?: string;
-  noteId?: string | null;
-  notes?: string;
-}
-
-export interface UpdateBusinessEventDto extends Partial<CreateBusinessEventDto> {}
 
 export interface CreateTransactionCategoryDto {
   code: string;

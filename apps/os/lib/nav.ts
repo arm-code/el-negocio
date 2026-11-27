@@ -1,5 +1,4 @@
 import {
-    Calendar,
     FilePlus2,
     FileText,
     LayoutDashboard,
@@ -8,6 +7,7 @@ import {
     Package,
     type LucideIcon,
 } from 'lucide-react'
+import { agendaMeta } from '@el-negocio/tool-agenda/meta'
 import { cashMeta } from '@el-negocio/tool-cash/meta'
 import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 
@@ -38,10 +38,10 @@ export const primaryNav: NavItem[] = [
         matchPrefix: '/tools/finanzas',
     },
     {
-        label: 'Eventos',
-        shortLabel: 'Eventos',
+        label: agendaMeta.title,
+        shortLabel: agendaMeta.shortTitle,
         href: '/tools/eventos',
-        icon: Calendar,
+        icon: agendaMeta.icon,
         matchPrefix: '/tools/eventos',
     },
     {

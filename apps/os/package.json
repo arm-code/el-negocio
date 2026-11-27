@@ -9,6 +9,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@el-negocio/tool-agenda": "workspace:*",
     "@el-negocio/tool-cash": "workspace:*",
     "@el-negocio/tool-sales-notes": "workspace:*",
     "@el-negocio/ui": "workspace:*",
