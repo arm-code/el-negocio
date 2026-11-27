@@ -384,6 +384,8 @@ Acordado el 2026-11-27:
 - Cambios en una rama basada en `dev`; `main` es producción.
 - Un paquete compartido afecta a las dos apps: compilar ambas antes de cada merge.
 - No cambiar las claves de `localStorage` ya publicadas.
+- API: un listado ordena solo por campos de una lista (`sortColumn` en
+  `apps/api/src/common/utils`); `sortBy` llega de la URL.
 
 ## 8. Decisiones pendientes
 
