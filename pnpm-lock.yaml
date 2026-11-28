@@ -40,9 +40,15 @@ importers:
 
   apps/os:
     dependencies:
+      '@el-negocio/tool-agenda':
+        specifier: workspace:*
+        version: link:../../packages/tool-agenda
       '@el-negocio/tool-cash':
         specifier: workspace:*
         version: link:../../packages/tool-cash
+      '@el-negocio/tool-documents':
+        specifier: workspace:*
+        version: link:../../packages/tool-documents
       '@el-negocio/tool-sales-notes':
         specifier: workspace:*
         version: link:../../packages/tool-sales-notes
@@ -197,9 +203,15 @@ importers:
 
   apps/toolbox:
     dependencies:
+      '@el-negocio/tool-agenda':
+        specifier: workspace:*
+        version: link:../../packages/tool-agenda
       '@el-negocio/tool-cash':
         specifier: workspace:*
         version: link:../../packages/tool-cash
+      '@el-negocio/tool-documents':
+        specifier: workspace:*
+        version: link:../../packages/tool-documents
       '@el-negocio/tool-sales-notes':
         specifier: workspace:*
         version: link:../../packages/tool-sales-notes
@@ -277,11 +289,82 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
 
+  packages/tool-agenda:
+    dependencies:
+      '@el-negocio/ui':
+        specifier: workspace:*
+        version: link:../ui
+      lucide-react:
+        specifier: 'catalog:'
+        version: 0.563.0(react@19.2.5)
+    devDependencies:
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.104.1(react@19.2.5)
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.14)
+      next:
+        specifier: 'catalog:'
+        version: 16.2.4(@babel/core@7.29.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.5
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.5(react@19.2.5)
+      sonner:
+        specifier: 'catalog:'
+        version: 2.0.7(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
   packages/tool-cash:
     dependencies:
       '@el-negocio/ui':
         specifier: workspace:*
         version: link:../ui
+      lucide-react:
+        specifier: 'catalog:'
+        version: 0.563.0(react@19.2.5)
+    devDependencies:
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.104.1(react@19.2.5)
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.14
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.14)
+      next:
+        specifier: 'catalog:'
+        version: 16.2.4(@babel/core@7.29.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      react:
+        specifier: 'catalog:'
+        version: 19.2.5
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.5(react@19.2.5)
+      sonner:
+        specifier: 'catalog:'
+        version: 2.0.7(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/tool-documents:
+    dependencies:
+      '@el-negocio/ui':
+        specifier: workspace:*
+        version: link:../ui
+      jspdf:
+        specifier: ^4.2.1
+        version: 4.2.1
       lucide-react:
         specifier: 'catalog:'
         version: 0.563.0(react@19.2.5)

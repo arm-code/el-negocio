@@ -12,7 +12,7 @@ export function AdminBottomNav() {
     return (
         <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
             <ul className="mx-auto flex h-16 max-w-lg items-stretch justify-around px-2">
-                {primaryNav.map((item) => {
+                {primaryNav.filter((item) => !item.sideOnly).map((item) => {
                     const active = isActive(pathname, item)
                     const Icon = item.icon
 

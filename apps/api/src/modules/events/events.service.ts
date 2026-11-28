@@ -44,10 +44,12 @@ export class EventsService {
       ownerId: userId,
       name: dto.name.trim(),
       eventDate: dto.eventDate,
-      clientName: dto.clientName.trim(),
+      eventTime: dto.eventTime ?? null,
+      needsReturn: dto.needsReturn ?? false,
+      clientName: dto.clientName?.trim() || null,
       clientPhone: dto.clientPhone?.trim() ?? null,
-      eventAddress: dto.eventAddress.trim(),
-      cost: dto.cost.toFixed(2),
+      eventAddress: dto.eventAddress?.trim() || null,
+      cost: (dto.cost ?? 0).toFixed(2),
       status: dto.status ?? EventStatus.PENDING,
       guaranteeDocument: dto.guaranteeDocument?.trim() ?? null,
       noteId: dto.noteId ?? null,
@@ -62,7 +64,7 @@ export class EventsService {
     }
     
     const reloaded = await this.getEntityOrFail(businessId, saved.id);
-    return BusinessEventResponseDto.fromEntity(reloaded);
+    return this.toResponse(businessId, reloaded);
   }
 
   async findAll(
@@ -123,8 +125,15 @@ export class EventsService {
 
     const [items, totalItems] = await qb.getManyAndCount();
 
+    const paid = await this.paidByEvent(
+      businessId,
+      items.map((item) => item.id),
+    );
+
     return new PaginatedResultDto(
-      items.map((item) => BusinessEventResponseDto.fromEntity(item)),
+      items.map((item) =>
+        BusinessEventResponseDto.fromEntity(item, paid.get(item.id)),
+      ),
       query.page,
       query.limit,
       totalItems,
@@ -141,7 +150,7 @@ export class EventsService {
       this.transactionRepository
         .createQueryBuilder('t')
         .select('COALESCE(SUM(t.amount), 0)', 'total')
-        .where('t.businessEventId = :id AND t.type = :type', {
+        .where('t.business_event_id = :id AND t.type = :type', {
           id,
           type: TransactionType.INPUT,
         })
@@ -149,7 +158,7 @@ export class EventsService {
       this.transactionRepository
         .createQueryBuilder('t')
         .select('COALESCE(SUM(t.amount), 0)', 'total')
-        .where('t.businessEventId = :id AND t.type = :type', {
+        .where('t.business_event_id = :id AND t.type = :type', {
           id,
           type: TransactionType.OUTPUT,
         })
@@ -161,6 +170,7 @@ export class EventsService {
 
     const response = BusinessEventResponseDto.fromEntity(
       entity,
+      totalIncome,
     ) as BusinessEventBalanceResponseDto;
     response.totalIncome = totalIncome;
     response.totalExpenses = totalExpenses;
@@ -175,16 +185,19 @@ export class EventsService {
   ): Promise<BusinessEventResponseDto> {
     const entity = await this.getEntityOrFail(businessId, id);
 
-    if (dto.name !== undefined) entity.name = dto.name.trim();
-    if (dto.eventDate !== undefined) entity.eventDate = dto.eventDate;
+    // Nombre y fecha no se pueden vaciar: un null se ignora
+    if (dto.name != null) entity.name = dto.name.trim();
+    if (dto.eventDate != null) entity.eventDate = dto.eventDate;
+    if (dto.eventTime !== undefined) entity.eventTime = dto.eventTime ?? null;
+    if (dto.needsReturn != null) entity.needsReturn = dto.needsReturn;
     if (dto.clientName !== undefined)
       entity.clientName = dto.clientName?.trim() ?? null;
     if (dto.clientPhone !== undefined)
       entity.clientPhone = dto.clientPhone?.trim() ?? null;
     if (dto.eventAddress !== undefined)
       entity.eventAddress = dto.eventAddress?.trim() ?? null;
-    if (dto.cost !== undefined) entity.cost = dto.cost.toFixed(2);
-    if (dto.status !== undefined) entity.status = dto.status;
+    if (dto.cost !== undefined) entity.cost = (dto.cost ?? 0).toFixed(2);
+    if (dto.status != null) entity.status = dto.status;
     if (dto.guaranteeDocument !== undefined)
       entity.guaranteeDocument = dto.guaranteeDocument?.trim() ?? null;
       
@@ -211,10 +224,10 @@ export class EventsService {
     }
     
     if (dto.notes !== undefined) entity.notes = dto.notes?.trim() ?? null;
-    if (dto.isActive !== undefined) entity.isActive = dto.isActive;
+    if (dto.isActive != null) entity.isActive = dto.isActive;
 
     const saved = await this.eventRepository.save(entity);
-    return BusinessEventResponseDto.fromEntity(saved);
+    return this.toResponse(businessId, saved);
   }
 
   async updateStatus(
@@ -225,14 +238,42 @@ export class EventsService {
     const entity = await this.getEntityOrFail(businessId, id);
     entity.status = status;
     const saved = await this.eventRepository.save(entity);
-    return BusinessEventResponseDto.fromEntity(saved);
+    return this.toResponse(businessId, saved);
   }
 
   async remove(businessId: string, id: string): Promise<BusinessEventResponseDto> {
     const entity = await this.getEntityOrFail(businessId, id);
     entity.status = EventStatus.CANCELLED;
     const saved = await this.eventRepository.save(entity);
-    return BusinessEventResponseDto.fromEntity(saved);
+    return this.toResponse(businessId, saved);
+  }
+
+  private async toResponse(
+    businessId: string,
+    entity: BusinessEvent,
+  ): Promise<BusinessEventResponseDto> {
+    const paid = await this.paidByEvent(businessId, [entity.id]);
+    return BusinessEventResponseDto.fromEntity(entity, paid.get(entity.id));
+  }
+
+  /** Lo cobrado de cada evento: la suma de sus entradas de dinero. */
+  private async paidByEvent(
+    businessId: string,
+    ids: string[],
+  ): Promise<Map<string, number>> {
+    if (ids.length === 0) return new Map();
+
+    const rows = await this.transactionRepository
+      .createQueryBuilder('t')
+      .select('t.business_event_id', 'eventId')
+      .addSelect('SUM(t.amount)', 'total')
+      .where('t.businessId = :businessId', { businessId })
+      .andWhere('t.business_event_id IN (:...ids)', { ids })
+      .andWhere('t.type = :type', { type: TransactionType.INPUT })
+      .groupBy('t.business_event_id')
+      .getRawMany<{ eventId: string; total: string }>();
+
+    return new Map(rows.map((row) => [row.eventId, Number(row.total)]));
   }
 
   private async getEntityOrFail(businessId: string, id: string): Promise<BusinessEvent> {

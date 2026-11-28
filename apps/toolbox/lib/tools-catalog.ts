@@ -4,10 +4,11 @@
 // agregar a `availableTools` la ficha de su paquete junto con su `href` y su muestra.
 // Los nombres siguen el apartado "Nombres" de docs/PACKAGES-TOOLS.md.
 import type { ComponentType } from "react"
+import { agendaMeta } from "@el-negocio/tool-agenda/meta"
 import { cashMeta } from "@el-negocio/tool-cash/meta"
+import { documentsMeta } from "@el-negocio/tool-documents/meta"
 import { salesNotesMeta } from "@el-negocio/tool-sales-notes/meta"
 import {
-    FileSignature,
     Calculator,
     BookOpen,
     Package,
@@ -16,7 +17,9 @@ import {
     Users,
     type LucideIcon,
 } from "lucide-react"
+import { AgendaPreview } from "@/components/home/agenda-preview"
 import { CashPreview } from "@/components/home/cash-preview"
+import { DocumentsPreview } from "@/components/home/documents-preview"
 import { ReceiptPreview } from "@/components/home/receipt-preview"
 
 interface ToolBase {
@@ -53,15 +56,23 @@ export const availableTools: readonly AvailableTool[] = [
         alsoKnownAs: "Ingresos y gastos, cuentas del día, lo que hay en caja.",
         preview: CashPreview,
     },
+    {
+        ...agendaMeta,
+        href: "/tools/agenda",
+        action: "Abrir mi agenda",
+        alsoKnownAs: "Citas, pedidos, entregas, eventos o recordatorios.",
+        preview: AgendaPreview,
+    },
+    {
+        ...documentsMeta,
+        href: "/tools/documents",
+        action: "Hacer un documento",
+        alsoKnownAs: "Pagaré, compraventa, contrato de renta o de servicio.",
+        preview: DocumentsPreview,
+    },
 ]
 
 export const upcomingTools: readonly UpcomingTool[] = [
-    {
-        id: "event-contracts",
-        title: "Contratos de renta",
-        description: "Contratos para tus eventos, listos para firmar",
-        icon: FileSignature,
-    },
     {
         id: "daily-close",
         title: "Corte de caja",

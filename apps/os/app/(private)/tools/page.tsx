@@ -2,9 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { FilePlus2, FileText, Calendar, Wallet, Package, ArrowRight } from 'lucide-react'
+import { FilePlus2, FileText, Wallet, Package, ArrowRight } from 'lucide-react'
+import { agendaMeta } from '@el-negocio/tool-agenda/meta'
 import Link from 'next/link'
 import { cashMeta } from '@el-negocio/tool-cash/meta'
+import { documentsMeta } from '@el-negocio/tool-documents/meta'
 import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 import { PageHeader } from '@/components/admin/page-header'
 
@@ -27,11 +29,11 @@ const toolsList = [
     primary: false,
   },
   {
-    title: 'Eventos',
-    description: 'Anota tus fechas, qué ya entregaste y genera el contrato.',
+    title: agendaMeta.title,
+    description: 'Anota citas, pedidos y entregas, y cobra lo que te deben.',
     href: '/tools/eventos',
-    icon: Calendar,
-    btnLabel: 'Ver eventos',
+    icon: agendaMeta.icon,
+    btnLabel: 'Abrir mi agenda',
     primary: true,
   },
   {
@@ -40,6 +42,14 @@ const toolsList = [
     href: '/tools/finanzas',
     icon: Wallet,
     btnLabel: 'Ver mi caja',
+    primary: false,
+  },
+  {
+    title: documentsMeta.title,
+    description: 'Pagarés, compraventas y contratos listos para firmar.',
+    href: '/tools/documentos',
+    icon: documentsMeta.icon,
+    btnLabel: 'Hacer un documento',
     primary: false,
   },
   {

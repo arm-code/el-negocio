@@ -40,6 +40,14 @@ export class BusinessEvent extends BaseEntity {
   @Column({ name: 'event_date', type: 'date', nullable: true })
   eventDate: string | null;
 
+  /** Hora "HH:mm"; sin hora es "durante el día". */
+  @Column({ name: 'event_time', type: 'varchar', length: 5, nullable: true })
+  eventTime: string | null;
+
+  /** Algo se entrega y hay que recibirlo de vuelta. */
+  @Column({ name: 'needs_return', type: 'boolean', default: false })
+  needsReturn: boolean;
+
   @Column({ type: 'numeric', precision: 12, scale: 2, default: 0 })
   cost: string; // numeric se mapea como string en TypeORM
 

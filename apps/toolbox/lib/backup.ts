@@ -4,9 +4,20 @@
 // El archivo que se carga viene de fuera: se valida campo por campo y solo se
 // copian los campos conocidos.
 
+import { LIMITS as AGENDA_LIMITS } from '@el-negocio/tool-agenda'
 import type { BusinessInfo, Note, NoteItem } from '@el-negocio/tool-sales-notes'
 import { LIMITS, type CatalogItem } from '@el-negocio/tool-cash'
+import {
+  DOCUMENT_KINDS,
+  FIELD_KEYS,
+  LIMITS as DOCUMENT_LIMITS,
+  type BusinessDocument,
+  type DocumentItem,
+  type DocumentValues,
+} from '@el-negocio/tool-documents'
+import { readAgendaData, writeAgendaData, type StoredEvent } from '@/lib/agenda-storage'
 import { readCashData, sameName, writeCashData, type StoredMovement } from '@/lib/cash-storage'
+import { readDocumentsData, writeDocumentsData } from '@/lib/documents-storage'
 import { readLocalData, writeLocalData } from '@/lib/sales-notes-storage'
 
 const APP_ID = 'el-negocio'
@@ -16,6 +27,8 @@ const MAX_NOTES = 5000
 const MAX_ITEMS = 500
 const MAX_MOVEMENTS = 20_000
 const MAX_OPTIONS = 500
+const MAX_EVENTS = 20_000
+const MAX_DOCUMENTS = 5000
 const MAX_TEXT = 2000
 
 /** Error con un mensaje que se le puede mostrar a la persona. */
@@ -92,6 +105,74 @@ function parseMovement(v: unknown): StoredMovement | null {
     categoryId: text(v.categoryId, 100),
     methodId: text(v.methodId, 100),
     description: optionalText(v.description, LIMITS.description),
+    eventId: optionalText(v.eventId, 100),
+    createdAt: v.createdAt,
+    updatedAt: isDate(v.updatedAt) ? v.updatedAt : undefined,
+  }
+}
+
+function parseEvent(v: unknown): StoredEvent | null {
+  if (!isObject(v) || !text(v.id, 100) || !isDate(v.createdAt)) return null
+  const title = text(v.title, AGENDA_LIMITS.title).trim()
+  const date = text(v.date, 10)
+  if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !isDate(date)) return null
+  const { status } = v
+  if (status !== 'pending' && status !== 'delivered' && status !== 'done' && status !== 'cancelled') return null
+  const time = text(v.time, 5)
+  const total = Math.round(number(v.total) * 100) / 100
+
+  return {
+    id: text(v.id, 100),
+    title,
+    date,
+    time: /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? time : undefined,
+    clientName: optionalText(v.clientName, AGENDA_LIMITS.clientName),
+    clientPhone: optionalText(v.clientPhone, AGENDA_LIMITS.clientPhone),
+    place: optionalText(v.place, AGENDA_LIMITS.place),
+    notes: optionalText(v.notes, AGENDA_LIMITS.notes),
+    total: total > 0 && total <= AGENDA_LIMITS.maxAmount ? total : undefined,
+    needsReturn: v.needsReturn === true,
+    guarantee: optionalText(v.guarantee, AGENDA_LIMITS.guarantee),
+    status,
+    createdAt: v.createdAt,
+    updatedAt: isDate(v.updatedAt) ? v.updatedAt : undefined,
+  }
+}
+
+function parseDocumentItem(v: unknown): DocumentItem | null {
+  if (!isObject(v)) return null
+  const description = text(v.description, DOCUMENT_LIMITS.itemDescription).trim()
+  const quantity = number(v.quantity)
+  const unitValue = number(v.unitValue)
+  if (!description || !(quantity > 0 && quantity <= DOCUMENT_LIMITS.maxQuantity)) return null
+  if (!(unitValue >= 0 && unitValue <= DOCUMENT_LIMITS.maxAmount)) return null
+  return { description, quantity, unitValue }
+}
+
+function parseDocument(v: unknown): BusinessDocument | null {
+  if (!isObject(v) || !text(v.id, 100) || !isDate(v.createdAt)) return null
+  const kind = DOCUMENT_KINDS.find((k) => k === v.kind)
+  const folio = number(v.folio)
+  if (!kind || !(Number.isInteger(folio) && folio > 0) || !isObject(v.values)) return null
+  if (!Array.isArray(v.items) || v.items.length > DOCUMENT_LIMITS.items) return null
+  const items = v.items.map(parseDocumentItem)
+  if (items.some((item) => item === null)) return null
+
+  // Solo los datos conocidos
+  const source = v.values
+  const values: DocumentValues = {}
+  for (const key of FIELD_KEYS) {
+    const value = text(source[key], DOCUMENT_LIMITS.longText)
+    if (value) values[key] = value
+  }
+
+  return {
+    id: text(v.id, 100),
+    folio,
+    kind,
+    values,
+    items: items as DocumentItem[],
+    eventId: optionalText(v.eventId, 100),
     createdAt: v.createdAt,
     updatedAt: isDate(v.updatedAt) ? v.updatedAt : undefined,
   }
@@ -148,16 +229,68 @@ function mergeCash(incoming: unknown, summary: ImportSummary) {
   return { movements: [...byId.values()], categories: categories.items, methods: methods.items }
 }
 
+/** Suma la agenda del archivo. `null` si no trae (respaldos anteriores). */
+function mergeAgenda(incoming: unknown, summary: ImportSummary) {
+  if (!Array.isArray(incoming)) return null
+  if (incoming.length > MAX_EVENTS) throw new BackupError('El respaldo tiene demasiados registros.')
+
+  const byId = new Map(readAgendaData().map((e) => [e.id, e]))
+  for (const entry of incoming) {
+    const event = parseEvent(entry)
+    if (!event) {
+      summary.invalid++
+      continue
+    }
+    const existing = byId.get(event.id)
+    if (!existing) summary.added++
+    else if (lastChange(event) > lastChange(existing)) summary.updated++
+    else continue
+    byId.set(event.id, event)
+  }
+  return [...byId.values()]
+}
+
+/** Suma los documentos del archivo. `null` si no trae (respaldos anteriores). */
+function mergeDocuments(incoming: unknown, summary: ImportSummary) {
+  if (!isObject(incoming) || !Array.isArray(incoming.documents)) return null
+  if (incoming.documents.length > MAX_DOCUMENTS) throw new BackupError('El respaldo tiene demasiados registros.')
+
+  const current = readDocumentsData()
+  const byId = new Map(current.documents.map((d) => [d.id, d]))
+  for (const entry of incoming.documents) {
+    const document = parseDocument(entry)
+    if (!document) {
+      summary.invalid++
+      continue
+    }
+    const existing = byId.get(document.id)
+    if (!existing) summary.added++
+    else if (lastChange(document) > lastChange(existing)) summary.updated++
+    else continue
+    byId.set(document.id, document)
+  }
+  const documents = [...byId.values()]
+  // El siguiente folio no puede repetir uno que ya exista
+  return {
+    documents,
+    seq: Math.max(current.seq, number(incoming.seq), ...documents.map((d) => d.folio), 0),
+  }
+}
+
 export function createBackup() {
   const data = readLocalData()
   const cash = readCashData()
+  const agenda = readAgendaData()
+  const documents = readDocumentsData()
   const exportedAt = new Date()
   const day = exportedAt.toLocaleDateString('en-CA') // AAAA-MM-DD en hora local
   return {
     fileName: `el-negocio-respaldo-${day}.json`,
     noteCount: data.salesNotes.length,
     movementCount: cash.movements.length,
-    content: JSON.stringify({ app: APP_ID, version: VERSION, exportedAt: exportedAt.toISOString(), ...data, cash }),
+    eventCount: agenda.length,
+    documentCount: documents.documents.length,
+    content: JSON.stringify({ app: APP_ID, version: VERSION, exportedAt: exportedAt.toISOString(), ...data, cash, agenda, documents }),
   }
 }
 
@@ -200,8 +333,12 @@ export async function importBackup(file: File): Promise<ImportSummary> {
   }
 
   let cash: ReturnType<typeof mergeCash>
+  let agenda: ReturnType<typeof mergeAgenda>
+  let documents: ReturnType<typeof mergeDocuments>
   try {
     cash = mergeCash(parsed.cash, summary)
+    agenda = mergeAgenda(parsed.agenda, summary)
+    documents = mergeDocuments(parsed.documents, summary)
   } catch (error) {
     if (error instanceof BackupError) throw error
     throw new BackupError('No se pudo leer lo que ya tienes guardado en este dispositivo.')
@@ -219,6 +356,8 @@ export async function importBackup(file: File): Promise<ImportSummary> {
       businessInfo: hasOwnInfo ? current.businessInfo : imported,
     })
     if (cash) writeCashData(cash)
+    if (agenda) writeAgendaData(agenda)
+    if (documents) writeDocumentsData(documents)
   } catch {
     throw new BackupError('No se pudo guardar. Revisa que tu navegador permita guardar datos y tenga espacio.')
   }

@@ -2,9 +2,6 @@ import { axiosInstance } from './axios';
 import { getAllPages } from './pagination';
 import {
   BusinessEvent,
-  CreateBusinessEventDto,
-  UpdateBusinessEventDto,
-  EventStatus,
   TransactionCategory,
   PaymentMethod,
   CreateTransactionCategoryDto,
@@ -19,33 +16,15 @@ import {
 const PREFIX = '/v1';
 
 export const financeApi = {
-  // Business Events
-  /** Todos los eventos: las pestañas, la búsqueda y el inicio filtran sobre la lista completa. */
-  getBusinessEvents: () => getAllPages<BusinessEvent>(`${PREFIX}/events`),
-
+  // Eventos: la agenda los lee y guarda con lib/agenda-storage.ts
   getBusinessEventById: async (id: string) => {
-    const res = await axiosInstance.get<BusinessEvent>(`${PREFIX}/events/${id}`);
+    const res = await axiosInstance.get<BusinessEvent>(`${PREFIX}/events/${encodeURIComponent(id)}`);
     return res.data;
   },
 
-  createBusinessEvent: async (data: CreateBusinessEventDto) => {
-    const res = await axiosInstance.post<BusinessEvent>(`${PREFIX}/events`, data);
-    return res.data;
-  },
-
-  updateBusinessEvent: async (id: string, data: UpdateBusinessEventDto) => {
-    const res = await axiosInstance.patch<BusinessEvent>(`${PREFIX}/events/${id}`, data);
-    return res.data;
-  },
-
-  updateEventStatus: async (id: string, status: EventStatus) => {
-    const res = await axiosInstance.patch<BusinessEvent>(`${PREFIX}/events/${id}/status`, { status });
-    return res.data;
-  },
-
-  deleteBusinessEvent: async (id: string) => {
-    const res = await axiosInstance.delete<{ success: boolean }>(`${PREFIX}/events/${id}`);
-    return res.data;
+  /** Liga o desliga (`null`) la nota de venta de un evento. */
+  linkEventNote: async (id: string, noteId: string | null) => {
+    await axiosInstance.patch(`${PREFIX}/events/${encodeURIComponent(id)}`, { noteId });
   },
 
   // Categories
