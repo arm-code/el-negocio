@@ -132,6 +132,11 @@ pnpm --dir apps/os dev
 
 Entra en http://localhost:3000/auth/login con el usuario del paso 3.
 
+- **Equipo:** agrega empleados o administradores en `/equipo`. El enlace que genera abre
+  en la misma dirección donde estás (en local, solo en tu computadora).
+- **Avisos:** actívalos en `/avisos`. En `localhost` funcionan en la computadora; en un
+  celular necesitan la app publicada con HTTPS.
+
 ### Después de traer cambios
 
 ```bash

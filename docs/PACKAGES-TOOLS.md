@@ -393,7 +393,7 @@ citas, pedidos y entregas de cualquier giro. Acordado el 2026-11-27:
 | Estados | Pendiente, Entregado (solo con devolución), Hecho y Cancelado; solo lo cancelado se puede borrar |
 | Cobro | Total, anticipo y lo que falta. Cada pago es una entrada en Caja, que es la única fuente de lo cobrado |
 | Contratos | No van en los ajustes: son la micro app de la Fase 8 |
-| Fuera de alcance | Eventos que se repiten, avisos propios, sincronizar con Google y asignar personal |
+| Fuera de alcance | Eventos que se repiten, sincronizar con Google y asignar personal. Los avisos son solo de `os` (Fase 10) |
 
 Hecho en `packages/tool-agenda`. En el sitio gratuito está en `/tools/agenda` (datos en
 `el-negocio:agenda:events:v1`, adaptador `apps/toolbox/lib/agenda-storage.ts`); en `os`,
@@ -448,6 +448,46 @@ Pendiente de revisar con un abogado: la cláusula del pagaré que lo liga a la d
 del mobiliario puede restarle la "promesa incondicional" que exige el artículo 170 de la
 Ley General de Títulos y Operaciones de Crédito. Una opción es firmar el pagaré limpio y
 dejar las condiciones en el contrato de renta.
+
+### Fase 9 — Equipo (solo `os`)
+
+Para que el negocio dé de alta a quienes lo ayudan. La cuenta principal se sigue creando
+por comando; las demás, en `/equipo`.
+
+| Tema | Decisión |
+| --- | --- |
+| Tipos | Administrador y Empleado |
+| Empleado | Agenda (incluido cobrar), notas, contratos e inventario. No ve Caja, resumen ni ajustes |
+| Cuenta principal | La del primer administrador: otros no pueden quitarla ni cambiarle contraseña |
+| Entrar por primera vez u olvido | Enlace de un solo uso, 3 días, para mandar por WhatsApp. No depende del correo |
+| Quitar a alguien | Pierde el acceso al momento; lo que anotó se queda |
+
+- El API es quien impide (`@AdminOnly()` y `@AdminWrites()` en `modules/auth/permissions.ts`);
+  `os` además esconde lo que no aplica (`lib/nav.ts`). Un endpoint nuevo que solo sea del
+  administrador debe marcarse.
+- Los cobros de la agenda van por `/events/:id/payments`, así cobrar no abre la Caja.
+- Migración `1755500000000`.
+
+### Fase 10 — Avisos en el celular (solo `os`)
+
+Avisos propios con el estándar Web Push, sin cuentas ni cobros de terceros. Cada persona
+los activa en cada dispositivo, en `/avisos`.
+
+| Aviso | A quién |
+| --- | --- |
+| Se agendó, cambió (nombre, fecha, hora o lugar), se canceló o volvió | Al equipo, menos a quien lo hizo |
+| Desde las 8:00: lo de hoy y mañana | Al equipo |
+| Una hora antes de lo que tiene hora | Al equipo |
+
+- El API firma con llaves que crea solo y guarda en la base (`push_keys`): no hay que
+  configurar nada, y un respaldo restaurado las conserva.
+- La hora es la del negocio: `BUSINESS_TZ` (por defecto `America/Ciudad_Juarez`).
+- Solo se aceptan direcciones de los servicios de los navegadores
+  (`modules/notifications/push-endpoint.ts`).
+- En iPhone requiere la app agregada a la pantalla de inicio. En un celular requiere HTTPS.
+- El API revisa los recordatorios cada minuto. Cada uno se aparta en `sent_reminders`
+  antes de mandarlo, así sale una sola vez, también si se reinicia.
+- Migración `1755600000000`. El correo queda para una fase futura.
 
 ## 7. Cuidados
 

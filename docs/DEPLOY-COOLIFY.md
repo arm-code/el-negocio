@@ -195,6 +195,15 @@ Después recupera las imágenes con el paso 2 de la sección 3, usando
 - El front se compila desde la **raíz del repo** porque usa `packages/`; lo indica el
   `docker-compose.yml`, así que en Coolify *Base Directory* sigue siendo `/`.
 
+### Equipo y avisos
+
+- Después de la cuenta principal, el negocio agrega a su gente desde **Equipo**.
+- Los avisos no requieren configuración. Si el negocio no está en la hora de Ciudad
+  Juárez, define `BUSINESS_TZ` (p. ej. `America/Mexico_City`) y redespliega.
+- Cada persona los activa en su celular, en **Avisos**. En iPhone, primero se agrega la
+  app a la pantalla de inicio.
+- `web` y `api` se actualizan juntos.
+
 ## 7. Un cliente nuevo
 
 Otro recurso en Coolify con el **mismo repo** y variables propias (`BUSINESS_SLUG`,
