@@ -97,7 +97,8 @@ async function main() {
 
       const { rows } = await db.query(
         `INSERT INTO elnegocio.users (email, password_hash) VALUES ($1, $2)
-         ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, updated_at = now()
+         ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash,
+           password_changed_at = now(), updated_at = now()
          RETURNING id`,
         [email, hash],
       );

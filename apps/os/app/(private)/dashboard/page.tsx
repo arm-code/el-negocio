@@ -31,6 +31,7 @@ interface QuickAction {
   label: string
   href: string
   icon: LucideIcon
+  adminOnly?: boolean
 }
 
 /* ─── Constantes ────────────────────────────────────────────────────────── */
@@ -38,7 +39,7 @@ interface QuickAction {
 const QUICK_ACTIONS: readonly QuickAction[] = [
   { label: 'Nueva nota', href: '/tools/notas-venta/crear-nota-venta', icon: FilePlus2 },
   { label: 'Agendar', href: '/tools/eventos/crear-evento', icon: CalendarPlus },
-  { label: 'Anotar entrada o salida', href: '/tools/finanzas', icon: ArrowLeftRight },
+  { label: 'Anotar entrada o salida', href: '/tools/finanzas', icon: ArrowLeftRight, adminOnly: true },
   { label: 'Ver notas', href: '/tools/notas-venta', icon: FileText },
 ]
 
@@ -85,13 +86,14 @@ function getUpcoming(events: AgendaEvent[] = []): AgendaEvent[] {
 /* ─── Página ────────────────────────────────────────────────────────────── */
 
 export default function PrincipalPage() {
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
   const firstName = user?.name?.trim().split(/\s+/)[0]
 
   const summaryQuery = useQuery({
     // Bajo 'cash' para que se refresque al anotar, corregir o borrar
     queryKey: ['cash', 'dashboard'],
     queryFn: () => apiMovementsStorage.summary(null),
+    enabled: isAdmin,
   })
 
   const eventsQuery = useQuery({
@@ -107,27 +109,29 @@ export default function PrincipalPage() {
     <div className="space-y-8 pb-28 sm:pb-8">
       <PageHeader
         title={firstName ? `Hola, ${firstName}` : 'Hola'}
-        description="Así va tu negocio."
+        description={isAdmin ? 'Así va tu negocio.' : 'Esto es lo que hay por hacer.'}
       />
 
       {/* Resumen */}
-      <section aria-label="Resumen de dinero">
-        {summaryQuery.isLoading ? (
-          <SummarySkeleton />
-        ) : summaryQuery.isError ? (
-          <InlineError
-            message="No se pudo cargar tu resumen."
-            onRetry={() => summaryQuery.refetch()}
-          />
-        ) : (
-          <SummaryCard
-            // En centavos: restar decimales directamente deja colas
-            balance={(Math.round(toNumber(summaryQuery.data?.in) * 100) - Math.round(toNumber(summaryQuery.data?.out) * 100)) / 100}
-            inputs={toNumber(summaryQuery.data?.in)}
-            outputs={toNumber(summaryQuery.data?.out)}
-          />
-        )}
-      </section>
+      {isAdmin && (
+        <section aria-label="Resumen de dinero">
+          {summaryQuery.isLoading ? (
+            <SummarySkeleton />
+          ) : summaryQuery.isError ? (
+            <InlineError
+              message="No se pudo cargar tu resumen."
+              onRetry={() => summaryQuery.refetch()}
+            />
+          ) : (
+            <SummaryCard
+              // En centavos: restar decimales directamente deja colas
+              balance={(Math.round(toNumber(summaryQuery.data?.in) * 100) - Math.round(toNumber(summaryQuery.data?.out) * 100)) / 100}
+              inputs={toNumber(summaryQuery.data?.in)}
+              outputs={toNumber(summaryQuery.data?.out)}
+            />
+          )}
+        </section>
+      )}
 
       {/* Accesos rápidos */}
       <section aria-labelledby="quick-actions-title" className="space-y-3">
@@ -135,7 +139,7 @@ export default function PrincipalPage() {
           ¿Qué quieres hacer?
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {QUICK_ACTIONS.map(({ label, href, icon: Icon }) => (
+          {QUICK_ACTIONS.filter((action) => isAdmin || !action.adminOnly).map(({ label, href, icon: Icon }) => (
             <Link
               key={href}
               href={href}

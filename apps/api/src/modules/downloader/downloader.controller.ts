@@ -22,11 +22,14 @@ import * as fs from 'fs';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { DownloadAudioDto } from './dto/download-audio.dto';
 import { GetMediaInfoDto } from './dto/get-media-info.dto';
+import { TenantGuard } from '../auth/guards/tenant.guard';
+import { AdminOnly } from '../auth/permissions';
 import { DownloaderService } from './downloader.service';
 
 @ApiTags('Downloader — Audio de YouTube')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@AdminOnly()
+@UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('download')
 export class DownloaderController {
   private readonly logger = new Logger(DownloaderController.name);

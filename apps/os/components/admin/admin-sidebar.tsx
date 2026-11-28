@@ -6,14 +6,15 @@ import { usePathname } from 'next/navigation'
 import { LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth'
-import { isActive, primaryNav } from '@/lib/nav'
+import { isActive, navFor } from '@/lib/nav'
 import { Button } from '@/components/ui/button'
 
 import { BusinessBadge } from './BusinessBadge'
 
 export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const pathname = usePathname()
-    const items = [...primaryNav]
+    const { isAdmin } = useAuth()
+    const items = navFor(isAdmin)
 
     return (
         <div className="flex h-full flex-col">

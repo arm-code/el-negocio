@@ -23,7 +23,8 @@ export interface AuthenticatedRequest extends Request {
  *
  * El token se lee de la cookie httpOnly de sesión o, como alternativa para
  * herramientas (curl, Scalar), del header `Authorization: Bearer <token>`.
- * La verificación es local: no hay llamadas de red ni a la base de datos.
+ * La verificación es local: no hay llamadas de red ni a la base de datos. Que la
+ * cuenta siga vigente lo revisan `TenantGuard` y `/auth/me`.
  */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -59,6 +60,7 @@ export class JwtAuthGuard implements CanActivate {
         id: payload.sub,
         email: payload.email ?? null,
         role: payload.role ?? 'authenticated',
+        issuedAt: payload.iat,
       };
       return true;
     } catch (error) {

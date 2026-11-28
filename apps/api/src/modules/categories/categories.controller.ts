@@ -22,6 +22,7 @@ import { ResponseMessage } from '../../common/interceptors/transform.interceptor
 import { CurrentBusiness } from '../auth/decorators/current-business.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../auth/guards/tenant.guard';
+import { AdminWrites } from '../auth/permissions';
 import { CategoriesService } from './categories.service';
 import { CategoryResponseDto } from './dto/category-response.dto';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -34,6 +35,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
  */
 @ApiTags('Categories')
 @ApiBearerAuth()
+@AdminWrites()
 @UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('categories')
 export class CategoriesController {

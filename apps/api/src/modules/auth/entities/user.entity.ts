@@ -16,4 +16,12 @@ export class User extends BaseEntity {
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
+
+  /** Como se le saluda; la cuenta creada por comando puede no tenerlo. */
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  name: string | null;
+
+  /** Las sesiones anteriores a esta fecha dejan de valer. */
+  @Column({ name: 'password_changed_at', type: 'timestamptz', nullable: true })
+  passwordChangedAt: Date | null;
 }

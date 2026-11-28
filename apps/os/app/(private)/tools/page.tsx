@@ -1,5 +1,7 @@
 'use client'
 
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { FilePlus2, FileText, Wallet, Package, ArrowRight } from 'lucide-react'
@@ -9,6 +11,8 @@ import { cashMeta } from '@el-negocio/tool-cash/meta'
 import { documentsMeta } from '@el-negocio/tool-documents/meta'
 import { salesNotesMeta } from '@el-negocio/tool-sales-notes/meta'
 import { PageHeader } from '@/components/admin/page-header'
+import { useAuth } from '@/lib/auth'
+import { isAdminPath } from '@/lib/nav'
 
 // Nombres: ver el apartado "Nombres" de docs/PACKAGES-TOOLS.md
 const toolsList = [
@@ -63,6 +67,8 @@ const toolsList = [
 ]
 
 export default function ToolsPage() {
+  const { isAdmin } = useAuth()
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -71,7 +77,7 @@ export default function ToolsPage() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
-        {toolsList.map((tool) => {
+        {toolsList.filter((tool) => isAdmin || !isAdminPath(tool.href)).map((tool) => {
           const Icon = tool.icon
           return (
             <Card

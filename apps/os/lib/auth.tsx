@@ -1,18 +1,24 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
-import { axiosInstance } from '@/lib/api/axios'
+import { ApiError, axiosInstance } from '@/lib/api/axios'
+
+/** `editor` es un empleado; `viewer` solo consulta. */
+export type UserRole = 'admin' | 'editor' | 'viewer'
 
 export interface AuthUser {
   id: string
   email?: string
   name?: string
-  role?: string
+  role: UserRole
 }
 
 interface AuthContextType {
   user: AuthUser | null
   loading: boolean
+  isAdmin: boolean
+  /** El API ya no reconoce la sesión (venció o quitaron el acceso). */
+  expired: boolean
   /** Vuelve a consultar la sesión (llamar tras iniciar sesión). */
   refresh: () => Promise<void>
   signOut: (redirectTo?: unknown) => Promise<void>
@@ -21,6 +27,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
+  isAdmin: false,
+  expired: false,
   refresh: async () => {},
   signOut: async () => {},
 })
@@ -28,25 +36,33 @@ const AuthContext = createContext<AuthContextType>({
 interface MeResponse {
   id: string
   email: string
+  name: string | null
+  role: UserRole
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
+  const [expired, setExpired] = useState(false)
 
   // La sesión vive en una cookie httpOnly: la única forma de saber si hay
   // sesión es preguntarle al API.
   const refresh = useCallback(async () => {
     try {
-      const res = await axiosInstance.get<MeResponse>('/v1/auth/me')
+      const { data } = await axiosInstance.get<MeResponse>('/v1/auth/me')
       setUser({
-        id: res.data.id,
-        email: res.data.email,
-        name: res.data.email.split('@')[0] || 'Usuario',
-        role: 'admin',
+        id: data.id,
+        email: data.email,
+        name: data.name || data.email.split('@')[0] || 'Usuario',
+        role: data.role,
       })
-    } catch {
-      setUser(null)
+      setExpired(false)
+    } catch (error) {
+      // Sin conexión no se cierra la sesión: solo cuando el API la rechaza
+      if (error instanceof ApiError && error.status === 401) {
+        setUser(null)
+        setExpired(true)
+      }
     } finally {
       setLoading(false)
     }
@@ -54,6 +70,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void refresh()
+  }, [refresh])
+
+  // Al volver a la app se revisa si cambió el acceso
+  useEffect(() => {
+    const check = () => {
+      if (document.visibilityState === 'visible') void refresh()
+    }
+    document.addEventListener('visibilitychange', check)
+    return () => document.removeEventListener('visibilitychange', check)
   }, [refresh])
 
   // Algunos botones pasan `signOut` directo como onClick: el argumento puede ser un evento
@@ -68,7 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, loading, refresh, signOut }}>
+    <AuthContext.Provider
+      value={{ user, loading, isAdmin: user?.role === 'admin', expired, refresh, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   )

@@ -71,7 +71,7 @@ export default function LoginPage() {
             Iniciar sesión
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Panel de administración de {businessName || 'tu negocio'}
+            Entra al panel de {businessName || 'tu negocio'}
           </p>
         </div>
 
@@ -182,7 +182,7 @@ export default function LoginPage() {
         {/* Footer */}
         <div className="mt-6 text-center">
           <p className="text-xs text-muted-foreground">
-            Acceso exclusivo para administradores.
+            ¿Olvidaste tu contraseña? Pide a tu administrador un enlace nuevo.
           </p>
         </div>
       </div>
