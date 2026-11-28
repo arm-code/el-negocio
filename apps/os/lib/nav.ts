@@ -5,6 +5,7 @@ import {
     Settings,
     Wallet,
     Package,
+    UsersRound,
     type LucideIcon,
 } from 'lucide-react'
 import { agendaMeta } from '@el-negocio/tool-agenda/meta'
@@ -21,6 +22,8 @@ export interface NavItem {
     matchPrefix?: string
     /** Solo en el menú lateral: la barra inferior del celular ya va llena. */
     sideOnly?: boolean
+    /** Solo para administradores. */
+    adminOnly?: boolean
 }
 
 // Menú del panel. La barra inferior del celular omite los marcados `sideOnly`.
@@ -39,6 +42,7 @@ export const primaryNav: NavItem[] = [
         href: '/tools/finanzas',
         icon: Wallet,
         matchPrefix: '/tools/finanzas',
+        adminOnly: true,
     },
     {
         label: agendaMeta.title,
@@ -62,8 +66,28 @@ export const primaryNav: NavItem[] = [
         icon: Package,
         matchPrefix: '/tools/inventario',
     },
-    { label: 'Configuración', shortLabel: 'Ajustes', href: '/configuracion', icon: Settings },
+    {
+        label: 'Equipo',
+        shortLabel: 'Equipo',
+        href: '/equipo',
+        icon: UsersRound,
+        sideOnly: true,
+        adminOnly: true,
+    },
+    { label: 'Configuración', shortLabel: 'Ajustes', href: '/configuracion', icon: Settings, adminOnly: true },
 ]
+
+/** Lo que ve cada quien en el menú. */
+export function navFor(isAdmin: boolean): NavItem[] {
+    return primaryNav.filter((item) => isAdmin || !item.adminOnly)
+}
+
+// El API es quien de verdad lo impide; esto evita enseñar pantallas que fallarían
+const ADMIN_PATHS = ['/tools/finanzas', '/configuracion', '/equipo', '/gestion-productos']
+
+export function isAdminPath(pathname: string): boolean {
+    return ADMIN_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+}
 
 
 

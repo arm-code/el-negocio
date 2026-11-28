@@ -29,7 +29,7 @@ export async function proxy(req: NextRequest) {
   const privateRoutes = [
     '/dashboard',
     '/configuracion',
-    '/usuarios',
+    '/equipo',
     '/gestion-productos',
     '/tools',
   ];
@@ -57,7 +57,7 @@ export const config = {
     '/gestion-productos/:path*',
     '/configuracion/:path*',
     '/tools/:path*',
-    '/usuarios/:path*',
+    '/equipo/:path*',
     '/auth/:path*',
   ],
 };
