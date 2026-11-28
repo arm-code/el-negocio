@@ -23,6 +23,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { MobileFab } from '@/components/ui/mobile-fab'
+import { NotificationsPrompt } from '@/components/notifications/notifications-prompt'
 import { cn } from '@/lib/utils'
 
 /* ─── Tipos ─────────────────────────────────────────────────────────────── */
@@ -111,6 +112,8 @@ export default function PrincipalPage() {
         title={firstName ? `Hola, ${firstName}` : 'Hola'}
         description={isAdmin ? 'Así va tu negocio.' : 'Esto es lo que hay por hacer.'}
       />
+
+      <NotificationsPrompt />
 
       {/* Resumen */}
       {isAdmin && (

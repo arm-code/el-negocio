@@ -10,15 +10,22 @@ import { Button } from '@/components/ui/button'
 import { EmptyState, ListSkeleton } from '@/components/ui/states'
 import { useAuth } from '@/lib/auth'
 import { isAdminPath } from '@/lib/nav'
+import { syncPush } from '@/lib/push'
 
 export default function PrivateLayout({ children }: { children: React.ReactNode }) {
-  const { loading, isAdmin, expired, signOut } = useAuth()
+  const { user, loading, isAdmin, expired, endSession } = useAuth()
   const pathname = usePathname()
 
   // La cookie puede seguir firmada aunque ya no valga: se borra y se pide entrar
   useEffect(() => {
-    if (expired) void signOut('/auth/login')
-  }, [expired, signOut])
+    if (expired) void endSession('/auth/login')
+  }, [expired, endSession])
+
+  const userId = user?.id
+  useEffect(() => {
+    // Si falla, se vuelve a intentar la próxima vez que se abra la app
+    if (userId) void syncPush().catch(() => {})
+  }, [userId])
 
   let content = children
   if (isAdminPath(pathname) && !isAdmin) {
