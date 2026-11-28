@@ -3,36 +3,15 @@
 // Lo agendado, con lo que se puede hacer con ello. Solo muestra lo que se llenó.
 
 import type { ReactNode } from 'react'
-import { CalendarPlus, Check, MapPin, MessageCircle, PackageCheck, Pencil, RotateCcw, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { Check, MapPin, MessageCircle, PackageCheck, Pencil, RotateCcw, Trash2 } from 'lucide-react'
 import { AppBottomSheet } from '@el-negocio/ui/app-bottom-sheet'
 import { Button } from '@el-negocio/ui/button'
 import { ContactButtons, DetailSection, TOUCH } from '@el-negocio/ui/detail'
-import { formatMxPhone, toMxPhone, toSlug } from '@el-negocio/ui/display'
+import { formatMxPhone, toMxPhone } from '@el-negocio/ui/display'
 import { cn } from '@el-negocio/ui/utils'
-import { toCalendarFile } from '../lib/calendar'
 import { dayFromToday, dayName, tabOf, timeName } from '../lib/when'
 import type { AgendaEvent, EventStatus } from '../types'
 import { ChargeSection } from './charge-section'
-
-/** Abre el archivo de calendario: el celular ofrece guardarlo con su recordatorio. */
-function addToCalendar(event: AgendaEvent) {
-  try {
-    const url = URL.createObjectURL(new Blob([toCalendarFile(event)], { type: 'text/calendar;charset=utf-8' }))
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${toSlug(event.title, 'evento')}.ics`
-    link.addEventListener('click', (e) => e.stopPropagation())
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    // Algunos navegadores leen el archivo después del clic
-    setTimeout(() => URL.revokeObjectURL(url), 10_000)
-    toast.success('Ábrelo para guardarlo en tu calendario')
-  } catch {
-    toast.error('No se pudo preparar el calendario')
-  }
-}
 
 /** Mensaje de WhatsApp para recordarle la cita al cliente. */
 function reminder(event: AgendaEvent) {
@@ -200,12 +179,6 @@ export function EventDetail({
           {renderExtra?.(event)}
 
           <div className="space-y-1 border-t pt-4">
-            {event.status === 'pending' && event.date && (
-              <Button variant="outline" className={cn(TOUCH, 'w-full')} onClick={() => addToCalendar(event)}>
-                <CalendarPlus aria-hidden="true" />
-                Agregar a mi calendario
-              </Button>
-            )}
             {event.status === 'delivered' && (
               <Button
                 variant="ghost"
