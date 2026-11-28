@@ -61,6 +61,9 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       STORAGE_DIR: /app/storage
       STORAGE_PUBLIC_URL: /files
+      # Hora del negocio para los recordatorios, y quién firma los avisos
+      BUSINESS_TZ: ${BUSINESS_TZ:-America/Ciudad_Juarez}
+      VAPID_SUBJECT: ${SITE_URL:-}
       DOCS_USER: ${DOCS_USER:-docs}
       DOCS_PASSWORD: ${DOCS_PASSWORD:?Define DOCS_PASSWORD}
     volumes:

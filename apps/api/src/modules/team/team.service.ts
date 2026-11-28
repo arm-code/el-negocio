@@ -11,6 +11,7 @@ import { AccessLink } from '../auth/entities/access-link.entity';
 import { User } from '../auth/entities/user.entity';
 import { BusinessUser } from '../businesses/entities/business-user.entity';
 import { BusinessRole } from '../businesses/enums/business-role.enum';
+import { PushSubscription } from '../notifications/entities/push-subscription.entity';
 import { CreateMemberDto, UpdateMemberDto } from './dto/team.dto';
 
 export interface TeamMember {
@@ -180,6 +181,7 @@ export class TeamService {
     await this.members.manager.transaction(async (manager) => {
       await manager.delete(BusinessUser, { businessId, userId });
       await manager.delete(AccessLink, { userId });
+      await manager.delete(PushSubscription, { userId });
       await manager.update(
         User,
         { id: userId },

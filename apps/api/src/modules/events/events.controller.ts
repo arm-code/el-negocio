@@ -135,11 +135,12 @@ export class EventsController {
     description: 'No encontrado o pertenece a otro usuario.',
   })
   update(
+    @CurrentUser() user: AuthenticatedUser,
     @CurrentBusiness() businessId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateBusinessEventDto,
   ): Promise<BusinessEventResponseDto> {
-    return this.eventsService.update(businessId, id, dto);
+    return this.eventsService.update(businessId, id, dto, user.id);
   }
 
   @Patch(':id/status')
@@ -150,11 +151,12 @@ export class EventsController {
     description: 'No encontrado o pertenece a otro usuario.',
   })
   updateStatus(
+    @CurrentUser() user: AuthenticatedUser,
     @CurrentBusiness() businessId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateEventStatusDto,
   ): Promise<BusinessEventResponseDto> {
-    return this.eventsService.updateStatus(businessId, id, dto.status);
+    return this.eventsService.updateStatus(businessId, id, dto.status, user.id);
   }
 
   @Delete(':id')
@@ -168,9 +170,10 @@ export class EventsController {
     description: 'No encontrado o pertenece a otro usuario.',
   })
   remove(
+    @CurrentUser() user: AuthenticatedUser,
     @CurrentBusiness() businessId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<BusinessEventResponseDto> {
-    return this.eventsService.remove(businessId, id);
+    return this.eventsService.remove(businessId, id, user.id);
   }
 }

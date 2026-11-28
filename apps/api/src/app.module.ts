@@ -17,6 +17,7 @@ import { SalesNotesModule } from './modules/sales-notes/sales-notes.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { DownloaderModule } from './modules/downloader/downloader.module';
 import { TeamModule } from './modules/team/team.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { TeamModule } from './modules/team/team.module';
     AuthModule,
     BusinessesModule,
     TeamModule,
+    NotificationsModule,
 
     // Módulos de negocio (feature: finanzas, ex-business.xlsx)
     PaymentMethodsModule,

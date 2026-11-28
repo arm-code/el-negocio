@@ -5,6 +5,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { EntityManager, IsNull, MoreThan, Repository } from 'typeorm';
 import { BusinessUser } from '../businesses/entities/business-user.entity';
 import { BusinessesService } from '../businesses/businesses.service';
+import { PushSubscription } from '../notifications/entities/push-subscription.entity';
 import { ACCESS_LINK_TTL_MS } from './access.constants';
 import { AccessLink } from './entities/access-link.entity';
 import { User } from './entities/user.entity';
@@ -61,6 +62,8 @@ export class AccessLinksService {
         { passwordHash, passwordChangedAt: new Date() },
       );
       await manager.update(AccessLink, { id: link.id }, { usedAt: new Date() });
+      // Por si el cambio es porque perdió el celular
+      await manager.delete(PushSubscription, { userId: user.id });
       return user;
     });
   }
