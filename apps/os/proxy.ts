@@ -30,6 +30,7 @@ export async function proxy(req: NextRequest) {
     '/dashboard',
     '/configuracion',
     '/equipo',
+    '/avisos',
     '/gestion-productos',
     '/tools',
   ];
@@ -58,6 +59,7 @@ export const config = {
     '/configuracion/:path*',
     '/tools/:path*',
     '/equipo/:path*',
+    '/avisos/:path*',
     '/auth/:path*',
   ],
 };

@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { accessApi, MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '@/lib/api/team'
 import { ApiError } from '@/lib/api/axios'
-import { useAuth } from '@/lib/auth'
 
 const subscribe = (onChange: () => void) => {
   window.addEventListener('hashchange', onChange)
@@ -37,7 +36,6 @@ export default function ActivarPage() {
 
 function Activate({ token }: { token: string }) {
   const router = useRouter()
-  const { refresh } = useAuth()
   const [password, setPassword] = useState('')
   const [repeat, setRepeat] = useState('')
   const [visible, setVisible] = useState(false)
@@ -53,10 +51,8 @@ function Activate({ token }: { token: string }) {
 
   const save = useMutation({
     mutationFn: () => accessApi.redeem(token, password),
-    onSuccess: async () => {
-      await refresh()
-      router.replace('/dashboard')
-    },
+    // Carga completa: no debe quedar nada en memoria de quien usaba antes este celular
+    onSuccess: () => window.location.replace('/dashboard'),
     onError: (error: Error) => setProblem(error.message),
   })
 

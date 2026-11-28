@@ -15,6 +15,26 @@ import { BusinessEvent } from './entities/business-event.entity';
 import { EventStatus } from './enums/event-status.enum';
 import { SalesNote } from '../sales-notes/entities/sales-note.entity';
 import { sortColumn } from '../../common/utils/sort-column';
+import { NotificationsService } from '../notifications/notifications.service';
+
+/** Cómo estaba antes de cambiarlo, para saber qué avisar. */
+const snapshot = ({
+  id,
+  name,
+  eventDate,
+  eventTime,
+  eventAddress,
+  status,
+  isActive,
+}: BusinessEvent) => ({
+  id,
+  name,
+  eventDate,
+  eventTime,
+  eventAddress,
+  status,
+  isActive,
+});
 
 @Injectable()
 export class EventsService {
@@ -25,6 +45,7 @@ export class EventsService {
     private readonly transactionRepository: Repository<Transaction>,
     @InjectRepository(SalesNote)
     private readonly salesNoteRepository: Repository<SalesNote>,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async create(
@@ -64,6 +85,7 @@ export class EventsService {
     }
     
     const reloaded = await this.getEntityOrFail(businessId, saved.id);
+    this.notifications.agendaChanged(businessId, userId, null, reloaded);
     return this.toResponse(businessId, reloaded);
   }
 
@@ -182,8 +204,10 @@ export class EventsService {
     businessId: string,
     id: string,
     dto: UpdateBusinessEventDto,
+    userId: string,
   ): Promise<BusinessEventResponseDto> {
     const entity = await this.getEntityOrFail(businessId, id);
+    const before = snapshot(entity);
 
     // Nombre y fecha no se pueden vaciar: un null se ignora
     if (dto.name != null) entity.name = dto.name.trim();
@@ -227,6 +251,7 @@ export class EventsService {
     if (dto.isActive != null) entity.isActive = dto.isActive;
 
     const saved = await this.eventRepository.save(entity);
+    this.notifications.agendaChanged(businessId, userId, before, saved);
     return this.toResponse(businessId, saved);
   }
 
@@ -234,17 +259,26 @@ export class EventsService {
     businessId: string,
     id: string,
     status: EventStatus,
+    userId: string,
   ): Promise<BusinessEventResponseDto> {
     const entity = await this.getEntityOrFail(businessId, id);
+    const before = snapshot(entity);
     entity.status = status;
     const saved = await this.eventRepository.save(entity);
+    this.notifications.agendaChanged(businessId, userId, before, saved);
     return this.toResponse(businessId, saved);
   }
 
-  async remove(businessId: string, id: string): Promise<BusinessEventResponseDto> {
+  async remove(
+    businessId: string,
+    id: string,
+    userId: string,
+  ): Promise<BusinessEventResponseDto> {
     const entity = await this.getEntityOrFail(businessId, id);
+    const before = snapshot(entity);
     entity.status = EventStatus.CANCELLED;
     const saved = await this.eventRepository.save(entity);
+    this.notifications.agendaChanged(businessId, userId, before, saved);
     return this.toResponse(businessId, saved);
   }
 

@@ -4,11 +4,10 @@ import { useEffect } from 'react';
 
 export default function PwaRegistration() {
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {
-          // Ignorar errores de registro en producción
-        });
+    // Sin esperar a "load": si la página ya cargó, ese evento no vuelve a ocurrir
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {
+        // Sin service worker la app funciona igual, pero sin avisos
       });
     }
   }, []);

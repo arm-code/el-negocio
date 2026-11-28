@@ -103,6 +103,8 @@ async function main() {
         [email, hash],
       );
       const userId = rows[0].id as string;
+      // Los dispositivos con avisos se vuelven a activar con la contraseña nueva
+      await db.query(`DELETE FROM elnegocio.push_subscriptions WHERE user_id = $1`, [userId]);
       console.log(`OK: contraseña guardada para ${email}`);
 
       if (slug) {

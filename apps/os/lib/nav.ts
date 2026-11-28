@@ -1,4 +1,5 @@
 import {
+    Bell,
     FilePlus2,
     FileText,
     LayoutDashboard,
@@ -66,6 +67,7 @@ export const primaryNav: NavItem[] = [
         icon: Package,
         matchPrefix: '/tools/inventario',
     },
+    { label: 'Avisos', shortLabel: 'Avisos', href: '/avisos', icon: Bell, sideOnly: true },
     {
         label: 'Equipo',
         shortLabel: 'Equipo',

@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SalesNote } from '../sales-notes/entities/sales-note.entity';
 import { TransactionCategory } from '../categories/entities/transaction-category.entity';
 import { Transaction } from '../transactions/entities/transaction.entity';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { TransactionsModule } from '../transactions/transactions.module';
 import { EventPaymentsService } from './event-payments.service';
 import { BusinessEvent } from './entities/business-event.entity';
@@ -18,6 +19,7 @@ import { EventsService } from './events.service';
       SalesNote,
     ]),
     TransactionsModule,
+    NotificationsModule,
   ],
   controllers: [EventsController],
   providers: [EventsService, EventPaymentsService],

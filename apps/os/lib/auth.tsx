@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
 import { ApiError, axiosInstance } from '@/lib/api/axios'
+import { forgetDevice } from '@/lib/push'
 
 /** `editor` es un empleado; `viewer` solo consulta. */
 export type UserRole = 'admin' | 'editor' | 'viewer'
@@ -21,7 +22,10 @@ interface AuthContextType {
   expired: boolean
   /** Vuelve a consultar la sesión (llamar tras iniciar sesión). */
   refresh: () => Promise<void>
+  /** Cerrar sesión a propósito: este celular además deja de recibir avisos. */
   signOut: (redirectTo?: unknown) => Promise<void>
+  /** Borrar una sesión que ya no vale; los avisos de este celular no se tocan. */
+  endSession: (redirectTo: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -31,6 +35,7 @@ const AuthContext = createContext<AuthContextType>({
   expired: false,
   refresh: async () => {},
   signOut: async () => {},
+  endSession: async () => {},
 })
 
 interface MeResponse {
@@ -81,9 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => document.removeEventListener('visibilitychange', check)
   }, [refresh])
 
-  // Algunos botones pasan `signOut` directo como onClick: el argumento puede ser un evento
-  const signOut = useCallback(async (redirectArg?: unknown) => {
-    const redirectTo = typeof redirectArg === 'string' ? redirectArg : '/'
+  const endSession = useCallback(async (redirectTo: string) => {
     try {
       await axiosInstance.post('/v1/auth/logout')
     } finally {
@@ -92,9 +95,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Algunos botones pasan `signOut` directo como onClick: el argumento puede ser un evento
+  const signOut = useCallback(
+    async (redirectArg?: unknown) => {
+      await forgetDevice()
+      await endSession(typeof redirectArg === 'string' ? redirectArg : '/')
+    },
+    [endSession]
+  )
+
   return (
     <AuthContext.Provider
-      value={{ user, loading, isAdmin: user?.role === 'admin', expired, refresh, signOut }}
+      value={{ user, loading, isAdmin: user?.role === 'admin', expired, refresh, signOut, endSession }}
     >
       {children}
     </AuthContext.Provider>
