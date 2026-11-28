@@ -399,8 +399,9 @@ Hecho en `packages/tool-agenda`. En el sitio gratuito está en `/tools/agenda` (
 `el-negocio:agenda:events:v1`, adaptador `apps/toolbox/lib/agenda-storage.ts`); en `os`,
 en `/tools/eventos` (la dirección no cambió).
 
-- Es una sola pantalla con hojas. "Agregar a mi calendario" descarga un `.ics` para que
-  el celular avise.
+- Es una sola pantalla con hojas. No exporta al calendario del celular: descargar un
+  archivo y cargarlo era demasiado para quien usa la app. Lo próximo y lo atrasado se ve
+  en la propia agenda.
 - Los cobros entran por el puerto `PaymentsStorage`. Un movimiento guarda de qué se cobró
   (`eventId` en el navegador, `businessEventId` en el API) y corregirlo en Caja no lo
   desliga.
