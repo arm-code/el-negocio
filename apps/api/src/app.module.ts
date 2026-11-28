@@ -16,6 +16,7 @@ import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.
 import { SalesNotesModule } from './modules/sales-notes/sales-notes.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { DownloaderModule } from './modules/downloader/downloader.module';
+import { TeamModule } from './modules/team/team.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { DownloaderModule } from './modules/downloader/downloader.module';
     // Autenticación y gestión de Negocios (Globales)
     AuthModule,
     BusinessesModule,
+    TeamModule,
 
     // Módulos de negocio (feature: finanzas, ex-business.xlsx)
     PaymentMethodsModule,

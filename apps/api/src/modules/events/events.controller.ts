@@ -17,16 +17,25 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ResponseMessage } from '../../common/interceptors/transform.interceptor';
-import { CurrentBusiness } from '../auth/decorators/current-business.decorator';
+import { BusinessRole } from '../businesses/enums/business-role.enum';
+import {
+  CurrentBusiness,
+  CurrentBusinessRole,
+} from '../auth/decorators/current-business.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../auth/guards/tenant.guard';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
-import { BusinessEventResponseDto } from './dto/business-event-response.dto';
+import {
+  BusinessEventBalanceResponseDto,
+  BusinessEventResponseDto,
+} from './dto/business-event-response.dto';
+import { CreateEventPaymentDto } from './dto/create-event-payment.dto';
 import { CreateBusinessEventDto } from './dto/create-business-event.dto';
 import { QueryBusinessEventDto } from './dto/query-business-event.dto';
 import { UpdateBusinessEventDto } from './dto/update-business-event.dto';
 import { UpdateEventStatusDto } from './dto/update-event-status.dto';
+import { EventPaymentsService } from './event-payments.service';
 import { EventsService } from './events.service';
 
 /**
@@ -38,7 +47,10 @@ import { EventsService } from './events.service';
 @UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('events')
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(
+    private readonly eventsService: EventsService,
+    private readonly payments: EventPaymentsService,
+  ) {}
 
   @Post()
   @ResponseMessage('Evento creado exitosamente.')
@@ -78,11 +90,41 @@ export class EventsController {
     status: 404,
     description: 'No encontrado o pertenece a otro usuario.',
   })
-  findOne(
+  async findOne(
+    @CurrentBusiness() businessId: string,
+    @CurrentBusinessRole() role: BusinessRole,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    const event: Partial<BusinessEventBalanceResponseDto> =
+      await this.eventsService.findOne(businessId, id);
+    // Gastos y ganancia son de la Caja: solo para administradores
+    if (role !== BusinessRole.ADMIN) {
+      delete event.totalExpenses;
+      delete event.netBalance;
+    }
+    return event;
+  }
+
+  @Get(':id/payments')
+  @ResponseMessage('Cobros obtenidos.')
+  @ApiOperation({ summary: 'Lo cobrado de algo agendado.' })
+  listPayments(
     @CurrentBusiness() businessId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.eventsService.findOne(businessId, id);
+    return this.payments.list(businessId, id);
+  }
+
+  @Post(':id/payments')
+  @ResponseMessage('Cobro anotado.')
+  @ApiOperation({ summary: 'Anota un cobro: entra a la Caja ligado a lo agendado.' })
+  createPayment(
+    @CurrentUser() user: AuthenticatedUser,
+    @CurrentBusiness() businessId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateEventPaymentDto,
+  ) {
+    return this.payments.create(businessId, user.id, id, dto);
   }
 
   @Patch(':id')

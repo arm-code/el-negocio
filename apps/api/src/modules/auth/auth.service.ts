@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -10,8 +11,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { Repository } from 'typeorm';
+import { BusinessesService } from '../businesses/businesses.service';
 import { SESSION_TTL_SECONDS } from './auth.constants';
 import { User } from './entities/user.entity';
+import type { AuthenticatedUser } from './interfaces/authenticated-user.interface';
+import { SessionService } from './session.service';
 
 const MAX_FAILURES = 5;
 const WINDOW_MS = 15 * 60 * 1000;
@@ -65,6 +69,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
     private readonly configService: ConfigService,
+    private readonly sessions: SessionService,
+    private readonly businesses: BusinessesService,
   ) {}
 
   async login(email: string, password: string, ip: string) {
@@ -95,13 +101,27 @@ export class AuthService {
     }
 
     this.throttle.reset(ipKey, emailKey);
+    return this.issueSession(user);
+  }
+
+  /** Sesión nueva para una cuenta ya comprobada. */
+  issueSession(user: User) {
     return { user: { id: user.id, email: user.email }, token: this.signToken(user) };
   }
 
-  async getUserById(id: string) {
-    const user = await this.users.findOne({ where: { id, isActive: true } });
-    if (!user) throw new UnauthorizedException('Sesión inválida.');
-    return { id: user.id, email: user.email };
+  /** Quién es y qué puede hacer. Quien ya no es del equipo se queda sin sesión. */
+  async me(session: AuthenticatedUser) {
+    const user = await this.sessions.assertCurrent(session);
+    const business = await this.businesses.getCurrentBusiness();
+    const role = await this.businesses
+      .validateUserInBusiness(user.id, business.id)
+      .catch((error: unknown) => {
+        if (error instanceof ForbiddenException) {
+          throw new UnauthorizedException('Ya no tienes acceso a este negocio.');
+        }
+        throw error;
+      });
+    return { id: user.id, email: user.email, name: user.name, role };
   }
 
   private signToken(user: User): string {

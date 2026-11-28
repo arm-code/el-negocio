@@ -22,6 +22,7 @@ import { ResponseMessage } from '../../common/interceptors/transform.interceptor
 import { CurrentBusiness } from '../auth/decorators/current-business.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../auth/guards/tenant.guard';
+import { AdminWrites } from '../auth/permissions';
 import { CreatePaymentMethodDto } from './dto/create-payment-method.dto';
 import { PaymentMethodResponseDto } from './dto/payment-method-response.dto';
 import { QueryPaymentMethodDto } from './dto/query-payment-method.dto';
@@ -36,6 +37,7 @@ import { PaymentMethodsService } from './payment-methods.service';
  */
 @ApiTags('Payment Methods')
 @ApiBearerAuth()
+@AdminWrites()
 @UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('payment-methods')
 export class PaymentMethodsController {

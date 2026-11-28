@@ -25,6 +25,8 @@ export interface AuthenticatedUser {
   id: string;
   email: string | null;
   role: string;
+  /** Cuándo se emitió la sesión (claim `iat`, en segundos). */
+  issuedAt?: number;
 }
 
 /**

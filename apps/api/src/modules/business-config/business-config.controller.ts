@@ -26,6 +26,7 @@ import { CurrentBusiness } from '../auth/decorators/current-business.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../auth/guards/tenant.guard';
+import { AdminWrites } from '../auth/permissions';
 import { BusinessesService } from '../businesses/businesses.service';
 import { PublicBusinessResponseDto } from '../businesses/dto/public-business-response.dto';
 import { BusinessConfigService } from './business-config.service';
@@ -54,6 +55,7 @@ import { UpdateGalleryItemDto } from './dto/update-gallery-item.dto';
  */
 @ApiTags('Business Config')
 @ApiBearerAuth()
+@AdminWrites()
 @UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('config')
 export class BusinessConfigController {

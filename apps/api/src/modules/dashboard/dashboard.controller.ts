@@ -9,6 +9,7 @@ import { ResponseMessage } from '../../common/interceptors/transform.interceptor
 import { CurrentBusiness } from '../auth/decorators/current-business.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../auth/guards/tenant.guard';
+import { AdminOnly } from '../auth/permissions';
 import { DashboardService } from './dashboard.service';
 import { DashboardQueryDto } from './dto/dashboard-query.dto';
 
@@ -18,6 +19,7 @@ import { DashboardQueryDto } from './dto/dashboard-query.dto';
  */
 @ApiTags('Dashboard')
 @ApiBearerAuth()
+@AdminOnly()
 @UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('dashboard')
 export class DashboardController {

@@ -23,6 +23,7 @@ import { CurrentBusiness } from '../auth/decorators/current-business.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../auth/guards/tenant.guard';
+import { AdminOnly } from '../auth/permissions';
 import type { AuthenticatedUser } from '../auth/interfaces/authenticated-user.interface';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { QuerySummaryDto } from './dto/query-summary.dto';
@@ -37,6 +38,7 @@ import { TransactionsService } from './transactions.service';
  */
 @ApiTags('Transactions')
 @ApiBearerAuth()
+@AdminOnly()
 @UseGuards(JwtAuthGuard, TenantGuard)
 @Controller('transactions')
 export class TransactionsController {
